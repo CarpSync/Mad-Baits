@@ -451,8 +451,9 @@ class MBMC_REST_Account {
 		$order_id = isset( $params['orderId'] ) ? absint( $params['orderId'] ) : 0;
 		$order_key = isset( $params['orderKey'] ) ? sanitize_text_field( (string) $params['orderKey'] ) : '';
 		$payment_intent_id = isset( $params['paymentIntentId'] ) ? sanitize_text_field( (string) $params['paymentIntentId'] ) : '';
+		$payment_method_id = isset( $params['paymentMethodId'] ) ? sanitize_text_field( (string) $params['paymentMethodId'] ) : '';
 
-		$result = MBMC_Native_Checkout::confirm( $order_id, $order_key, $payment_intent_id );
+		$result = MBMC_Native_Checkout::confirm( $order_id, $order_key, $payment_intent_id, $payment_method_id );
 
 		if ( is_wp_error( $result ) ) {
 			return $result;
