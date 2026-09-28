@@ -1,0 +1,239 @@
+/**
+ * Shop / category / tag archive product grids.
+ * Fixes WooCommerce clearfix pseudo-elements occupying the first grid column.
+ */
+
+/* Shared archive contexts */
+:is(
+	body.post-type-archive-product,
+	body.tax-product_cat,
+	body.tax-product_tag,
+	body.woocommerce-shop,
+	body.archive.woocommerce-page
+) #mad-shop-grid .product-grid,
+:is(
+	body.post-type-archive-product,
+	body.tax-product_cat,
+	body.tax-product_tag,
+	body.woocommerce-shop,
+	body.archive.woocommerce-page
+) .woocommerce ul.products,
+.mad-baits-theme.woocommerce ul.products {
+	display: grid !important;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: clamp(0.8rem, 1.7vw, 1.25rem);
+	list-style: none;
+	margin: 0 !important;
+	padding: 0 !important;
+	width: 100%;
+	max-width: none;
+	clear: none !important;
+	float: none !important;
+}
+
+/* WooCommerce clearfix placeholders must not become grid cells */
+:is(
+	body.post-type-archive-product,
+	body.tax-product_cat,
+	body.tax-product_tag,
+	body.woocommerce-shop,
+	body.archive.woocommerce-page
+) .woocommerce ul.products::before,
+:is(
+	body.post-type-archive-product,
+	body.tax-product_cat,
+	body.tax-product_tag,
+	body.woocommerce-shop,
+	body.archive.woocommerce-page
+) .woocommerce ul.products::after,
+.mad-baits-theme.woocommerce ul.products::before,
+.mad-baits-theme.woocommerce ul.products::after {
+	content: none !important;
+	display: none !important;
+}
+
+:is(
+	body.post-type-archive-product,
+	body.tax-product_cat,
+	body.tax-product_tag,
+	body.woocommerce-shop,
+	body.archive.woocommerce-page
+) #mad-shop-grid .product-grid > *,
+:is(
+	body.post-type-archive-product,
+	body.tax-product_cat,
+	body.tax-product_tag,
+	body.woocommerce-shop,
+	body.archive.woocommerce-page
+) .woocommerce ul.products > li.product,
+.mad-baits-theme.woocommerce ul.products > li.product,
+.mad-baits-theme #mad-shop-grid .product-grid > .mad-product-card,
+.mad-baits-theme #mad-shop-grid .product-grid > article.product {
+	float: none !important;
+	width: auto !important;
+	max-width: none !important;
+	margin: 0 !important;
+	clear: none !important;
+	min-width: 0;
+}
+
+/* Hide category placeholder tiles / empty loop items */
+.woocommerce ul.products > li.product-category,
+.woocommerce ul.products > li.product:empty {
+	display: none !important;
+}
+
+.mad-baits-theme .mad-shop-toolbar {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: 0.75rem 1rem;
+}
+
+.mad-baits-theme .mad-shop-toolbar .woocommerce-result-count {
+	margin: 0;
+}
+
+.mad-baits-theme .mad-shop-toolbar .woocommerce-ordering {
+	margin: 0 0 0 auto;
+}
+
+/* Mobile shop archive: centred sort + scrollable category chips */
+@media (max-width: 768px) {
+	.mad-baits-theme .mad-shop-catalogue-section {
+		overflow-x: visible;
+	}
+
+	.mad-baits-theme .mad-shop-catalogue-section .container,
+	.mad-baits-theme .mad-shop-catalogue-section .mad-shop-catalogue {
+		overflow-x: visible;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar {
+		flex-direction: column;
+		align-items: stretch;
+		justify-content: flex-start;
+		gap: 0.65rem;
+		padding: 0.85rem 0.7rem;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar .mad-mobile-shop-chips {
+		display: flex;
+		flex: 0 0 100%;
+		flex-wrap: nowrap;
+		align-items: center;
+		gap: 0.46rem;
+		width: 100%;
+		max-width: 100%;
+		margin: 0;
+		padding: 0.15rem 0.1rem 0.5rem;
+		overflow-x: auto;
+		overflow-y: hidden;
+		-webkit-overflow-scrolling: touch;
+		overscroll-behavior-x: contain;
+		scrollbar-width: none;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar .mad-mobile-shop-chips::-webkit-scrollbar {
+		display: none;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar .mad-mobile-shop-chips__item {
+		flex: 0 0 auto;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar .woocommerce-result-count {
+		width: 100%;
+		text-align: center;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar .woocommerce-ordering {
+		width: 100%;
+		max-width: 320px;
+		margin: 0 auto !important;
+	}
+
+	.mad-baits-theme .mad-shop-toolbar .woocommerce-ordering select {
+		width: 100%;
+		min-width: 0;
+		margin: 0 auto;
+		text-align: center;
+		text-align-last: center;
+	}
+
+	.mad-baits-theme .mad-shop-quick-filters {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.45rem;
+		margin-left: auto;
+		margin-right: auto;
+		max-width: 100%;
+	}
+
+	.mad-baits-theme .mad-shop-quick-filters__link {
+		flex: 0 1 auto;
+		max-width: 100%;
+	}
+}
+
+@media (max-width: 1100px) {
+	:is(
+		body.post-type-archive-product,
+		body.tax-product_cat,
+		body.tax-product_tag,
+		body.woocommerce-shop,
+		body.archive.woocommerce-page
+	) #mad-shop-grid .product-grid,
+	:is(
+		body.post-type-archive-product,
+		body.tax-product_cat,
+		body.tax-product_tag,
+		body.woocommerce-shop,
+		body.archive.woocommerce-page
+	) .woocommerce ul.products,
+	.mad-baits-theme.woocommerce ul.products {
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 900px) {
+	:is(
+		body.post-type-archive-product,
+		body.tax-product_cat,
+		body.tax-product_tag,
+		body.woocommerce-shop,
+		body.archive.woocommerce-page
+	) #mad-shop-grid .product-grid,
+	:is(
+		body.post-type-archive-product,
+		body.tax-product_cat,
+		body.tax-product_tag,
+		body.woocommerce-shop,
+		body.archive.woocommerce-page
+	) .woocommerce ul.products,
+	.mad-baits-theme.woocommerce ul.products {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+}
+
+@media (max-width: 520px) {
+	:is(
+		body.post-type-archive-product,
+		body.tax-product_cat,
+		body.tax-product_tag,
+		body.woocommerce-shop,
+		body.archive.woocommerce-page
+	) #mad-shop-grid .product-grid,
+	:is(
+		body.post-type-archive-product,
+		body.tax-product_cat,
+		body.tax-product_tag,
+		body.woocommerce-shop,
+		body.archive.woocommerce-page
+	) .woocommerce ul.products,
+	.mad-baits-theme.woocommerce ul.products {
+		grid-template-columns: 1fr;
+	}
+}

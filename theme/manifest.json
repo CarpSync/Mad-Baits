@@ -1,0 +1,131 @@
+{
+  "name": "Mad Baits",
+  "short_name": "Mad Baits",
+  "description": "Premium carp bait, bundles and session-ready products.",
+  "id": "/",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#fff202",
+  "background_color": "#050505",
+  "categories": [
+    "shopping",
+    "sports",
+    "lifestyle"
+  ],
+  "icons": [
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-48.png",
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-72.png",
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-167.png",
+      "sizes": "167x167",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-180.png",
+      "sizes": "180x180",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-monochrome-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "monochrome"
+    },
+    {
+      "src": "/wp-content/themes/mad-baits/assets/img/icons/app-icon-monochrome-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "monochrome"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Shop",
+      "url": "/shop/"
+    },
+    {
+      "name": "Bundle Deals",
+      "url": "/product-category/bundles-deals/"
+    },
+    {
+      "name": "Session",
+      "url": "/session/"
+    },
+    {
+      "name": "AI Bait Finder",
+      "url": "/ai-bait-finder/"
+    },
+    {
+      "name": "My Account",
+      "url": "/my-account/"
+    }
+  ]
+}

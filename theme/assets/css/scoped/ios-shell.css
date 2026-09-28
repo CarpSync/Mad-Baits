@@ -1,0 +1,123 @@
+/**
+ * Capacitor iOS WebView polish — safe areas, status bar fill, touch targets.
+ *
+ * Do NOT add padding-top to body — fixed headers own safe-area insets.
+ * Body padding caused a scroll gap above the sticky top bar on iPhone.
+ */
+
+html.is-capacitor-ios,
+body.is-capacitor-ios {
+  --app-safe-top: env(safe-area-inset-top, 0px);
+  --app-safe-bottom: env(safe-area-inset-bottom, 0px);
+  --app-safe-left: env(safe-area-inset-left, 0px);
+  --app-safe-right: env(safe-area-inset-right, 0px);
+  --app-header-height: 48px;
+  --app-bottom-nav-height: 86px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  overflow-x: clip;
+}
+
+html.is-capacitor-ios {
+  background: #000;
+}
+
+body.is-capacitor-ios {
+  margin: 0;
+  padding: 0;
+  min-height: 100dvh;
+  background: #000;
+}
+
+/* Black fill behind Dynamic Island / status bar — stays fixed while scrolling */
+body.is-capacitor-ios::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-safe-top);
+  background: #000;
+  z-index: 10150;
+  pointer-events: none;
+}
+
+body.is-capacitor-ios .mad-app-top-bar {
+  padding-top: var(--app-safe-top);
+  background: rgba(8, 8, 10, 0.92);
+}
+
+body.is-capacitor-ios .mad-app-top-bar::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-safe-top);
+  background: #000;
+  pointer-events: none;
+}
+
+body.is-capacitor-ios.home:not(.mad-app-has-top-back) .site-header {
+  padding-top: var(--app-safe-top);
+}
+
+body.is-capacitor-ios.home:not(.mad-app-has-top-back) .site-header::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--app-safe-top);
+  background: #000;
+  pointer-events: none;
+}
+
+body.is-capacitor-ios input,
+body.is-capacitor-ios select,
+body.is-capacitor-ios textarea {
+  font-size: 16px;
+}
+
+body.is-capacitor-ios .mad-button,
+body.is-capacitor-ios .button,
+body.is-capacitor-ios button {
+  min-height: 44px;
+}
+
+body.is-capacitor-ios .mobile-menu,
+body.is-capacitor-ios .mad-app-session-sheet__body,
+body.is-capacitor-ios .woocommerce-checkout,
+body.is-capacitor-ios .woocommerce-cart {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+body.is-capacitor-ios .woocommerce-checkout .form-row input,
+body.is-capacitor-ios .woocommerce-checkout .form-row select,
+body.is-capacitor-ios .woocommerce-checkout .form-row textarea {
+  font-size: 16px;
+}
+
+body.is-capacitor-ios.is-capacitor-backgrounded .mad-app-toast,
+body.is-capacitor-ios.is-capacitor-backgrounded .mad-mini-cart-drawer-shell.is-open {
+  opacity: 0;
+  pointer-events: none;
+}
+
+body.is-capacitor-ios.is-capacitor-splash-fading {
+  opacity: 1;
+  transition: opacity 0.28s ease;
+}
+
+@media (max-width: 768px) {
+  body.is-capacitor-ios .mad-app-bottom-nav {
+    padding-bottom: var(--app-safe-bottom);
+  }
+
+  body.is-capacitor-ios:not(.mad-app-nav-hidden-context) .site-main,
+  body.is-capacitor-ios:not(.mad-app-nav-hidden-context) main,
+  body.is-capacitor-ios:not(.mad-app-nav-hidden-context) #content.site-main {
+    padding-bottom: calc(var(--app-bottom-nav-height) + 16px + var(--app-safe-bottom));
+  }
+}

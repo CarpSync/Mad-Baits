@@ -1,0 +1,456 @@
+/**
+ * Standard single product PDP — polish only.
+ * Scoped to body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) (not bundle builder).
+ */
+
+/* Override main.css gallery img width/height 100% shrink */
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).single-product .woocommerce div.product div.images .woocommerce-product-gallery__image img,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).single-product .mad-single-product__gallery .woocommerce-product-gallery__image img {
+  width: auto !important;
+  height: auto !important;
+}
+
+/* -------------------------------------------------------------------------
+   Shell + section order
+   ------------------------------------------------------------------------- */
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-product-page.container {
+  width: calc(100% - 48px);
+  max-width: 1280px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: clamp(1rem, 2.5vw, 1.5rem);
+  padding-right: clamp(1rem, 2.5vw, 1.5rem);
+  box-sizing: border-box;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product {
+  width: calc(100% - 48px) !important;
+  max-width: 1280px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .woocommerce-tabs,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .mad-session-upsell,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .mad-pdp-module,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > section {
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+/* -------------------------------------------------------------------------
+   Desktop hero
+   ------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).woocommerce div.product.mad-pdp-product {
+    display: grid !important;
+    grid-template-columns: minmax(520px, 1fr) minmax(430px, 520px) !important;
+    gap: 56px !important;
+    align-items: start !important;
+    padding: 0 0 clamp(2rem, 3vw, 3rem) !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .mad-pdp-gallery-col {
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    min-width: min(520px, 100%);
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .summary.entry-summary {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    max-width: 520px !important;
+    justify-self: end;
+    padding: 34px !important;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 242, 2, 0.22);
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255, 242, 2, 0.08), transparent 42%),
+      linear-gradient(168deg, rgba(20, 20, 20, 0.98), rgba(8, 8, 8, 0.98));
+    box-shadow:
+      0 0 0 1px rgba(255, 242, 2, 0.06),
+      0 24px 48px rgba(0, 0, 0, 0.42);
+    box-sizing: border-box;
+  }
+
+  /* Main product image panel */
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .mad-pdp-gallery-col > .woocommerce-product-gallery,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .mad-pdp-gallery-col > .images,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .woocommerce-product-gallery,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .images {
+    width: 100% !important;
+    max-width: none !important;
+    padding: 0 !important;
+    border-radius: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.11);
+    background: rgba(255, 255, 255, 0.035);
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35);
+    overflow: hidden;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .woocommerce-product-gallery__wrapper,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .woocommerce-product-gallery__image {
+    width: 100% !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .woocommerce-product-gallery__image a,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product div.images .woocommerce-product-gallery__image a,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-single-product__gallery .woocommerce-product-gallery__image a {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 100% !important;
+    min-height: 560px !important;
+    max-height: 700px !important;
+    aspect-ratio: auto !important;
+    padding: 28px !important;
+    box-sizing: border-box !important;
+    background: rgba(255, 255, 255, 0.035) !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .woocommerce-product-gallery__image img,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product div.images .woocommerce-product-gallery__image img,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce div.product div.images .woocommerce-product-gallery__image img,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-single-product__gallery .woocommerce-product-gallery__image img {
+    position: static !important;
+    inset: auto !important;
+    width: auto !important;
+    height: auto !important;
+    max-width: min(100%, 920px) !important;
+    max-height: 640px !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
+    object-fit: contain !important;
+    object-position: center center !important;
+    transform: none !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .product_title {
+    font-size: clamp(2.15rem, 3.2vw, 3.25rem) !important;
+    line-height: 1.06 !important;
+    letter-spacing: -0.02em;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .summary .price {
+    font-size: clamp(1.75rem, 2.4vw, 2.2rem) !important;
+    font-weight: 800;
+    color: var(--mb-accent, #fff202);
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-pdp-summary-inner .woocommerce-product-details__short-description {
+    max-width: 420px;
+    font-size: 1rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.84);
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-pdp-chips {
+    margin-top: 0.25rem;
+  }
+}
+
+/* Beat layout-fixes 2-column variation grid + flex ATC on standard PDP */
+@media (min-width: 1024px) {
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product form.cart .variations tbody {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Variation selector (premium)
+   ------------------------------------------------------------------------- */
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart table.variations {
+  width: 100%;
+  border: 0;
+  margin: 0;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations {
+  display: block !important;
+  width: 100% !important;
+  margin-top: 18px;
+  padding: 16px !important;
+  border-radius: 16px !important;
+  border: 1px solid rgba(255, 230, 0, 0.12) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-sizing: border-box;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations tbody {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 14px !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations tr {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 8px !important;
+  margin: 0 !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations td.label,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations td.value,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations th.label {
+  display: block !important;
+  width: 100% !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations td.label label,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations th.label label {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 242, 2, 0.78);
+  line-height: 1.35;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations select {
+  width: 100% !important;
+  min-height: 48px !important;
+  padding: 0 44px 0 14px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(255, 255, 255, 0.16) !important;
+  background-color: #0b0b0b !important;
+  color: #fff !important;
+  font-size: 0.95rem !important;
+  font-weight: 700 !important;
+  line-height: 1.3 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23fff202' d='M1 1l5 5 5-5'/%3E%3C/svg%3E") !important;
+  background-repeat: no-repeat !important;
+  background-position: right 14px center !important;
+  background-size: 12px 8px !important;
+  box-sizing: border-box !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .variations select:focus {
+  outline: none !important;
+  border-color: rgba(255, 242, 2, 0.55) !important;
+  box-shadow: 0 0 0 2px rgba(255, 242, 2, 0.18) !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart .reset_variations {
+  display: inline-block !important;
+  margin: 4px 0 0 !important;
+  padding: 0 !important;
+  font-size: 0.82rem !important;
+  font-weight: 600;
+  color: rgba(255, 242, 2, 0.88) !important;
+  text-decoration: underline;
+  text-underline-offset: 0.15em;
+}
+
+/* -------------------------------------------------------------------------
+   Add to cart row
+   ------------------------------------------------------------------------- */
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart:not(.variations_form) {
+  display: grid !important;
+  grid-template-columns: 96px minmax(0, 1fr) !important;
+  gap: 12px !important;
+  align-items: stretch !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  margin-top: 4px;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart .quantity,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart:not(.variations_form) > .quantity {
+  width: 100% !important;
+  max-width: 96px !important;
+  margin: 0 !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart .quantity .qty,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart:not(.variations_form) .quantity .qty {
+  width: 100% !important;
+  min-height: 52px !important;
+  border-radius: 999px !important;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .single_add_to_cart_button {
+  width: 100% !important;
+  min-height: 52px !important;
+  margin: 0 !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em !important;
+  text-transform: uppercase !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-pdp-express,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart .wcpay-payment-request-wrapper,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart #wc-stripe-payment-request-wrapper {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  margin-top: 0.5rem;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-pdp-express__label {
+  margin: 0 0 0.5rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* -------------------------------------------------------------------------
+   Complete Your Session — full product visible (contain, not cover)
+   ------------------------------------------------------------------------- */
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell.mad-pdp-module {
+  width: 100% !important;
+  max-width: 1280px !important;
+  margin-top: clamp(2rem, 3vw, 3rem) !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell__grid,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell ul.products {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: clamp(0.85rem, 1.5vw, 1.25rem) !important;
+  align-items: stretch !important;
+}
+
+@media (min-width: 1100px) {
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell__grid,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell ul.products {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  }
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell__grid > li.product,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell ul.products > li.product {
+  max-width: none !important;
+  width: 100% !important;
+  justify-self: stretch !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).mad-baits-theme .mad-session-upsell .mad-product-card__image-link,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card__image-link {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  aspect-ratio: 1 / 1 !important;
+  min-height: 190px !important;
+  max-height: none !important;
+  padding: 14px !important;
+  overflow: hidden !important;
+  border-radius: 14px 14px 0 0 !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  box-sizing: border-box !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).mad-baits-theme .mad-session-upsell .mad-product-card__image-link .mad-product-card__image,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).mad-baits-theme .mad-session-upsell .mad-product-card__image-link > img.mad-product-card__image,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).mad-baits-theme .mad-session-upsell .mad-product-card__image-link > img,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card__image-link .mad-product-card__image,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card__image-link > img.mad-product-card__image,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card__image-link > img {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card:hover .mad-product-card__image-link .mad-product-card__image,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card:hover .mad-product-card__image-link > img {
+  transform: none !important;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card__content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell .mad-product-card__actions {
+  margin-top: auto;
+}
+
+/* -------------------------------------------------------------------------
+   Tablet / mobile
+   ------------------------------------------------------------------------- */
+@media (max-width: 1023px) {
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).woocommerce div.product.mad-pdp-product {
+    grid-template-columns: 1fr !important;
+    gap: 1.25rem !important;
+    width: 100% !important;
+    padding-inline: max(1rem, env(safe-area-inset-left)) max(1rem, env(safe-area-inset-right)) !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .summary.entry-summary {
+    max-width: none !important;
+    justify-self: stretch;
+    padding: clamp(1.15rem, 3vw, 1.5rem) !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .woocommerce-product-gallery__image a,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product div.images .woocommerce-product-gallery__image a {
+    min-height: clamp(320px, 52vw, 480px) !important;
+    max-height: min(560px, 72vh) !important;
+    padding: clamp(1rem, 3vw, 1.5rem) !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product .woocommerce-product-gallery__image img,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product div.images .woocommerce-product-gallery__image img {
+    max-height: min(480px, 58vh) !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart:not(.variations_form) {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .woocommerce-variation-add-to-cart .quantity,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) form.cart:not(.variations_form) > .quantity {
+    max-width: none !important;
+  }
+}
+
+@media (max-width: 680px) {
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell__grid,
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell ul.products {
+    grid-auto-flow: column;
+    grid-auto-columns: minmax(78%, 1fr);
+    grid-template-columns: unset !important;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) .mad-session-upsell__grid > li.product {
+    scroll-snap-align: start;
+  }
+}
+
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).mad-mobile-app-ux--active .woocommerce-variation-add-to-cart,
+body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).mad-pwa-active .woocommerce-variation-add-to-cart {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom));
+}

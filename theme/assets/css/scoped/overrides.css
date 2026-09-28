@@ -1,0 +1,376 @@
+/* Final overrides and conversion-feature styles */
+
+/* Conversion features: session builder, comparison, matching, dispatch */
+.mad-session-builder,
+.mad-bait-comparison {
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 82% 10%, rgba(255, 242, 2, 0.1), transparent 44%),
+    linear-gradient(158deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.01));
+  padding: clamp(1rem, 2.2vw, 1.35rem);
+}
+
+.mad-session-builder__header p,
+.mad-bait-comparison__header p {
+  color: rgba(243, 243, 243, 0.86);
+  max-width: 66ch;
+}
+
+.mad-session-builder__steps {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.5rem;
+  padding: 0;
+  margin: 1rem 0 1.2rem;
+  list-style: none;
+}
+
+.mad-session-builder__steps li {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 999px;
+  padding: 0.42rem 0.58rem;
+  text-align: center;
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(240, 240, 240, 0.72);
+}
+
+.mad-session-builder__steps li.is-active {
+  border-color: rgba(255, 242, 2, 0.6);
+  background: rgba(255, 242, 2, 0.12);
+  color: #fff7ba;
+}
+
+.mad-session-builder__panel {
+  display: none;
+}
+
+.mad-session-builder__panel.is-active {
+  display: block;
+}
+
+.mad-session-builder__choice-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.mad-session-builder__choice-grid--ranges {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mad-session-builder__choice {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(9, 9, 9, 0.84);
+  color: #f3f3f3;
+  min-height: 48px;
+  padding: 0.55rem 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mad-session-builder__choice.is-selected,
+.mad-session-builder__choice:hover {
+  border-color: rgba(255, 242, 2, 0.58);
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.17);
+  transform: translateY(-1px);
+}
+
+.mad-session-builder__range-group {
+  margin-top: 0.9rem;
+}
+
+.mad-session-builder__range-title {
+  margin: 0 0 0.55rem;
+  color: rgba(247, 247, 247, 0.88);
+}
+
+.mad-session-builder__product-options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.7rem;
+}
+
+.mad-session-builder__product-option {
+  display: grid;
+  grid-template-columns: 56px minmax(0, 1fr);
+  gap: 0.62rem;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 12px;
+  padding: 0.55rem;
+  background: rgba(10, 10, 10, 0.82);
+  cursor: pointer;
+}
+
+.mad-session-builder__product-option:has(input:checked) {
+  border-color: rgba(255, 242, 2, 0.62);
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.18);
+}
+
+.mad-session-builder__product-option input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mad-session-builder__product-media {
+  width: 56px;
+  height: 56px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background:
+    linear-gradient(155deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.01)),
+    var(--builder-product-image) center / cover no-repeat;
+}
+
+.mad-session-builder__product-copy {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 0;
+}
+
+.mad-session-builder__product-copy strong {
+  font-size: 0.93rem;
+  line-height: 1.35;
+}
+
+.mad-session-builder__product-copy span {
+  color: rgba(251, 245, 160, 0.92);
+  font-size: 0.84rem;
+}
+
+.mad-session-builder__actions {
+  margin-top: 0.9rem;
+  display: flex;
+  gap: 0.56rem;
+}
+
+.mad-session-builder__review {
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(8, 8, 8, 0.82);
+  padding: 0.82rem;
+}
+
+.mad-session-builder__review-list {
+  margin: 0.65rem 0 0;
+  padding-left: 1rem;
+  color: rgba(241, 241, 241, 0.86);
+}
+
+.mad-session-builder__total {
+  margin: 0.8rem 0 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.mad-session-builder__status {
+  margin: 0.62rem 0 0;
+  min-height: 1.2em;
+}
+
+.mad-session-builder__status.is-error {
+  color: #ffb6b6;
+}
+
+.mad-session-builder__status.is-success {
+  color: #c8ffcc;
+}
+
+.mad-bait-comparison__controls {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.56rem;
+  margin: 0.9rem 0 0.72rem;
+}
+
+.mad-bait-comparison__toggle {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 999px;
+  background: rgba(9, 9, 9, 0.86);
+  min-height: 42px;
+  padding: 0.42rem 0.68rem;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: #f3f3f3;
+}
+
+.mad-bait-comparison__toggle input {
+  accent-color: #fff202;
+}
+
+.mad-bait-comparison__status {
+  margin: 0 0 0.7rem;
+  color: rgba(242, 242, 242, 0.82);
+}
+
+.mad-bait-comparison__table-wrap {
+  overflow-x: auto;
+}
+
+.mad-bait-comparison__table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+
+.mad-bait-comparison__table th,
+.mad-bait-comparison__table td {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(10, 10, 10, 0.86);
+  padding: 0.62rem 0.7rem;
+  text-align: left;
+}
+
+.mad-bait-comparison__table th {
+  color: #fff9bd;
+}
+
+.mad-bait-comparison__table .is-compare-hidden {
+  display: none;
+}
+
+.mad-fresh-rolling {
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 86% 10%, rgba(255, 242, 2, 0.12), transparent 48%),
+    linear-gradient(160deg, rgba(14, 14, 14, 0.97), rgba(8, 8, 8, 0.93));
+  padding: 0.78rem 0.84rem;
+}
+
+.mad-fresh-rolling__kicker {
+  margin: 0;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: rgba(255, 242, 2, 0.88);
+}
+
+.mad-fresh-rolling h3 {
+  margin: 0.28rem 0 0.34rem;
+  font-size: 1.06rem;
+}
+
+.mad-fresh-rolling__message {
+  margin: 0;
+  color: rgba(241, 241, 241, 0.84);
+  line-height: 1.5;
+}
+
+.mad-fresh-rolling__list {
+  margin: 0.72rem 0 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.36rem;
+}
+
+.mad-fresh-rolling__list li {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.6rem;
+  font-size: 0.84rem;
+}
+
+.mad-fresh-rolling__list span {
+  color: rgba(238, 238, 238, 0.75);
+}
+
+.mad-fresh-rolling__list strong {
+  color: #fff8b1;
+}
+
+.site-footer__premium-top .mad-fresh-rolling--footer {
+  align-self: stretch;
+}
+
+@media (min-width: 861px) {
+  .mad-fresh-rolling {
+    display: none;
+  }
+}
+
+/* Premium hover interaction layer */
+.mad-product-card,
+.category-card,
+.site-footer--premium .site-footer__column a,
+.mad-button {
+  transition: transform 0.26s ease, box-shadow 0.26s ease, border-color 0.26s ease, color 0.2s ease;
+}
+
+.mad-product-card:hover,
+.mad-product-card:focus-within {
+  transform: translateY(-6px);
+  box-shadow: 0 20px 34px rgba(0, 0, 0, 0.38), 0 0 0 1px rgba(255, 242, 2, 0.14);
+}
+
+.mad-product-card__image-link img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+}
+
+.mad-product-card__actions .mad-button,
+.mad-product-card__actions .button {
+  position: relative;
+  overflow: hidden;
+}
+
+.mad-product-card__actions .mad-button::after,
+.mad-product-card__actions .button::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -120%;
+  width: 38%;
+  background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.34), transparent);
+  transition: left 0.35s ease;
+}
+
+.mad-product-card__actions .mad-button:hover::after,
+.mad-product-card__actions .button:hover::after {
+  left: 130%;
+}
+
+.category-card:hover,
+.category-card:focus-visible {
+  box-shadow: 0 24px 42px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 242, 2, 0.16);
+}
+
+.site-footer--premium .site-footer__column a:hover,
+.site-footer--premium .site-footer__column a:focus-visible {
+  color: #fff8b4;
+}
+
+@media (max-width: 1100px) {
+  .mad-session-builder__choice-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mad-session-builder__choice-grid--ranges {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .mad-bait-comparison__controls {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .mad-session-builder__steps {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mad-session-builder__choice-grid,
+  .mad-session-builder__choice-grid--ranges,
+  .mad-bait-comparison__controls,
+  .mad-session-builder__product-options {
+    grid-template-columns: 1fr;
+  }
+}

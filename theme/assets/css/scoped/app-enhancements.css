@@ -1,0 +1,609 @@
+/* Premium enhancement layer - scoped, mobile-first */
+
+body.mad-app-enhance--enable_motion_effects .mad-product-card,
+body.mad-app-enhance--enable_motion_effects .mbbb-slot,
+body.mad-app-enhance--enable_motion_effects .mbbb-progress-dock {
+  transition: transform 0.22s ease, box-shadow 0.22s ease, opacity 0.28s ease, filter 0.28s ease;
+}
+
+body.mad-app-enhance--enable_motion_effects .mad-product-card:not(.is-revealed),
+body.mad-app-enhance--enable_motion_effects .mbbb-slot:not(.is-revealed),
+body.mad-app-enhance--enable_motion_effects .mbbb-progress-dock:not(.is-revealed) {
+  opacity: 0.85;
+  transform: translateY(8px);
+}
+
+body.mad-app-enhance--enable_motion_effects .mad-product-card.is-revealed,
+body.mad-app-enhance--enable_motion_effects .mbbb-slot.is-revealed,
+body.mad-app-enhance--enable_motion_effects .mbbb-progress-dock.is-revealed {
+  opacity: 1;
+  transform: none;
+}
+
+.mad-button.is-tapped,
+.mbbb-cta.is-tapped,
+.single_add_to_cart_button.is-tapped {
+  transform: scale(0.97);
+}
+
+.mad-product-card__premium-badges {
+  position: absolute;
+  inset: auto auto 0.55rem 0.55rem;
+  z-index: 4;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.24rem;
+  max-width: calc(100% - 1.1rem);
+}
+
+.mad-product-card__premium-badge {
+  padding: 0.2rem 0.46rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 242, 2, 0.44);
+  background: rgba(5, 5, 5, 0.8);
+  color: #fff6a2;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+
+/* Premium card chrome — all shop cards, not only bundle/deal listings */
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card {
+  position: relative;
+  border-color: rgba(255, 242, 2, 0.28) !important;
+  box-shadow: 0 16px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 242, 2, 0.12);
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 242, 2, 0.05) 0.75px, transparent 0.75px);
+  background-size: 6px 6px;
+  opacity: 0.2;
+  mix-blend-mode: screen;
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card .mad-product-card__category-badge {
+  border-color: rgba(255, 242, 2, 0.44);
+  color: #fff4af;
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card .mad-product-card__price {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: fit-content;
+  max-width: 100%;
+  padding: 0.18rem 0.42rem;
+  border-radius: 8px;
+  background: rgba(255, 242, 2, 0.13);
+  color: #fff9cb;
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card--bundle-deal {
+  border-color: rgba(255, 242, 2, 0.4) !important;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.42), 0 0 0 1px rgba(255, 242, 2, 0.18);
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card--bundle-deal::after {
+  opacity: 0.26;
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mad-product-card--bundle-deal .mad-product-card__discount-badge--bundle {
+  background: linear-gradient(135deg, #fff202, #ffd84d) !important;
+  color: #0b0b0b !important;
+  border-color: rgba(0, 0, 0, 0.15) !important;
+  box-shadow: 0 8px 18px rgba(255, 242, 2, 0.24);
+}
+
+.mad-perfect-match {
+  margin-top: 0.4rem;
+}
+
+.mad-perfect-match__header {
+  margin-bottom: 0.9rem;
+}
+
+.mad-perfect-match__grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.mad-bundle-match-rail {
+  margin-top: 0.75rem;
+  padding: 0.7rem;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 242, 2, 0.24);
+  background: linear-gradient(160deg, rgba(18, 18, 18, 0.9), rgba(10, 10, 10, 0.86));
+}
+
+.mad-bundle-match-rail__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.55rem;
+  color: #fff4a7;
+}
+
+.mad-bundle-match-rail__header strong {
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.mad-bundle-match-rail__header span {
+  font-size: 0.68rem;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.mad-bundle-match-rail__items {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.mad-bundle-match-rail .mad-product-card__content {
+  padding: 0.55rem 0.58rem 0.62rem;
+}
+
+.mbbb-celebrate-note {
+  margin: 0.36rem 0 0;
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #ddffb8;
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mbbb-progress-dock,
+body.mad-app-enhance--enable_mad_deal_style .mbbb-success__sheet {
+  position: relative;
+}
+
+body.mad-app-enhance--enable_mad_deal_style .mbbb-progress-dock::after,
+body.mad-app-enhance--enable_mad_deal_style .mbbb-success__sheet::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(255, 242, 2, 0.05) 0.65px, transparent 0.65px);
+  background-size: 7px 7px;
+  opacity: 0.28;
+  mix-blend-mode: screen;
+}
+
+.mbbb-celebrate-once .mbbb-sticky__btn.mbbb-cta--ready {
+  box-shadow: 0 0 0 1px rgba(255, 242, 2, 0.4), 0 12px 24px rgba(255, 242, 2, 0.3);
+}
+
+.mbbb-confetti-pop {
+  position: relative;
+}
+
+.mbbb-confetti-pop::after {
+  content: "";
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 12% 18%, rgba(255, 242, 2, 0.85) 0 2px, transparent 3px),
+    radial-gradient(circle at 36% 24%, rgba(255, 242, 2, 0.78) 0 1.6px, transparent 2.6px),
+    radial-gradient(circle at 62% 20%, rgba(255, 242, 2, 0.8) 0 1.8px, transparent 2.7px),
+    radial-gradient(circle at 84% 28%, rgba(255, 242, 2, 0.85) 0 1.8px, transparent 2.7px);
+  opacity: 0;
+  animation: madConfettiBurst 1.2s ease;
+}
+
+@keyframes madConfettiBurst {
+  0% { opacity: 0; transform: translateY(4px); }
+  15% { opacity: 0.95; }
+  100% { opacity: 0; transform: translateY(-14px); }
+}
+
+.mad-loading-copy {
+  display: none;
+  margin: 0 0 0.55rem;
+  color: rgba(255, 242, 2, 0.88);
+  font-size: 0.76rem;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+
+.mad-loading-copy.is-visible {
+  display: block;
+}
+
+.mad-install-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 10065;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.mad-install-sheet.is-open {
+  display: flex;
+}
+
+.mad-install-sheet__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.56);
+}
+
+.mad-install-sheet__panel {
+  position: relative;
+  width: 100%;
+  max-width: 32rem;
+  border-radius: 20px 20px 0 0;
+  border-top: 2px solid rgba(255, 242, 2, 0.64);
+  background: linear-gradient(180deg, rgba(18, 18, 18, 0.95), rgba(8, 8, 8, 0.98));
+  padding: 0.95rem 1rem calc(1.15rem + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -12px 36px rgba(0, 0, 0, 0.5);
+  animation: madInstallUp 0.24s ease;
+}
+
+@keyframes madInstallUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+
+.mad-install-sheet__logo {
+  display: inline-flex;
+  margin-bottom: 0.35rem;
+  padding: 0.16rem 0.44rem;
+  border-radius: 6px;
+  background: #fff202;
+  color: #080808;
+  font-size: 0.62rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+
+.mad-install-sheet h3 {
+  margin: 0 0 0.45rem;
+  font-size: 1.02rem;
+}
+
+.mad-install-sheet ul {
+  margin: 0 0 0.58rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.32rem;
+}
+
+.mad-install-sheet li {
+  position: relative;
+  padding-left: 1rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 0.82rem;
+}
+
+.mad-install-sheet li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: #fff202;
+}
+
+.mad-install-sheet__warning {
+  margin: 0 0 0.5rem;
+  padding: 0.55rem 0.62rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 120, 80, 0.45);
+  background: rgba(120, 24, 8, 0.35);
+  color: #ffd5c8;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
+.mad-install-sheet__steps {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 0.28rem;
+}
+
+.mad-install-sheet__steps li {
+  position: relative;
+  padding-left: 1.15rem;
+  color: rgba(255, 255, 255, 0.88);
+  font-size: 0.8rem;
+}
+
+.mad-install-sheet__steps li::before {
+  content: counter(mad-install-step);
+  counter-increment: mad-install-step;
+  position: absolute;
+  left: 0;
+  color: #fff202;
+  font-weight: 700;
+  font-size: 0.74rem;
+}
+
+.mad-install-sheet__steps {
+  counter-reset: mad-install-step;
+}
+
+.mad-install-sheet__hint {
+  margin: 0.15rem 0 0.45rem;
+  font-size: 0.78rem;
+  color: #ffe88a;
+}
+
+.mad-install-sheet__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.45rem;
+}
+
+body.is-standalone-app .mad-install-sheet,
+body.is-pwa .mad-install-sheet {
+  display: none !important;
+}
+
+.mad-water-quiz-launcher {
+  position: fixed;
+  right: max(0.75rem, env(safe-area-inset-right));
+  bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  z-index: 10048;
+  text-decoration: none;
+  cursor: pointer;
+  min-height: 42px;
+  padding: 0.52rem 0.78rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 242, 2, 0.45);
+  background: rgba(8, 8, 8, 0.82);
+  color: #fff7b4;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  backdrop-filter: blur(8px);
+}
+
+.mad-water-quiz {
+  position: fixed;
+  inset: 0;
+  z-index: 10066;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.mad-water-quiz.is-open,
+.mad-water-quiz[aria-hidden="false"]:not([hidden]) {
+  display: flex;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.mad-water-quiz__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.64);
+}
+
+.mad-water-quiz__sheet {
+  position: relative;
+  width: 100%;
+  max-width: 36rem;
+  max-height: min(88vh, 760px);
+  border-radius: 20px 20px 0 0;
+  border-top: 2px solid rgba(255, 242, 2, 0.55);
+  background: linear-gradient(180deg, #121212, #080808);
+  overflow: auto;
+  padding: 0.8rem 0.9rem calc(1rem + env(safe-area-inset-bottom, 0px));
+}
+
+.mad-water-quiz__head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.4rem;
+  align-items: start;
+}
+
+.mad-water-quiz__kicker {
+  margin: 0;
+  font-size: 0.62rem;
+  color: #fff202;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mad-water-quiz__head h2 {
+  margin: 0.18rem 0 0.4rem;
+  font-size: 1.06rem;
+}
+
+.mad-water-quiz__close {
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 1.4rem;
+  line-height: 1;
+  padding: 0.1rem 0.4rem;
+}
+
+.mad-water-quiz__progress {
+  height: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  margin-bottom: 0.7rem;
+}
+
+.mad-water-quiz__progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #fff202, #ffd85f);
+  transition: width 0.25s ease;
+}
+
+.mad-water-quiz__question {
+  margin: 0 0 0.6rem;
+  font-size: 0.95rem;
+}
+
+.mad-water-quiz__options {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.mad-water-quiz__option {
+  min-height: 48px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(17, 17, 17, 0.9);
+  color: #f4f4f4;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.mad-water-quiz__result-card {
+  display: grid;
+  grid-template-columns: 48px minmax(0, 1fr);
+  gap: 0.52rem;
+  align-items: center;
+  padding: 0.42rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(16, 16, 16, 0.9);
+  text-decoration: none;
+}
+
+.mad-water-quiz__result-media {
+  width: 48px;
+  height: 48px;
+  border-radius: 9px;
+  overflow: hidden;
+  background: #111;
+}
+
+.mad-water-quiz__result-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mad-water-quiz__result-copy strong {
+  display: block;
+  color: #f5f5f5;
+  font-size: 0.82rem;
+}
+
+.mad-water-quiz__result-copy em {
+  display: block;
+  color: #fff202;
+  font-style: normal;
+  font-size: 0.76rem;
+  margin-top: 0.16rem;
+}
+
+.mad-water-quiz__results {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.mad-water-quiz__footer-actions {
+  display: grid;
+  gap: 0.4rem;
+  margin-top: 0.7rem;
+}
+
+.mad-water-quiz__loading {
+  margin: 0;
+  color: #fff2a7;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+[data-app-cart-count].is-pulse,
+[data-app-top-cart-count].is-pulse,
+.site-header__cart-count.is-pulse {
+  animation: madCartPulse 0.6s ease;
+}
+
+@keyframes madCartPulse {
+  0% { transform: scale(1); }
+  45% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@media (max-width: 900px) {
+  .mad-perfect-match__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 769px) {
+  .mad-water-quiz-launcher {
+    display: none;
+  }
+
+  .mad-water-quiz {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (min-width: 769px) {
+  .mad-pwa-install,
+  .mad-install-sheet {
+    display: none !important;
+  }
+
+  .mad-pwa-install.is-force-visible {
+    display: grid !important;
+  }
+}
+
+@media (max-width: 768px) {
+
+  .mad-perfect-match .container {
+    padding-left: max(0.78rem, env(safe-area-inset-left));
+    padding-right: max(0.78rem, env(safe-area-inset-right));
+  }
+
+  .mad-perfect-match__grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.55rem;
+  }
+
+  .mad-water-quiz__options {
+    grid-template-columns: 1fr;
+  }
+
+  .mad-bundle-match-rail .mad-product-card__premium-badges {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mad-product-card,
+  .mbbb-slot,
+  .mbbb-progress-dock,
+  .mad-button,
+  .mbbb-cta,
+  .single_add_to_cart_button,
+  [data-app-cart-count],
+  [data-app-top-cart-count],
+  .site-header__cart-count {
+    transition: none !important;
+    animation: none !important;
+  }
+}

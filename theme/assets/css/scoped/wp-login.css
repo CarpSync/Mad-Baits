@@ -1,0 +1,342 @@
+/**
+ * Mad Baits branded wp-login.php
+ */
+
+body.login {
+  --mb-bg: #050505;
+  --mb-bg-soft: #111111;
+  --mb-surface: #171717;
+  --mb-border: #2b2b2b;
+  --mb-text: #f5f5f5;
+  --mb-muted: #b2b2b2;
+  --mb-accent: #fff202;
+  --mb-accent-hover: #fff76a;
+  --mb-radius: 14px;
+  --mb-login-bg-image: none;
+
+  font-family: Inter, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(255, 242, 2, 0.08), transparent 34%),
+    radial-gradient(circle at 88% 100%, rgba(255, 242, 2, 0.05), transparent 40%),
+    linear-gradient(165deg, #0a0a0a 0%, var(--mb-bg) 48%, #030303 100%);
+  color: var(--mb-text);
+  min-height: 100vh;
+}
+
+body.login::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  background-image: var(--mb-login-bg-image);
+  background-size: cover;
+  background-position: center;
+  opacity: 0.14;
+  pointer-events: none;
+  z-index: 0;
+}
+
+body.login #login {
+  position: relative;
+  z-index: 1;
+  width: min(420px, calc(100vw - 2rem));
+  margin-left: auto;
+  margin-right: auto;
+  padding: 2.4rem 0 4.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+body.login #login h1 {
+  width: 100%;
+  margin: 0 0 1.35rem;
+  text-align: center;
+}
+
+body.login .mad-login-logo-wrap {
+  width: 100%;
+  max-width: min(420px, calc(100vw - 2rem));
+  margin: 0 auto 1.25rem;
+  padding: 0 1rem;
+  text-align: center;
+}
+
+body.login .mad-login-logo-wrap__link {
+  display: inline-block;
+  line-height: 0;
+}
+
+body.login .mad-login-logo-wrap__img {
+  display: block;
+  width: min(220px, 78vw);
+  height: auto;
+  max-height: 100px;
+  margin: 0 auto;
+  object-fit: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+}
+
+/* Hide default WP text logo when our image mark is present. */
+body.login .mad-login-logo-wrap + .screen-reader-text + #login h1.wp-login-logo,
+body.login .mad-login-logo-wrap ~ #login h1.wp-login-logo {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+body.login #login h1.wp-login-logo a,
+body.login #login h1 a {
+  display: block;
+  width: min(220px, 78vw);
+  height: 100px;
+  margin: 0 auto;
+  background-position: center center;
+  background-repeat: no-repeat;
+  background-size: contain;
+  filter: drop-shadow(0 10px 24px rgba(0, 0, 0, 0.45));
+  color: transparent;
+  font-size: 0;
+  line-height: 0;
+  text-indent: -9999px;
+  overflow: hidden;
+  outline: none;
+}
+
+body.login #loginform,
+body.login #registerform,
+body.login #lostpasswordform,
+body.login #nav,
+body.login #backtoblog,
+body.login .mad-login-footer {
+  width: 100%;
+}
+
+body.login #loginform,
+body.login #registerform,
+body.login #lostpasswordform {
+  margin-top: 0;
+  padding: 1.65rem 1.5rem 1.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--mb-radius);
+  background:
+    linear-gradient(180deg, rgba(22, 22, 22, 0.96), rgba(10, 10, 10, 0.98));
+  box-shadow:
+    0 0 0 1px rgba(255, 255, 255, 0.03) inset,
+    0 24px 48px rgba(0, 0, 0, 0.5),
+    0 0 40px rgba(255, 242, 2, 0.06);
+  backdrop-filter: blur(10px);
+}
+
+body.login #loginform::before,
+body.login #registerform::before,
+body.login #lostpasswordform::before {
+  content: "Account access";
+  display: block;
+  margin: 0 0 1rem;
+  color: var(--mb-accent);
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+body.login form .input,
+body.login input[type="text"],
+body.login input[type="password"],
+body.login input[type="email"] {
+  min-height: 46px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--mb-text);
+  box-shadow: none;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+body.login form .input:focus,
+body.login input[type="text"]:focus,
+body.login input[type="password"]:focus,
+body.login input[type="email"]:focus {
+  border-color: rgba(255, 242, 2, 0.55);
+  background: rgba(255, 242, 2, 0.06);
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.14);
+  outline: none;
+}
+
+body.login label {
+  color: var(--mb-muted);
+  font-size: 0.84rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+body.login .forgetmenot label {
+  font-weight: 500;
+}
+
+body.login .wp-pwd .button.button-secondary {
+  color: var(--mb-muted);
+}
+
+body.login .wp-core-ui .button-primary {
+  min-height: 46px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mb-accent);
+  color: #101010;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-shadow: none;
+  box-shadow: 0 10px 24px rgba(255, 242, 2, 0.22);
+  transition:
+    transform 0.15s ease,
+    background-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+body.login .wp-core-ui .button-primary:hover,
+body.login .wp-core-ui .button-primary:focus {
+  background: var(--mb-accent-hover);
+  color: #101010;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(255, 242, 2, 0.28);
+}
+
+body.login #nav a,
+body.login #backtoblog a,
+body.login .privacy-policy-page-link a {
+  color: var(--mb-muted);
+  transition: color 0.2s ease;
+}
+
+body.login #nav a:hover,
+body.login #nav a:focus,
+body.login #backtoblog a:hover,
+body.login #backtoblog a:focus,
+body.login .privacy-policy-page-link a:hover,
+body.login .privacy-policy-page-link a:focus {
+  color: var(--mb-accent);
+}
+
+body.login .message,
+body.login .success,
+body.login #login_error {
+  border-left-width: 4px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+body.login #login_error {
+  border-left-color: #ff6b6b;
+  background: rgba(255, 107, 107, 0.1);
+}
+
+body.login .message,
+body.login .success {
+  border-left-color: var(--mb-accent);
+  background: rgba(255, 242, 2, 0.08);
+}
+
+body.login .mad-login-footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.55rem 0.85rem;
+  margin-top: 1rem;
+}
+
+body.login .mad-login-footer__link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 242, 2, 0.35);
+  background: rgba(255, 242, 2, 0.08);
+  color: var(--mb-accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    border-color 0.2s ease,
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+body.login .mad-login-footer__link:hover,
+body.login .mad-login-footer__link:focus {
+  border-color: rgba(255, 242, 2, 0.55);
+  background: rgba(255, 242, 2, 0.14);
+  color: var(--mb-text);
+}
+
+body.login .mad-login-footer__link--ghost {
+  border-color: rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--mb-muted);
+}
+
+body.login .language-switcher {
+  position: relative;
+  z-index: 2;
+}
+
+body.login .mad-login-credit {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  margin: 0;
+  padding: 0.85rem 1rem 1.1rem;
+  text-align: center;
+  color: var(--mb-muted);
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+}
+
+body.login .mad-login-credit a {
+  color: var(--mb-muted);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+body.login .mad-login-credit a:hover,
+body.login .mad-login-credit a:focus {
+  color: var(--mb-accent);
+  border-bottom-color: rgba(255, 242, 2, 0.45);
+}
+
+@media (max-width: 480px) {
+  body.login #login {
+    width: calc(100vw - 1.25rem);
+    padding-top: 1.5rem;
+  }
+
+  body.login #login h1 a {
+    width: 148px;
+    height: 80px;
+  }
+
+  body.login #loginform,
+  body.login #registerform,
+  body.login #lostpasswordform {
+    padding: 1.35rem 1.1rem 1.15rem;
+  }
+}

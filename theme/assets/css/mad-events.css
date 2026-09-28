@@ -1,0 +1,368 @@
+/* Mad Baits Events */
+.mad-events-hub,
+.mad-event-single,
+.mad-event-teaser {
+  --mad-event-yellow: #fff202;
+  --mad-event-bg: #080808;
+  --mad-event-card: #111111;
+  --mad-event-border: rgba(255, 255, 255, 0.12);
+}
+
+.mad-events-hub__hero {
+  position: relative;
+  padding: clamp(2.5rem, 6vw, 4rem) 0 1.5rem;
+  background:
+    radial-gradient(120% 90% at 88% 0%, rgba(255, 242, 2, 0.16), transparent 55%),
+    linear-gradient(180deg, #050505, #0a0a0a 70%, #050505);
+  border-bottom: 1px solid rgba(255, 242, 2, 0.18);
+}
+
+.mad-events-hub__kicker,
+.mad-event-single__kicker,
+.mad-event-teaser__kicker,
+.mad-event-featured__label {
+  margin: 0 0 0.35rem;
+  color: var(--mad-event-yellow);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.mad-events-hub__title,
+.mad-event-single__title {
+  margin: 0 0 0.5rem;
+  color: #fff;
+  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  line-height: 1.05;
+}
+
+.mad-events-hub__intro,
+.mad-event-single__intro {
+  margin: 0;
+  max-width: 52ch;
+  color: #cfcfcf;
+}
+
+.mad-events-hub__body {
+  padding: 1.5rem 0 2.5rem;
+}
+
+.mad-event-featured {
+  display: grid;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--mad-event-border);
+  border-radius: 18px;
+  overflow: hidden;
+  background:
+    radial-gradient(90% 70% at 100% 0%, rgba(255, 242, 2, 0.12), transparent 50%),
+    linear-gradient(180deg, #141414, #090909);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+}
+
+.mad-event-featured__media img,
+.mad-event-card__image img {
+  display: block;
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+}
+
+.mad-event-featured__content,
+.mad-event-card__body {
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.mad-event-featured__top,
+.mad-event-card__head {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+}
+
+.mad-event-card__date-badge {
+  display: grid;
+  place-items: center;
+  min-width: 3.4rem;
+  padding: 0.45rem 0.5rem;
+  border-radius: 12px;
+  background: rgba(255, 242, 2, 0.14);
+  border: 1px solid rgba(255, 242, 2, 0.45);
+  color: #fff;
+  text-align: center;
+  line-height: 1;
+}
+
+.mad-event-card__day {
+  display: block;
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.mad-event-card__month {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--mad-event-yellow);
+}
+
+.mad-event-featured__title,
+.mad-event-card__title {
+  margin: 0;
+  color: #fff;
+  font-size: 1.35rem;
+  line-height: 1.15;
+}
+
+.mad-event-featured__countdown,
+.mad-event-card__date,
+.mad-event-single__countdown {
+  margin: 0.25rem 0 0;
+  color: var(--mad-event-yellow);
+  font-weight: 700;
+}
+
+.mad-event-featured__desc,
+.mad-event-card__desc,
+.mad-event-card__location {
+  margin: 0.65rem 0 0;
+  color: #bdbdbd;
+}
+
+.mad-event-highlights {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mad-event-highlights li {
+  padding: 0.28rem 0.62rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 242, 2, 0.35);
+  background: rgba(255, 242, 2, 0.08);
+  color: #fff9c4;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.mad-event-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+  margin-top: 1rem;
+}
+
+.mad-events-hub__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mad-event-card {
+  border: 1px solid var(--mad-event-border);
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--mad-event-card);
+}
+
+.mad-event-card__image {
+  display: block;
+}
+
+.mad-events-empty {
+  padding: 2rem 1.25rem;
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 242, 2, 0.35);
+  background: rgba(255, 242, 2, 0.04);
+  text-align: center;
+}
+
+.mad-events-empty__title {
+  margin: 0 0 0.35rem;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.mad-events-hub__discover-links {
+  margin-top: 1.5rem;
+}
+
+.mad-event-single__hero {
+  position: relative;
+  padding: clamp(2.5rem, 7vw, 4.5rem) 0 1.5rem;
+  background:
+    linear-gradient(180deg, rgba(0, 0, 0, 0.55), rgba(0, 0, 0, 0.88)),
+    var(--mad-event-hero, none);
+  background-size: cover;
+  background-position: center;
+  border-bottom: 1px solid rgba(255, 242, 2, 0.18);
+}
+
+.mad-event-single__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem 1rem;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: #e0e0e0;
+}
+
+.mad-event-single__body {
+  padding: 1.5rem 0 calc(2rem + env(safe-area-inset-bottom, 0px) + var(--mb-app-nav-offset, 0px));
+}
+
+.mad-event-single__section {
+  margin-top: 1.75rem;
+}
+
+.mad-event-single__section h2 {
+  margin: 0 0 0.75rem;
+  color: #fff;
+  font-size: 1.2rem;
+}
+
+.mad-event-gallery__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.mad-event-gallery__grid img {
+  display: block;
+  width: 100%;
+  border-radius: 12px;
+}
+
+.mad-event-rsvp__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.mad-event-rsvp__grid label {
+  display: grid;
+  gap: 0.35rem;
+  color: #ddd;
+  font-size: 0.88rem;
+}
+
+.mad-event-rsvp__grid input,
+.mad-event-rsvp__grid textarea {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: #101010;
+  color: #fff;
+  padding: 0.65rem 0.75rem;
+}
+
+.mad-event-rsvp__notes {
+  grid-column: 1 / -1;
+}
+
+.mad-event-rsvp__hp {
+  position: absolute;
+  left: -9999px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.mad-event-rsvp__status {
+  margin: 0.65rem 0 0;
+  min-height: 1.2em;
+}
+
+.mad-event-rsvp__status.is-success {
+  color: #b8f5b8;
+}
+
+.mad-event-rsvp__status.is-error {
+  color: #ffb4b4;
+}
+
+.mad-event-products__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.mad-event-teaser {
+  position: relative;
+  margin: 0 0 1rem;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 242, 2, 0.28);
+  background: linear-gradient(135deg, #101010, #050505);
+}
+
+.mad-event-teaser__glow {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 90% 10%, rgba(255, 242, 2, 0.18), transparent 45%);
+  pointer-events: none;
+}
+
+.mad-event-teaser__inner {
+  position: relative;
+  padding: 1rem 1.05rem;
+}
+
+.mad-event-teaser__title {
+  margin: 0 0 0.25rem;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.mad-event-teaser__date,
+.mad-event-teaser__tags {
+  margin: 0 0 0.65rem;
+  color: #d0d0d0;
+  font-size: 0.86rem;
+}
+
+.mad-app-home .mad-event-teaser {
+  grid-column: 1 / -1;
+}
+
+@media (max-width: 1080px) {
+  .mad-events-hub__grid,
+  .mad-event-products__grid,
+  .mad-event-gallery__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .mad-event-featured {
+    grid-template-columns: 1fr;
+  }
+
+  .mad-events-hub__grid,
+  .mad-event-products__grid,
+  .mad-event-gallery__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mad-event-rsvp__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .mad-event-actions .mad-button {
+    flex: 1 1 calc(50% - 0.55rem);
+    justify-content: center;
+    text-align: center;
+  }
+
+  .mad-event-single__body {
+    padding-bottom: calc(2.5rem + env(safe-area-inset-bottom, 0px) + var(--mb-app-nav-offset, 82px));
+  }
+}

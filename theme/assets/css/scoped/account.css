@@ -1,0 +1,19 @@
+/* Account scoped polish */
+.woocommerce-account .mad-myaccount-layout__main .woocommerce-MyAccount-content {
+  border-radius: 16px;
+  padding: clamp(0.95rem, 1.9vw, 1.25rem);
+}
+
+.woocommerce-account .mad-myaccount-layout {
+  gap: clamp(0.9rem, 2.1vw, 1.35rem);
+}
+
+.woocommerce-account .mad-myaccount-nav a {
+  min-height: 44px;
+}
+
+@media (max-width: 760px) {
+  .woocommerce-account .mad-myaccount-layout__main .woocommerce-MyAccount-content {
+    padding: 0.82rem;
+  }
+}

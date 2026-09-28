@@ -1,0 +1,248 @@
+/**
+ * Premium product card images — canonical (loads after main.css + overrides).
+ * Edge-to-edge cover fill, equal card heights, retina-safe sources, hover zoom.
+ */
+
+/* Grid stretch — equal-height cards */
+.mad-baits-theme .product-grid,
+.mad-baits-theme .woocommerce ul.products,
+.mad-baits-theme .mad-perfect-match__grid,
+.mad-baits-theme .mad-pair-it-with__grid,
+.mad-baits-theme .mad-session-upsell__products,
+.mad-baits-theme .mad-bundle-match-rail__grid {
+  align-items: stretch;
+}
+
+.mad-baits-theme .product-grid > *,
+.mad-baits-theme .woocommerce ul.products > li.product,
+.mad-baits-theme .mad-product-loop-item {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  height: auto;
+}
+
+.mad-baits-theme .mad-product-card {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 100%;
+  overflow: hidden;
+}
+
+.mad-baits-theme .mad-product-card__media {
+  flex: 0 0 auto;
+  position: relative;
+}
+
+/* Fixed 1:1 image stage */
+.mad-baits-theme .mad-product-card__image-link,
+#mad-shop-grid .mad-product-card__image-link,
+.home .product-grid .mad-product-card__image-link,
+.home .bundle-sales__uniform-grid .mad-product-card__image-link,
+.bundle-sales__uniform-grid .mad-product-card__image-link,
+.bundle-page .bundle-page__uniform-product-grid .mad-product-card__image-link,
+.single-product .mad-session-upsell .mad-product-card__image-link,
+.single-product .mad-session-upsell__grid .mad-product-card__image-link,
+.single-product .upsells.products .mad-product-card__image-link,
+.single-product .related.products .mad-product-card__image-link,
+.single-product .mad-pair-it-with .mad-product-card__image-link {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  min-height: 0 !important;
+  max-height: none !important;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 242, 2, 0.08), transparent 55%),
+    #0a0a0a;
+  isolation: isolate;
+}
+
+/* Product photo — cover fill */
+.mad-baits-theme .mad-product-card__image-link .mad-product-card__image,
+.mad-baits-theme .mad-product-card__image-link > img.mad-product-card__image,
+#mad-shop-grid .mad-product-card__image-link > .mad-product-card__image,
+#mad-shop-grid .mad-product-card__image-link > img,
+.woocommerce ul.products .mad-product-card__image-link img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0 !important;
+  aspect-ratio: auto !important;
+  object-fit: cover;
+  object-position: center center;
+  image-rendering: auto;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  transform: scale(1);
+  transform-origin: center center;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+/* Logo / missing image placeholder */
+.mad-baits-theme .mad-product-card__image--placeholder,
+#mad-shop-grid .mad-product-card__image--placeholder {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: center center;
+  padding: 1.35rem !important;
+  box-sizing: border-box;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 242, 2, 0.12), transparent 58%),
+    url("../img/CUP-LOGOv2-1.svg") center / 36% auto no-repeat,
+    linear-gradient(165deg, #1a1a1a, #0a0a0a);
+  transform: none;
+}
+
+/* Premium hover zoom — contained inside holder (no layout shift) */
+.mad-baits-theme .mad-product-card:hover .mad-product-card__image-link .mad-product-card__image,
+.mad-baits-theme .mad-product-card:hover .mad-product-card__image-link > img.mad-product-card__image,
+.mad-baits-theme .mad-product-card:focus-within .mad-product-card__image-link .mad-product-card__image,
+.mad-baits-theme .mad-product-card:focus-within .mad-product-card__image-link > img.mad-product-card__image,
+#mad-shop-grid .mad-product-card:hover .mad-product-card__image-link > .mad-product-card__image {
+  transform: scale(1.06);
+}
+
+.mad-baits-theme .mad-product-card:hover .mad-product-card__image--placeholder,
+.mad-baits-theme .mad-product-card:focus-within .mad-product-card__image--placeholder {
+  transform: none;
+}
+
+/* Badges & overlays above image */
+.mad-baits-theme .mad-product-card__image-link > .mad-product-card__discount-badges,
+.mad-baits-theme .mad-product-card__image-link > .mad-product-card__category-badge,
+.mad-baits-theme .mad-product-card__image-link > .mad-product-card__premium-badges,
+.mad-baits-theme .mad-product-card__image-link > .mad-product-card__sale-badge,
+#mad-shop-grid .mad-product-card__image-link > .mad-product-card__discount-badges,
+#mad-shop-grid .mad-product-card__image-link > .mad-product-card__category-badge {
+  z-index: 4;
+  pointer-events: none;
+}
+
+.mad-baits-theme .mad-product-card__image-link::before,
+.mad-baits-theme .mad-product-card__image-link::after,
+#mad-shop-grid .mad-product-card__image-link::after {
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* Card body — consistent footer alignment */
+.mad-baits-theme .mad-product-card__content {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+.mad-baits-theme .mad-product-card__price {
+  margin-top: auto;
+}
+
+.mad-baits-theme .mad-product-card__actions {
+  flex-shrink: 0;
+}
+
+/* Mobile / PWA */
+body.mad-mobile-app-ux--active .mad-product-card__image-link,
+body.mad-pwa-active .mad-product-card__image-link {
+  aspect-ratio: 1 / 1;
+  min-height: 0 !important;
+}
+
+body.mad-mobile-app-ux--active .mad-product-card__image-link img,
+body.mad-pwa-active .mad-product-card__image-link img {
+  object-fit: cover;
+  padding: 0 !important;
+}
+
+/* Legacy WooCommerce loop images (fallback if default markup appears) */
+.mad-baits-theme .woocommerce ul.products li.product a img,
+.mad-baits-theme .woocommerce ul.products li.product .attachment-woocommerce_thumbnail {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+@media (max-width: 680px) {
+  .mad-baits-theme .mad-product-card__image-link,
+  .woocommerce ul.products .mad-product-card__image-link {
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1;
+  }
+
+  .mad-baits-theme .mad-product-card__image-link .mad-product-card__image,
+  .mad-baits-theme .mad-product-card__image-link > img.mad-product-card__image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto !important;
+    object-fit: cover;
+    padding: 0 !important;
+  }
+
+  body.post-type-archive-product #mad-shop-grid .mad-product-card__image-link {
+    aspect-ratio: 1 / 1 !important;
+  }
+
+  .mad-baits-theme .mad-product-card:hover .mad-product-card__image-link .mad-product-card__image,
+  .mad-baits-theme .mad-product-card:hover .mad-product-card__image-link > img.mad-product-card__image {
+    transform: scale(1.04);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mad-baits-theme .mad-product-card__image-link .mad-product-card__image,
+  .mad-baits-theme .mad-product-card__image-link > img.mad-product-card__image {
+    transition: none;
+  }
+
+  .mad-baits-theme .mad-product-card:hover .mad-product-card__image-link .mad-product-card__image,
+  .mad-baits-theme .mad-product-card:hover .mad-product-card__image-link > img.mad-product-card__image {
+    transform: none;
+  }
+}
+
+/* Team / private product grids (portal + Team & Tester Range) */
+.mbta-range-card__image,
+.mbta-portal__product > a {
+  position: relative;
+  display: block;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 42%, rgba(255, 242, 2, 0.08), transparent 55%),
+    #0a0a0a;
+}
+
+.mbta-range-card__image img,
+.mbta-portal__product > a img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.mbta-range-card:hover .mbta-range-card__image img,
+.mbta-portal__product > a:hover img {
+  transform: scale(1.04);
+  transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+}

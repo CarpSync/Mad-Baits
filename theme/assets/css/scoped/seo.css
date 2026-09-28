@@ -1,0 +1,26 @@
+/**
+ * SEO archive internal linking (subtle, matches shop quick filters).
+ */
+.mad-seo-internal-links {
+	padding-top: 0;
+	padding-bottom: 2rem;
+}
+
+.mad-seo-internal-links__title {
+	font-size: 1.125rem;
+	margin: 0 0 0.75rem;
+	font-weight: 700;
+}
+
+.mad-seo-internal-links__nav {
+	margin-bottom: 0;
+}
+
+.mad-pdp-range-links {
+	padding-top: 0.5rem;
+}
+
+.mad-pdp-range-links .mad-pdp-module__lede {
+	margin: 0 0 0.85rem;
+	max-width: 42rem;
+}

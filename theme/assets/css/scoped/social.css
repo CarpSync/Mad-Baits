@@ -1,0 +1,275 @@
+/**
+ * Social profiles, community feed, share controls.
+ */
+
+.mad-social-links__list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.mad-social-links__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.mad-social-links__item:hover,
+.mad-social-links__item:focus-visible {
+  background: #fff202;
+  border-color: #fff202;
+  color: #111;
+  transform: translateY(-1px);
+}
+
+.mad-social-cta {
+  margin-top: 1.5rem;
+  padding: 1.25rem 1.35rem;
+  border-radius: 16px;
+  border: 1px solid rgba(255, 242, 2, 0.22);
+  background: linear-gradient(145deg, rgba(255, 242, 2, 0.08), rgba(0, 0, 0, 0.45));
+}
+
+.mad-social-cta__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff202;
+}
+
+.mad-social-cta__title {
+  margin: 0 0 1rem;
+  max-width: 42ch;
+  font-size: 1rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.92);
+}
+
+.mad-social-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem 1rem;
+}
+
+.mad-social-cta__primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.5rem;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  border: 1px solid #fff202;
+  color: #111;
+  background: #fff202;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mad-social-cta__primary:hover,
+.mad-social-cta__primary:focus-visible {
+  background: #fff76a;
+  border-color: #fff76a;
+  color: #111;
+}
+
+.site-footer .mad-social-cta {
+  grid-column: 1 / -1;
+}
+
+.mad-mobile-menu-social .mad-social-cta {
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.mad-community-feed {
+  margin: 2rem 0;
+}
+
+.mad-community-feed__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mad-community-feed__title {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.5vw, 1.85rem);
+}
+
+.mad-community-feed__subtitle {
+  margin: 0.35rem 0 0;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.mad-community-feed__rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(240px, 72vw);
+  gap: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.35rem;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mad-community-card {
+  scroll-snap-align: start;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(8, 8, 8, 0.88);
+}
+
+.mad-community-card__media {
+  display: block;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+
+.mad-community-card__media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.mad-community-card__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1a1a1a, #2e2e2e);
+}
+
+.mad-community-card__body {
+  padding: 0.85rem 0.95rem 1rem;
+}
+
+.mad-community-card__title {
+  margin: 0 0 0.35rem;
+  font-size: 1rem;
+}
+
+.mad-community-card__title a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.mad-community-card__meta {
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.mad-community-card__chip {
+  display: inline-block;
+  margin-bottom: 0.65rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  background: rgba(255, 242, 2, 0.14);
+  color: #fff202;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.mad-community-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 0.75rem;
+  align-items: center;
+}
+
+.mad-community-card__shop {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #fff202;
+  text-decoration: none;
+}
+
+.mad-product-social-proof {
+  margin: 2.5rem 0 1rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mad-product-social-proof__title {
+  margin: 0 0 1rem;
+  font-size: 1.35rem;
+}
+
+.mad-product-social-proof__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+}
+
+.mad-product-social-proof .mad-catch-card--compact .mad-catch-card__stats {
+  font-size: 0.85rem;
+}
+
+.mad-product-share-wrap {
+  margin: 0.75rem 0 0;
+}
+
+.mad-share-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2.35rem;
+  padding: 0.4rem 0.9rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.mad-share-btn:hover,
+.mad-share-btn:focus-visible {
+  border-color: #fff202;
+  background: rgba(255, 242, 2, 0.12);
+  color: #fff202;
+}
+
+.mad-cart-social-nudge {
+  margin-top: 1rem;
+  padding-top: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.mad-cart-social-nudge p {
+  margin: 0 0 0.65rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.woocommerce-order-received .mad-social-cta {
+  margin: 1.5rem 0;
+}
+
+@media (max-width: 768px) {
+  .mad-community-feed__rail {
+    grid-auto-columns: minmax(78vw, 1fr);
+  }
+
+  .mad-social-cta__actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

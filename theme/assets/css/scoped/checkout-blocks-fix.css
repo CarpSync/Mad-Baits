@@ -1,0 +1,881 @@
+/**
+ * Checkout Blocks overrides — loads after WooCommerce block styles.
+ * Fixes in-field labels (dark on white) and PayPal messaging (white on dark).
+ */
+
+/* All block field labels inside white input shells */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-form .wc-block-components-text-input label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-form .wc-block-components-combobox label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-form .wc-block-components-textarea label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input:not(.is-active) label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox:not(.is-active) label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.is-active label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.has-label label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.has-error label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox.is-active label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox.has-label label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input label span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox label span {
+  color: #2f2f2f !important;
+  -webkit-text-fill-color: #2f2f2f !important;
+  font-weight: 600 !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="email"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="tel"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="text"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="number"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea textarea {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input::placeholder,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea textarea::placeholder {
+  color: #666666 !important;
+  opacity: 1 !important;
+}
+
+/* Country/region combobox value + control */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox .components-custom-select-control__button,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox .components-custom-select-control__button span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox .components-input-control__container,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox .components-form-token-field__input-container {
+  color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox .components-custom-select-control__menu,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox .components-custom-select-control__item {
+  color: #111111 !important;
+  background: #ffffff !important;
+}
+
+/* White field shells */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea {
+  background: #ffffff !important;
+  border: 1px solid rgba(18, 18, 18, 0.22) !important;
+  color: #111111 !important;
+}
+
+/* PayPal / Pay in 3 / Pay Later messaging — Mad yellow on dark checkout (promo copy only, not Stripe/Link fields) */
+body.mad-baits-theme.woocommerce-checkout .payment_method_ppcp-gateway .payment_box,
+body.mad-baits-theme.woocommerce-checkout .payment_method_ppcp-gateway .payment_box p,
+body.mad-baits-theme.woocommerce-checkout .payment_method_ppcp-gateway .payment_box span,
+body.mad-baits-theme.woocommerce-checkout .payment_method_paypal .payment_box,
+body.mad-baits-theme.woocommerce-checkout .payment_method_paypal .payment_box p,
+body.mad-baits-theme.woocommerce-checkout [class*="paypal"] p,
+body.mad-baits-theme.woocommerce-checkout [class*="paypal"] span,
+body.mad-baits-theme.woocommerce-checkout [class*="paypal"] div,
+body.mad-baits-theme.woocommerce-checkout [class*="pay-later"] p,
+body.mad-baits-theme.woocommerce-checkout [class*="pay-later"] span,
+body.mad-baits-theme.woocommerce-checkout [class*="pay-later"] div,
+body.mad-baits-theme.woocommerce-checkout [class*="paylater"] p,
+body.mad-baits-theme.woocommerce-checkout [class*="paylater"] span,
+body.mad-baits-theme.woocommerce-checkout [class*="paylater"] div,
+body.mad-baits-theme.woocommerce-checkout [class*="pay-in"] p,
+body.mad-baits-theme.woocommerce-checkout [class*="pay-in"] span,
+body.mad-baits-theme.woocommerce-checkout [class*="pay_in"] p,
+body.mad-baits-theme.woocommerce-checkout [class*="pay_in"] span,
+body.mad-baits-theme.woocommerce-checkout .ppcp-messages,
+body.mad-baits-theme.woocommerce-checkout .ppcp-messages p,
+body.mad-baits-theme.woocommerce-checkout .ppcp-messages span,
+body.mad-baits-theme.woocommerce-checkout .ppcp-messages div,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-paypal-payments-message,
+body.mad-baits-theme.woocommerce-checkout .paypal-pay-later-messaging,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-express-payment,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-express-payment__content,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-express-payment__content p,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-express-payment__content span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__express-payment,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__express-payment p,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__express-payment span,
+body.mad-baits-theme.woocommerce-checkout .ppc-button-wrapper + div,
+body.mad-baits-theme.woocommerce-checkout .ppcp-button-pay-later-message,
+body.mad-baits-theme.woocommerce-checkout [id*="paylater-message"],
+body.mad-baits-theme.woocommerce-checkout [id*="pay-later-message"] {
+  color: #fff202 !important;
+  -webkit-text-fill-color: #fff202 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .payment_method_ppcp-gateway .payment_box a,
+body.mad-baits-theme.woocommerce-checkout .payment_method_paypal .payment_box a,
+body.mad-baits-theme.woocommerce-checkout [class*="paypal"] a,
+body.mad-baits-theme.woocommerce-checkout [class*="pay-later"] a,
+body.mad-baits-theme.woocommerce-checkout [class*="paylater"] a,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content a {
+  color: #fff76a !important;
+  -webkit-text-fill-color: #fff76a !important;
+}
+
+/* PayPal hosted message component (Pay in 3) — tint SDK artwork to Mad yellow */
+body.mad-baits-theme.woocommerce-checkout pp-message,
+body.mad-baits-theme.woocommerce-checkout [data-pp-message],
+body.woocommerce-checkout pp-message,
+body.woocommerce-checkout [data-pp-message] {
+  display: block;
+  max-width: 100%;
+}
+
+body.mad-baits-theme.woocommerce-checkout pp-message *,
+body.mad-baits-theme.woocommerce-checkout [data-pp-message] *,
+body.woocommerce-checkout pp-message *,
+body.woocommerce-checkout [data-pp-message] * {
+  color: #fff202 !important;
+  -webkit-text-fill-color: #fff202 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Delivery toggle — Ship / Factory Collection (block checkout)
+   ------------------------------------------------------------------------- */
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-container,
+body.woocommerce-checkout .wc-block-checkout__shipping-method-container {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 242, 2, 0.35) !important;
+  border-radius: 14px !important;
+  padding: 4px !important;
+  gap: 4px !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option {
+  color: #f2f2f2 !important;
+  border: 2px solid transparent !important;
+  background: transparent !important;
+  border-radius: 12px !important;
+  min-height: 48px !important;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option:hover,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option:focus-within {
+  background: rgba(255, 242, 2, 0.1) !important;
+  color: #ffffff !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option.wc-block-checkout__shipping-method-option--selected,
+body.woocommerce-checkout .wc-block-checkout__shipping-method-option.wc-block-checkout__shipping-method-option--selected {
+  background: #fff202 !important;
+  border-color: #fff202 !important;
+  color: #050505 !important;
+  box-shadow: none !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected .wc-block-checkout__shipping-method-option-title,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected .wc-block-checkout__shipping-method-option-price,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected p,
+body.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected .wc-block-checkout__shipping-method-option-title,
+body.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected .wc-block-checkout__shipping-method-option-price,
+body.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected span,
+body.woocommerce-checkout .wc-block-checkout__shipping-method-option--selected p {
+  color: #050505 !important;
+  -webkit-text-fill-color: #050505 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option-icon {
+  fill: currentColor !important;
+}
+
+/* -------------------------------------------------------------------------
+   Shipping methods — classic + block checkout
+   ------------------------------------------------------------------------- */
+
+body.mad-baits-theme.woocommerce-checkout #shipping_method,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.mad-baits-theme.woocommerce-checkout #shipping_method li,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods li {
+  margin: 0 0 0.65rem !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout #shipping_method li label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods li label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 0.75rem !important;
+  min-height: 52px !important;
+  padding: 0.85rem 1rem !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #f2f2f2 !important;
+  font-weight: 650 !important;
+  line-height: 1.35 !important;
+  cursor: pointer !important;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout #shipping_method li label:hover,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods li label:hover {
+  border-color: rgba(255, 242, 2, 0.45) !important;
+  background: rgba(255, 242, 2, 0.08) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout #shipping_method input[type="radio"]:checked + label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"]:checked + label,
+body.mad-baits-theme.woocommerce-checkout #shipping_method li:has(input[type="radio"]:checked) label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods li:has(input[type="radio"]:checked) label,
+body.woocommerce-checkout #shipping_method input[type="radio"]:checked + label,
+body.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"]:checked + label,
+body.woocommerce-checkout #shipping_method li:has(input[type="radio"]:checked) label,
+body.woocommerce-checkout .woocommerce-shipping-methods li:has(input[type="radio"]:checked) label {
+  border-color: #fff202 !important;
+  background: #fff202 !important;
+  box-shadow: none !important;
+  color: #050505 !important;
+  -webkit-text-fill-color: #050505 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout #shipping_method input[type="radio"],
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"] {
+  width: 1.1rem !important;
+  height: 1.1rem !important;
+  margin: 0 !important;
+  accent-color: #fff202 !important;
+  flex-shrink: 0 !important;
+}
+
+/* Block shipping rows — keep WC left-padding radio layout (do not flex the option row) */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option {
+  display: block !important;
+  min-height: 52px !important;
+  margin: 0 0 0.65rem !important;
+  padding: 0.9rem 1rem 0.9rem 3rem !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(255, 255, 255, 0.14) !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+  color: #f2f2f2 !important;
+  font-weight: 650 !important;
+  transition: border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:hover {
+  border-color: rgba(255, 242, 2, 0.45) !important;
+  background: rgba(255, 242, 2, 0.08) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option--checked-option-highlighted,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:has(.wc-block-components-radio-control__input:checked),
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option--checked-option-highlighted,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:has(.wc-block-components-radio-control__input:checked) {
+  border-color: #fff202 !important;
+  background: #fff202 !important;
+  box-shadow: none !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__secondary-label,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__label,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__secondary-label {
+  color: #f2f2f2 !important;
+  -webkit-text-fill-color: #f2f2f2 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option--checked-option-highlighted .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option--checked-option-highlighted .wc-block-components-radio-control__secondary-label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:has(.wc-block-components-radio-control__input:checked) .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:has(.wc-block-components-radio-control__input:checked) .wc-block-components-radio-control__secondary-label,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option--checked-option-highlighted .wc-block-components-radio-control__label,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option--checked-option-highlighted .wc-block-components-radio-control__secondary-label,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:has(.wc-block-components-radio-control__input:checked) .wc-block-components-radio-control__label,
+body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option:has(.wc-block-components-radio-control__input:checked) .wc-block-components-radio-control__secondary-label {
+  color: #050505 !important;
+  -webkit-text-fill-color: #050505 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__input {
+  left: 1rem !important;
+  top: 50% !important;
+  transform: translateY(-50%) !important;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 2px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__input:checked {
+  border-color: #fff202 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__input:checked::before {
+  background: #fff202 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-totals th,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-totals td,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-shipping .wc-block-components-totals-item__description {
+  color: #c9c9c9 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Frontend WooCommerce buttons (checkout + cart)
+   ------------------------------------------------------------------------- */
+
+body.mad-baits-theme.woocommerce-checkout .button,
+body.mad-baits-theme.woocommerce-checkout button.button,
+body.mad-baits-theme.woocommerce-checkout a.button,
+body.mad-baits-theme.woocommerce-checkout #place_order,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-Button,
+body.mad-baits-theme.woocommerce-cart .button,
+body.mad-baits-theme.woocommerce-cart a.button,
+body.mad-baits-theme.woocommerce-cart .checkout-button,
+body.mad-baits-theme.woocommerce-cart button[name="update_cart"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-button:not(.is-link),
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkout-place-order-button .wc-block-components-button,
+body.mad-baits-theme.woocommerce-checkout .wc-block-cart__submit-button .wc-block-components-button {
+  background: #fff202 !important;
+  border: 1px solid #fff202 !important;
+  color: #050505 !important;
+  border-radius: 999px !important;
+  font-weight: 800 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  min-height: 48px !important;
+  padding: 0.72rem 1.25rem !important;
+  box-shadow: 0 10px 24px rgba(255, 242, 2, 0.24) !important;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .button:hover,
+body.mad-baits-theme.woocommerce-checkout button.button:hover,
+body.mad-baits-theme.woocommerce-checkout a.button:hover,
+body.mad-baits-theme.woocommerce-checkout #place_order:hover,
+body.mad-baits-theme.woocommerce-cart .button:hover,
+body.mad-baits-theme.woocommerce-cart a.button:hover,
+body.mad-baits-theme.woocommerce-cart .checkout-button:hover,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-button:not(.is-link):hover {
+  background: #fff76a !important;
+  border-color: #fff76a !important;
+  color: #050505 !important;
+  transform: translateY(-1px);
+  box-shadow: 0 14px 28px rgba(255, 242, 2, 0.32) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .button.alt,
+body.mad-baits-theme.woocommerce-checkout #place_order,
+body.mad-baits-theme.woocommerce-cart .checkout-button {
+  width: 100%;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-button.is-link,
+body.mad-baits-theme.woocommerce-checkout a.showcoupon {
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #fff202 !important;
+  min-height: auto !important;
+  padding: 0 !important;
+  text-transform: none !important;
+}
+
+/* Payment methods — see global payment contrast block at end of file */
+
+/* Checkboxes — order note, ship to different address, etc. */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox label {
+  align-items: flex-start !important;
+  gap: 0.75rem !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox__label {
+  color: #f2f2f2 !important;
+  line-height: 1.45 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox .wc-block-components-checkbox__input[type="checkbox"] {
+  appearance: none !important;
+  width: 1.15rem !important;
+  height: 1.15rem !important;
+  min-width: 1.15rem !important;
+  margin-top: 0.1rem !important;
+  border: 2px solid rgba(255, 255, 255, 0.55) !important;
+  border-radius: 4px !important;
+  background: rgba(0, 0, 0, 0.35) !important;
+  position: relative !important;
+  flex-shrink: 0 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox .wc-block-components-checkbox__input[type="checkbox"]:checked {
+  background: #fff202 !important;
+  border-color: #fff202 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox .wc-block-components-checkbox__mark {
+  fill: #050505 !important;
+  width: 14px !important;
+  height: 14px !important;
+  margin-left: 2px !important;
+  margin-top: 2px !important;
+}
+
+@media (max-width: 767px) {
+  body.woocommerce-checkout #shipping_method li label,
+  body.mad-baits-theme.woocommerce-checkout #shipping_method li label,
+  body.woocommerce-checkout .woocommerce-shipping-methods li label,
+  body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods li label,
+  body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option,
+  body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__option {
+    min-height: 52px !important;
+    padding: 0.85rem 1rem 0.85rem 2.85rem !important;
+  }
+
+  body.woocommerce-checkout .wc-block-checkout__shipping-method-option,
+  body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__shipping-method-option {
+    min-height: 46px !important;
+  }
+
+  body.woocommerce-checkout #shipping_method input[type="radio"],
+  body.mad-baits-theme.woocommerce-checkout #shipping_method input[type="radio"],
+  body.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"],
+  body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"],
+  body.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__input,
+  body.mad-baits-theme.woocommerce-checkout .wc-block-components-shipping-rates-control .wc-block-components-radio-control__input {
+    width: 1rem !important;
+    height: 1rem !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body.mad-baits-theme.woocommerce-checkout #place_order,
+  body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkout-place-order-button .wc-block-components-button,
+  body.mad-baits-theme.woocommerce-cart .checkout-button {
+    width: 100% !important;
+  }
+}
+
+/* ==========================================================================
+   Checkout payment contrast — ALL viewports (desktop + mobile)
+   White labels on dark payment panel. Does not style iframe internals.
+   ========================================================================== */
+
+body.woocommerce-checkout,
+body.mad-baits-theme.woocommerce-checkout,
+.woocommerce-checkout {
+  --mad-checkout-pay-text: #fff202;
+  --mad-checkout-pay-text-soft: rgba(255, 242, 2, 0.82);
+  --mad-checkout-pay-text-muted: rgba(255, 242, 2, 0.55);
+  --mad-checkout-pay-border: rgba(255, 242, 2, 0.5);
+  --mad-checkout-pay-card-bg: rgba(255, 242, 2, 0.06);
+  --mad-checkout-pay-selected: #fff202;
+}
+
+body.woocommerce-checkout .wc-block-checkout__payment-method,
+body.woocommerce-checkout .wc-block-components-payment-methods,
+body.woocommerce-checkout .wc-block-checkout__payment-method,
+body.woocommerce-checkout .wp-block-woocommerce-checkout-payment-block,
+body.woocommerce-checkout #payment,
+body.woocommerce-checkout .woocommerce-checkout-payment,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__payment-method,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-methods,
+body.mad-baits-theme.woocommerce-checkout .wp-block-woocommerce-checkout-payment-block,
+body.mad-baits-theme.woocommerce-checkout #payment,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout-payment {
+  --wc-blocks-color-text: var(--mad-checkout-pay-text);
+  --wc-blocks-color-text-high-contrast: var(--mad-checkout-pay-text);
+  --wc-blocks-color-text-low-contrast: var(--mad-checkout-pay-text-soft);
+  --wc-blocks-color-text-muted: var(--mad-checkout-pay-text-muted);
+  color: var(--mad-checkout-pay-text);
+}
+
+/* Payment method tiles — premium dark cards */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method.wc-block-components-radio-control--highlight-checked,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method.wc-block-components-radio-control--highlight-checked {
+  border: 1px solid var(--mad-checkout-pay-border) !important;
+  border-radius: 14px !important;
+  background: var(--mad-checkout-pay-card-bg) !important;
+  overflow: hidden;
+}
+
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option,
+body.woocommerce-checkout .wc-block-components-radio-control-accordion-option,
+body.woocommerce-checkout #payment ul.payment_methods > li,
+body.woocommerce-checkout .woocommerce-checkout-payment .payment_methods > li,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control-accordion-option,
+body.mad-baits-theme.woocommerce-checkout #payment ul.payment_methods > li,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout-payment .payment_methods > li {
+  border-radius: 12px !important;
+  border: 1px solid var(--mad-checkout-pay-border) !important;
+  background: var(--mad-checkout-pay-card-bg) !important;
+  margin-bottom: 0.65rem !important;
+  color: var(--mad-checkout-pay-text) !important;
+}
+
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control-accordion-option,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control-accordion-option {
+  padding-left: 3rem !important;
+}
+
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option--checked-option-highlighted,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control-accordion-option--checked-option-highlighted,
+body.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method:has(input:checked),
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option--checked-option-highlighted,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control-accordion-option--checked-option-highlighted,
+body.mad-baits-theme.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method:has(input:checked) {
+  background: rgba(255, 242, 2, 0.14) !important;
+  border-color: #fff202 !important;
+  box-shadow: inset 0 0 0 1.5px #fff202 !important;
+}
+
+/* Primary labels — payment method row titles only (not inside white Stripe shell) */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group span,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-payment-method-label,
+body.woocommerce-checkout .wc-block-components-radio-control-accordion-option > .wc-block-components-radio-control__label,
+body.woocommerce-checkout #payment .payment_methods > li > label,
+body.woocommerce-checkout #payment .payment_methods > li > input[type="radio"] + label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-payment-method-label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control-accordion-option > .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods > li > label,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods > li > input[type="radio"] + label {
+  color: var(--mad-checkout-pay-text) !important;
+  -webkit-text-fill-color: var(--mad-checkout-pay-text) !important;
+  opacity: 1 !important;
+  text-shadow: none !important;
+}
+
+/* Short descriptions under payment method titles (outside the white form panel) */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__description,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__secondary-description,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__description,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__secondary-description {
+  color: var(--mad-checkout-pay-text-soft) !important;
+  -webkit-text-fill-color: var(--mad-checkout-pay-text-soft) !important;
+}
+
+/* Links on dark checkout chrome (method list, not inside white form panel) */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option a,
+body.woocommerce-checkout #payment .payment_methods > li > label a,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option a,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods > li > label a {
+  color: #fff76a !important;
+  -webkit-text-fill-color: #fff76a !important;
+}
+
+/* Selected payment method label emphasis */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option--checked-option-highlighted .wc-block-components-radio-control__label,
+body.woocommerce-checkout #payment ul.payment_methods li input[type="radio"]:checked ~ label,
+body.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method > input:checked + label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option--checked-option-highlighted .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout #payment ul.payment_methods li input[type="radio"]:checked ~ label,
+body.mad-baits-theme.woocommerce-checkout #payment ul.payment_methods li.wc_payment_method > input:checked + label {
+  color: #fff202 !important;
+  -webkit-text-fill-color: #fff202 !important;
+  font-weight: 800 !important;
+}
+
+/* Disabled payment methods — muted but readable */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option[disabled],
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option.is-disabled,
+body.woocommerce-checkout #payment .payment_methods li.payment_method_disabled label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option[disabled],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__option.is-disabled,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods li.payment_method_disabled label {
+  color: var(--mad-checkout-pay-text-muted) !important;
+  -webkit-text-fill-color: var(--mad-checkout-pay-text-muted) !important;
+  opacity: 1 !important;
+}
+
+/* Payment radios */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__input,
+body.woocommerce-checkout #payment .payment_methods input[type="radio"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__input,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods input[type="radio"] {
+  background: rgba(0, 0, 0, 0.35) !important;
+  border: 2px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__input:checked,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__input:checked {
+  border-color: var(--mad-checkout-pay-selected) !important;
+}
+
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__input:checked::before,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__input:checked::before {
+  background: var(--mad-checkout-pay-selected) !important;
+}
+
+/* Card field shells inside payment step stay white with dark text (see white panel block below) */
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-combobox,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-combobox,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea {
+  background: #ffffff !important;
+  border: 1px solid rgba(18, 18, 18, 0.22) !important;
+  color: #111111 !important;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input label,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-combobox label,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-combobox label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea label {
+  color: #2f2f2f !important;
+  -webkit-text-fill-color: #2f2f2f !important;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input input,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-combobox input,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea textarea,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-combobox input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea textarea {
+  color: #111111 !important;
+  -webkit-text-fill-color: #111111 !important;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input input::placeholder,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea textarea::placeholder,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-text-input input::placeholder,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-block-components-textarea textarea::placeholder {
+  color: #666666 !important;
+  opacity: 1 !important;
+}
+
+/* Payment method title row only (Klarna, PayPal, etc.) — yellow on dark; not inside white form panel */
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group span,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-payment-method-label,
+body.woocommerce-checkout #payment .payment_methods > li > label,
+body.woocommerce-checkout #payment .payment_methods > li > input[type="radio"] + label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-radio-control__label-group span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method > .wc-block-components-radio-control__option > .wc-block-components-payment-method-label,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods > li > label,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods > li > input[type="radio"] + label {
+  color: #fff202 !important;
+  -webkit-text-fill-color: #fff202 !important;
+}
+
+/* ==========================================================================
+   Payment form panel — white card for Stripe Link / Card / Clearpay fields
+   Gateway card iframes use Stripe appearance API; shell forces light color-scheme.
+   ========================================================================== */
+
+body.woocommerce-checkout .mad-checkout-payment-shell,
+body.woocommerce-checkout #wc-stripe-upe-form,
+body.woocommerce-checkout .wc-stripe-upe-element,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-payment-method-content,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control-accordion-content,
+body.woocommerce-checkout #payment .payment_box,
+body.woocommerce-checkout #payment .payment_box.payment_method_stripe,
+body.woocommerce-checkout .wc-block-checkout__payment-method .payment_box,
+body.mad-baits-theme.woocommerce-checkout .mad-checkout-payment-shell,
+body.mad-baits-theme.woocommerce-checkout #wc-stripe-upe-form,
+body.mad-baits-theme.woocommerce-checkout .wc-stripe-upe-element,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-payment-method-content,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control-accordion-content,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box.payment_method_stripe,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__payment-method .payment_box {
+  --wc-blocks-color-text: #121212 !important;
+  --wc-blocks-color-text-high-contrast: #121212 !important;
+  --wc-blocks-color-text-low-contrast: #333333 !important;
+  --wc-blocks-color-text-muted: #555555 !important;
+  background: #ffffff !important;
+  color: #121212 !important;
+  color-scheme: light only !important;
+  border: 1px solid rgba(18, 18, 18, 0.16) !important;
+  border-radius: 12px !important;
+  padding: 1rem 1rem 1.1rem !important;
+  margin-top: 0.65rem !important;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content p,
+body.woocommerce-checkout .wc-block-components-payment-method-content label,
+body.woocommerce-checkout .wc-block-components-payment-method-content span,
+body.woocommerce-checkout .wc-block-components-payment-method-content div,
+body.woocommerce-checkout .wc-block-components-payment-method-content button,
+body.woocommerce-checkout .wc-block-components-payment-method-content legend,
+body.woocommerce-checkout .wc-block-components-payment-method-content small,
+body.woocommerce-checkout .wc-block-components-payment-method-content strong,
+body.woocommerce-checkout .wc-block-components-payment-method-content em,
+body.woocommerce-checkout .wc-block-components-payment-method-content li,
+body.woocommerce-checkout .wc-block-components-payment-method-content h2,
+body.woocommerce-checkout .wc-block-components-payment-method-content h3,
+body.woocommerce-checkout .wc-block-components-payment-method-content h4,
+body.woocommerce-checkout #payment .payment_box p,
+body.woocommerce-checkout #payment .payment_box label,
+body.woocommerce-checkout #payment .payment_box span,
+body.woocommerce-checkout #payment .payment_box div,
+body.woocommerce-checkout #payment .payment_box button,
+body.woocommerce-checkout #payment .payment_box legend,
+body.woocommerce-checkout #payment .payment_box small,
+body.woocommerce-checkout #payment .payment_box strong,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content p,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content div,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content button,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content legend,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content small,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content strong,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box p,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box label,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box span,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box div,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box button,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box legend,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box small,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box strong {
+  color: #121212 !important;
+  -webkit-text-fill-color: #121212 !important;
+  opacity: 1 !important;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content a,
+body.woocommerce-checkout #payment .payment_box a,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content a,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box a {
+  color: #0a7a42 !important;
+  -webkit-text-fill-color: #0a7a42 !important;
+  text-decoration: underline;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content button,
+body.woocommerce-checkout #payment .payment_box button,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content button,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_box button {
+  background: #f2f2f2 !important;
+  border: 1px solid rgba(18, 18, 18, 0.22) !important;
+  border-radius: 8px !important;
+  color: #121212 !important;
+  min-height: 44px;
+  padding: 0.5rem 1rem !important;
+}
+
+/* Stripe Link / UPE tabs (Card, Clearpay) on white panel */
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="Tab"],
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="tab"],
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="Stripe"],
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="stripe"],
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="Link"],
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="link"],
+body.woocommerce-checkout .wc-block-components-payment-method-content [class*="onelink"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="Tab"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="tab"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="Stripe"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="stripe"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="Link"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="link"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content [class*="onelink"] {
+  color: #121212 !important;
+  -webkit-text-fill-color: #121212 !important;
+}
+
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-stripe-upe-element,
+body.woocommerce-checkout .wc-block-components-payment-method-content .wc-stripe-gateway-container,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-stripe-upe-element,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-content .wc-stripe-gateway-container {
+  background: #ffffff !important;
+}
+
+/* Pay in 3 / totals PayPal messaging below order total */
+body.woocommerce-checkout .wc-block-components-totals-footer-item,
+body.woocommerce-checkout .wc-block-components-totals-footer-item p,
+body.woocommerce-checkout .wc-block-components-totals-footer-item span,
+body.woocommerce-checkout .wc-block-components-totals-footer-item div,
+body.woocommerce-checkout .wc-block-components-totals-wrapper pp-message,
+body.woocommerce-checkout .wc-block-components-totals-wrapper [data-pp-message],
+body.woocommerce-checkout .wc-block-checkout__sidebar pp-message,
+body.woocommerce-checkout .wc-block-checkout__sidebar [data-pp-message],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-footer-item,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-footer-item p,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-footer-item span,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-footer-item div,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-wrapper pp-message,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-wrapper [data-pp-message],
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__sidebar pp-message,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__sidebar [data-pp-message] {
+  color: #fff202 !important;
+  -webkit-text-fill-color: #fff202 !important;
+}
+
+/* -------------------------------------------------------------------------
+   Mobile checkout — circular radios + square checkboxes (not stretched ovals)
+   ------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+  body.woocommerce-checkout .wc-block-components-radio-control__input,
+  body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control__input,
+  body.woocommerce-checkout #payment .payment_methods input[type="radio"],
+  body.mad-baits-theme.woocommerce-checkout #payment .payment_methods input[type="radio"],
+  body.woocommerce-checkout #shipping_method input[type="radio"],
+  body.mad-baits-theme.woocommerce-checkout #shipping_method input[type="radio"],
+  body.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"],
+  body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-methods input[type="radio"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    min-width: 1.125rem !important;
+    min-height: 1.125rem !important;
+    max-width: 1.125rem !important;
+    max-height: 1.125rem !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 50% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    flex: 0 0 1.125rem !important;
+    box-sizing: border-box !important;
+    line-height: 1 !important;
+    vertical-align: middle !important;
+  }
+
+  body.woocommerce-checkout .wc-block-components-radio-control__input::before,
+  body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control__input::before {
+    width: 0.45rem !important;
+    height: 0.45rem !important;
+    border-radius: 50% !important;
+    margin: 0 !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+  }
+
+  body.woocommerce-checkout .wc-block-components-checkbox .wc-block-components-checkbox__input[type="checkbox"],
+  body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox .wc-block-components-checkbox__input[type="checkbox"] {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+    min-width: 1.125rem !important;
+    min-height: 1.125rem !important;
+    max-width: 1.125rem !important;
+    max-height: 1.125rem !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 4px !important;
+    padding: 0 !important;
+    flex: 0 0 1.125rem !important;
+    box-sizing: border-box !important;
+  }
+}

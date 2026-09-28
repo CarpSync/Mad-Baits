@@ -1,0 +1,617 @@
+/**
+ * Mad Baits app mobile UX — haptics companions, offline, skeletons, app-exclusive slots.
+ * Scoped to mobile/PWA shell; checkout excluded via script enqueue guard.
+ */
+
+.mad-app-offline-bar,
+.mad-app-pull-indicator,
+.mad-app-exclusive-banner,
+.mad-app-exclusive-card {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  /* Shell content fade-in */
+  .mad-app-shell-content {
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.32s ease, transform 0.32s ease;
+  }
+
+  .mad-app-shell-content.is-visible,
+  .mad-content-ready {
+    opacity: 1;
+    transform: none;
+  }
+
+  /* Tap feedback */
+  .is-mobile-app-shell .mad-button.is-pressed,
+  .is-mobile-app-shell .button.is-pressed,
+  .is-pwa .mad-button.is-pressed,
+  .is-standalone-app .mad-button.is-pressed {
+    transform: scale(0.985);
+    opacity: 0.92;
+  }
+
+  .is-mobile-app-shell .mad-product-card.is-pressed,
+  .is-mobile-app-shell .mad-app-home__quick-card.is-pressed,
+  .is-pwa .mad-product-card.is-pressed {
+    transform: scale(0.985);
+  }
+
+  .is-mobile-app-shell .mad-button,
+  .is-mobile-app-shell .button,
+  .is-mobile-app-shell .mad-product-card,
+  .is-mobile-app-shell .mad-app-bottom-nav__item,
+  .is-mobile-app-shell .mad-app-home__quick-card {
+    transition: transform 0.14s ease, opacity 0.14s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  /* Bottom nav active state */
+  .mad-app-bottom-nav__item.is-active .mad-app-bottom-nav__icon svg {
+    filter: drop-shadow(0 0 6px rgba(255, 242, 2, 0.45));
+  }
+
+  .mad-app-bottom-nav__item.is-active .mad-app-bottom-nav__label {
+    color: var(--mad-yellow, #fff202);
+  }
+
+  .mad-app-bottom-nav__item.is-active::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0.18rem;
+    width: 18px;
+    height: 2px;
+    transform: translateX(-50%);
+    border-radius: 999px;
+    background: var(--mad-yellow, #fff202);
+    box-shadow: 0 0 10px rgba(255, 242, 2, 0.55);
+  }
+
+  .mad-app-bottom-nav__item {
+    position: relative;
+  }
+
+  /* Offline reconnect bar */
+  .mad-app-offline-bar {
+    display: block;
+    position: fixed;
+    left: 0.65rem;
+    right: 0.65rem;
+    bottom: calc(var(--mad-mobile-nav-height, 86px) + 0.55rem + var(--mad-app-nav-safe, 0px));
+    z-index: 10140;
+    pointer-events: none;
+    opacity: 0;
+    transform: translateY(12px);
+    transition: opacity 0.24s ease, transform 0.24s ease;
+  }
+
+  body.mad-app-nav-hidden-context .mad-app-offline-bar {
+    bottom: calc(0.75rem + var(--mad-app-nav-safe, 0px));
+  }
+
+  .mad-app-offline-bar.is-visible {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
+  }
+
+  .mad-app-offline-bar.is-hidden {
+    display: none;
+  }
+
+  .mad-app-offline-bar__inner {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    gap: 0.55rem;
+    align-items: center;
+    padding: 0.62rem 0.72rem;
+    border-radius: 14px;
+    border: 1px solid rgba(255, 242, 2, 0.28);
+    background: rgba(8, 8, 10, 0.94);
+    box-shadow: 0 12px 32px rgba(0, 0, 0, 0.42);
+    backdrop-filter: blur(14px);
+  }
+
+  .mad-app-offline-bar__icon {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #ff5b5b;
+    box-shadow: 0 0 10px rgba(255, 91, 91, 0.55);
+  }
+
+  .mad-app-offline-bar__copy strong {
+    display: block;
+    font-size: 0.82rem;
+    color: #fff;
+  }
+
+  .mad-app-offline-bar__copy p {
+    margin: 0.12rem 0 0;
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.68);
+    line-height: 1.35;
+  }
+
+  .mad-app-offline-bar__retry {
+    min-height: 36px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.74rem;
+    background: var(--mad-yellow, #fff202);
+    color: #050505;
+    border-color: var(--mad-yellow, #fff202);
+  }
+
+  /* Pull to refresh */
+  .mad-app-pull-indicator {
+    display: block;
+    position: fixed;
+    top: calc(var(--mad-app-top-bar-stack, 48px) + 0.35rem);
+    left: 50%;
+    z-index: 10120;
+    transform: translateX(-50%) translateY(calc(-120% + (var(--mad-pull-progress, 0) * 28px)));
+    opacity: var(--mad-pull-progress, 0);
+    pointer-events: none;
+    transition: opacity 0.12s ease;
+  }
+
+  .mad-app-pull-indicator.is-active {
+    opacity: 1;
+  }
+
+  .mad-app-pull-indicator__label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 0.2rem 0.65rem;
+    border-radius: 999px;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #050505;
+    background: rgba(255, 242, 2, 0.92);
+    box-shadow: 0 6px 18px rgba(255, 242, 2, 0.22);
+  }
+
+  .mad-app-pull-indicator.is-ready .mad-app-pull-indicator__label {
+    box-shadow: 0 0 16px rgba(255, 242, 2, 0.45);
+  }
+
+  /* Image fallback */
+  img.is-image-fallback {
+    object-fit: contain !important;
+    background: #0a0a0a;
+    padding: 12%;
+  }
+
+  /* Extended skeleton hosts */
+  .mad-skeleton-host {
+    position: relative;
+    min-height: 120px;
+  }
+
+  .mad-skeleton-host::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    border-radius: inherit;
+    background: linear-gradient(110deg, rgba(26, 26, 26, 0.92) 8%, rgba(42, 42, 42, 0.92) 18%, rgba(26, 26, 26, 0.92) 33%);
+    background-size: 200% 100%;
+    animation: madMobileSkeleton 1.1s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  .woocommerce-account .mad-skeleton-host::before {
+    border-radius: 14px;
+  }
+
+  .catch-reports-page__grid.mad-skeleton-host,
+  [data-catch-reports-grid].mad-skeleton-host {
+    min-height: 280px;
+  }
+
+  /* App exclusive badge */
+  .mad-app-exclusive-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.25rem;
+    padding: 0.18rem 0.52rem;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 242, 2, 0.42);
+    background: rgba(255, 242, 2, 0.08);
+    color: var(--mad-yellow, #fff202);
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    box-shadow: 0 0 14px rgba(255, 242, 2, 0.12);
+  }
+
+  .mad-app-exclusive-badge--banner {
+    align-self: flex-start;
+  }
+
+  /* App exclusive banner slot */
+  .mad-app-exclusive-banner {
+    display: block;
+    margin: 0 0 0.85rem;
+  }
+
+  .mad-app-exclusive-banner__inner {
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.85rem 0.9rem;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 242, 2, 0.24);
+    background:
+      radial-gradient(circle at 92% 8%, rgba(255, 242, 2, 0.12), transparent 42%),
+      linear-gradient(155deg, rgba(14, 14, 16, 0.98), rgba(6, 6, 8, 0.98));
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.32);
+  }
+
+  .mad-app-exclusive-banner__copy strong {
+    display: block;
+    font-size: 0.95rem;
+    color: #fff;
+    margin-bottom: 0.2rem;
+  }
+
+  .mad-app-exclusive-banner__copy p {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.45;
+  }
+
+  .mad-app-exclusive-banner__cta {
+    justify-self: start;
+    min-height: 40px;
+    font-size: 0.78rem;
+  }
+
+  /* Dismissible home card slot */
+  body.is-mobile-app-shell .mad-app-exclusive-card,
+  body.is-pwa .mad-app-exclusive-card,
+  body.is-standalone-app .mad-app-exclusive-card {
+    display: block;
+    position: relative;
+    margin: 0 0 0.85rem;
+    padding: 0.95rem 0.95rem 0.9rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 242, 2, 0.26);
+    background:
+      radial-gradient(circle at 88% 12%, rgba(255, 242, 2, 0.14), transparent 40%),
+      rgba(10, 10, 12, 0.96);
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.28s ease, transform 0.28s ease;
+  }
+
+  .mad-app-exclusive-card.is-visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .mad-app-exclusive-card[hidden] {
+    display: none !important;
+  }
+
+  .mad-app-exclusive-card__title {
+    margin: 0.45rem 0 0.35rem;
+    font-size: 1rem;
+    color: #fff;
+  }
+
+  .mad-app-exclusive-card__copy {
+    margin: 0 0 0.65rem;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.74);
+    line-height: 1.45;
+  }
+
+  .mad-app-exclusive-card__cta {
+    min-height: 42px;
+    font-size: 0.8rem;
+  }
+
+  .mad-app-exclusive-card__dismiss {
+    position: absolute;
+    top: 0.45rem;
+    right: 0.45rem;
+    width: 30px;
+    height: 30px;
+    border: 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 1.1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  /* App home dashboard — mobile/PWA/Capacitor only */
+  .mad-app-home {
+    display: none;
+  }
+
+  body.is-standalone-app .mad-app-home,
+  body.is-mobile-app-shell.home .mad-app-home,
+  body.is-capacitor-app.home .mad-app-home,
+  body.is-pwa.home .mad-app-home {
+    display: block;
+  }
+
+  .mad-app-home__hero {
+    margin: 0 0 0.85rem;
+    padding: 1rem 0.95rem;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 242, 2, 0.22);
+    background:
+      radial-gradient(circle at 88% 8%, rgba(255, 242, 2, 0.14), transparent 44%),
+      linear-gradient(155deg, rgba(12, 12, 14, 0.98), rgba(4, 4, 6, 0.98));
+    box-shadow: 0 16px 34px rgba(0, 0, 0, 0.34);
+  }
+
+  .mad-app-home__hero-kicker {
+    margin: 0 0 0.25rem;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--mad-yellow, #fff202);
+  }
+
+  .mad-app-home__hero-title {
+    margin: 0 0 0.35rem;
+    font-size: 1.35rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1.15;
+  }
+
+  .mad-app-home__hero-copy {
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.45;
+  }
+
+  .mad-app-home__header p {
+    max-width: 66ch;
+  }
+
+  .mad-app-home__quick-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.75rem;
+  }
+
+  .mad-app-home__quick-card {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    background:
+      radial-gradient(circle at 84% 10%, rgba(255, 242, 2, 0.12), transparent 44%),
+      linear-gradient(160deg, rgba(15, 15, 15, 0.92), rgba(9, 9, 9, 0.88));
+    padding: 0.85rem 0.75rem;
+    font-weight: 800;
+    font-size: 0.78rem;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    min-height: 72px;
+    display: flex;
+    align-items: flex-end;
+    text-decoration: none;
+    color: #f4f4f4;
+    box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  }
+
+  .mad-app-home__quick-card--primary {
+    grid-column: 1 / -1;
+    min-height: 56px;
+    align-items: center;
+    justify-content: center;
+    background: var(--mad-yellow, #fff202);
+    color: #050505;
+    border-color: var(--mad-yellow, #fff202);
+    font-size: 0.82rem;
+  }
+
+  .mad-app-home__lists {
+    margin-top: 0.85rem;
+    display: grid;
+    gap: 0.55rem;
+  }
+
+  .mad-app-home__list-card {
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 14px;
+    padding: 0.78rem;
+    background: rgba(10, 10, 10, 0.88);
+  }
+
+  .mad-app-home__list-card h3 {
+    margin: 0;
+    font-size: 0.92rem;
+  }
+
+  .mad-app-home__list-card p {
+    margin: 0.35rem 0 0.55rem;
+    color: rgba(238, 238, 238, 0.72);
+    font-size: 0.78rem;
+  }
+
+  /* Catch report photo polish */
+  .mad-catch-submit__photo-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.45rem;
+    margin: 0.65rem 0;
+  }
+
+  .mad-catch-submit__photo-btn {
+    min-height: 44px;
+    font-size: 0.78rem;
+    font-weight: 800;
+  }
+
+  .mad-catch-submit__preview-item {
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 242, 2, 0.2);
+    background: #0a0a0a;
+  }
+
+  .mad-catch-submit__preview-item img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+  }
+
+  .mad-catch-submit__upload-progress {
+    margin: 0.55rem 0 0;
+    font-size: 0.78rem;
+    color: var(--mad-yellow, #fff202);
+    font-weight: 700;
+  }
+
+  .mad-catch-submit__share-soon {
+    margin-top: 0.65rem;
+    padding: 0.55rem 0.65rem;
+    border-radius: 10px;
+    border: 1px dashed rgba(255, 242, 2, 0.35);
+    font-size: 0.72rem;
+    color: rgba(255, 255, 255, 0.62);
+  }
+
+  .mad-catch-submit__share-soon strong {
+    display: block;
+    color: var(--mad-yellow, #fff202);
+    font-size: 0.78rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .mad-catch-submit__file-input--hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+  }
+
+  /* Product quick view — coming soon sheet (long-press on product card in app shell) */
+  .mad-product-quick-view-open {
+    overflow: hidden;
+  }
+
+  .mad-product-quick-view-shell {
+    position: fixed;
+    inset: 0;
+    z-index: 10170;
+    display: grid;
+    align-items: end;
+    pointer-events: none;
+  }
+
+  .mad-product-quick-view-shell.is-open {
+    pointer-events: auto;
+  }
+
+  .mad-product-quick-view__backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.58);
+    opacity: 0;
+    transition: opacity 0.22s ease;
+  }
+
+  .mad-product-quick-view-shell.is-open .mad-product-quick-view__backdrop {
+    opacity: 1;
+  }
+
+  .mad-product-quick-view {
+    position: relative;
+    width: 100%;
+    max-height: min(70dvh, 520px);
+    background: linear-gradient(165deg, rgba(14, 14, 16, 0.98), rgba(4, 4, 6, 0.98));
+    border: 1px solid rgba(255, 242, 2, 0.22);
+    border-bottom: none;
+    border-radius: 22px 22px 0 0;
+    transform: translateY(105%);
+    transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+    padding-bottom: var(--mad-app-nav-safe, env(safe-area-inset-bottom, 0px));
+  }
+
+  .mad-product-quick-view-shell.is-open .mad-product-quick-view {
+    transform: translateY(0);
+  }
+
+  .mad-product-quick-view__handle {
+    width: 42px;
+    height: 4px;
+    margin: 0.55rem auto 0;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
+  }
+
+  .mad-product-quick-view__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65rem 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mad-product-quick-view__header h2 {
+    margin: 0;
+    font-size: 0.95rem;
+  }
+
+  .mad-product-quick-view__close {
+    border: 0;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    width: 34px;
+    height: 34px;
+    border-radius: 999px;
+    font-size: 1.25rem;
+    cursor: pointer;
+  }
+
+  .mad-product-quick-view__body {
+    padding: 1rem;
+  }
+
+  .mad-product-quick-view__soon {
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.72);
+    line-height: 1.45;
+  }
+
+  .mad-product-quick-view__footer {
+    display: grid;
+    gap: 0.45rem;
+    padding: 0.75rem 1rem 1rem;
+    border-top: 1px solid rgba(255, 242, 2, 0.12);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mad-app-shell-content,
+  .mad-app-offline-bar,
+  .mad-app-exclusive-card,
+  .mad-app-bottom-nav__item,
+  .mad-skeleton-host::before {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
+  }
+}

@@ -1,0 +1,79 @@
+/**
+ * Mobile navigation overlay — scroll lock, backdrop, z-index stack.
+ */
+
+html.mad-menu-open,
+html.mobile-menu-open,
+html.menu-open,
+body.mad-menu-open,
+body.mobile-menu-open,
+body.menu-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+.mobile-nav-backdrop {
+  display: none;
+}
+
+/* Desktop safety: never allow mobile overlays to intercept clicks. */
+@media (min-width: 861px) {
+  .mobile-nav,
+  .mobile-nav.is-active,
+  .mobile-nav-backdrop,
+  .mobile-nav-backdrop.is-active {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .mobile-nav-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 10140;
+    display: block;
+    background: rgba(0, 0, 0, 0.72);
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.24s ease, visibility 0.24s ease;
+  }
+
+  .mobile-nav-backdrop.is-active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+  }
+
+  .mobile-nav {
+    z-index: 10150;
+  }
+
+  body.mad-menu-open .mad-app-bottom-nav,
+  body.mobile-menu-open .mad-app-bottom-nav {
+    z-index: 10130;
+  }
+
+  body.mad-menu-open .mad-pwa-install,
+  body.mobile-menu-open .mad-pwa-install,
+  body.mad-menu-open .mad-app-toast,
+  body.mobile-menu-open .mad-app-toast {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  body.mad-menu-open .mbbb-sticky,
+  body.mobile-menu-open .mbbb-sticky,
+  body.mad-menu-open .mbbb-summary-drawer,
+  body.mobile-menu-open .mbbb-summary-drawer,
+  body.mad-menu-open .mad-mobile-sticky-atc,
+  body.mobile-menu-open .mad-mobile-sticky-atc {
+    visibility: hidden !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+  }
+}

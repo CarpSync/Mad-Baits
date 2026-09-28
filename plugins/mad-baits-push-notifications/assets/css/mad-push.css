@@ -1,0 +1,297 @@
+.mad-push-prompt {
+  position: fixed;
+  left: 10px;
+  right: 10px;
+  bottom: calc(94px + env(safe-area-inset-bottom, 0px));
+  z-index: 9998;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255, 242, 2, 0.22), rgba(255, 242, 2, 0) 46%),
+    linear-gradient(160deg, rgba(10, 10, 10, 0.98), rgba(2, 2, 2, 0.99));
+  border: 1px solid rgba(255, 242, 2, 0.42);
+  border-radius: 18px;
+  padding: 14px 14px 12px;
+  color: #fff;
+  box-shadow:
+    0 20px 40px rgba(0, 0, 0, 0.52),
+    inset 0 0 0 1px rgba(255, 242, 2, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.mad-push-prompt__eyebrow {
+  margin: 0 0 6px;
+  color: #fff202;
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.mad-push-prompt h3 {
+  margin: 0 0 0.32rem;
+  color: #fff;
+  font-size: 1.02rem;
+  line-height: 1.28;
+  font-weight: 800;
+}
+
+.mad-push-prompt__message {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.88);
+  line-height: 1.42;
+  font-size: 0.9rem;
+}
+
+.mad-push-prompt__actions {
+  margin-top: 11px;
+  display: flex;
+  gap: 8px;
+}
+
+.mad-push-prompt__enable,
+.mad-push-prompt__dismiss {
+  border-radius: 999px;
+  min-height: 46px;
+  padding: 0 16px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.03em;
+}
+
+.mad-push-prompt__enable {
+  background: linear-gradient(160deg, rgba(18, 18, 18, 0.98), rgba(5, 5, 5, 0.99));
+  color: #fff202;
+  border-color: rgba(255, 242, 2, 0.7);
+  flex: 1;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 0 0 1px rgba(255, 242, 2, 0.16);
+}
+
+.mad-push-prompt__dismiss {
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.16);
+}
+
+.mad-push-prompt__enable:hover,
+.mad-push-prompt__enable:focus-visible {
+  background: #fff202;
+  color: #080808;
+  border-color: #fff202;
+}
+
+.mad-push-prompt__dismiss:hover,
+.mad-push-prompt__dismiss:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.24);
+}
+
+.mad-push-prompt__status {
+  margin: 8px 0 0;
+  min-height: 1.25em;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.mad-push-prompt__status.is-error {
+  color: #ffd1d1;
+}
+
+.mad-push-prompt__status.is-success {
+  color: #d1ffe0;
+}
+
+.mad-push-prompt__force {
+  margin-top: 8px;
+  width: 100%;
+  min-height: 42px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 242, 2, 0.66);
+  background: rgba(255, 242, 2, 0.1);
+  color: #fff202;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+}
+
+.mad-push-prompt__force:hover,
+.mad-push-prompt__force:focus-visible {
+  background: rgba(255, 242, 2, 0.18);
+}
+
+.mad-push-prompt.is-loading {
+  opacity: 0.65;
+  pointer-events: none;
+}
+
+.mad-push-prompt.is-success {
+  border-color: rgba(66, 181, 103, 0.7);
+}
+
+@media (min-width: 769px) {
+  .mad-push-prompt {
+    max-width: 360px;
+    left: auto;
+    right: 16px;
+    bottom: 16px;
+  }
+
+}
+
+@media (max-width: 768px) {
+  body.is-mobile-app-shell .mad-push-prompt,
+  body.is-pwa .mad-push-prompt {
+    bottom: calc(152px + env(safe-area-inset-bottom, 0px));
+  }
+
+}
+
+@media (max-width: 520px) {
+  .mad-push-prompt,
+  .mad-alerts-prompt,
+  .pwa-push-prompt,
+  .push-notification-prompt {
+    width: calc(100vw - 28px);
+    max-width: none;
+    padding: 22px;
+    border-radius: 22px;
+    margin: 14px;
+    left: 0;
+    right: 0;
+    padding-bottom: calc(22px + env(safe-area-inset-bottom));
+  }
+
+  .mad-push-prompt .actions,
+  .mad-alerts-prompt .actions,
+  .pwa-push-prompt .actions,
+  .push-notification-prompt .actions,
+  .mad-push-prompt__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .mad-push-prompt button,
+  .mad-alerts-prompt button,
+  .pwa-push-prompt button,
+  .push-notification-prompt button,
+  .mad-push-prompt__enable,
+  .mad-push-prompt__dismiss,
+  .mad-push-prompt__force {
+    width: 100%;
+  }
+
+}
+
+.mad-push-admin .mad-push-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.mad-push-admin {
+  color: #101114;
+}
+
+.mad-push-admin h1,
+.mad-push-admin h2 {
+  color: #0f1115;
+}
+
+.mad-push-admin .mad-push-admin-card {
+  background: #ffffff;
+  color: #1a1d22;
+  border: 1px solid #d9dde5;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: 0 8px 24px rgba(15, 17, 21, 0.06);
+}
+
+.mad-push-admin .notice.notice-info {
+  background: #eef5ff;
+  border-left-color: #2f78d8;
+  color: #123a73;
+}
+
+.mad-push-admin .mad-push-stats .mad-push-admin-card span {
+  display: block;
+  font-size: 24px;
+  color: #d7a300;
+  margin-top: 6px;
+  font-weight: 800;
+}
+
+.mad-push-admin label {
+  display: block;
+  margin-top: 10px;
+  margin-bottom: 4px;
+  font-weight: 700;
+  color: #1b222c;
+}
+
+.mad-push-admin input[type="text"],
+.mad-push-admin input[type="url"],
+.mad-push-admin input[type="password"],
+.mad-push-admin textarea,
+.mad-push-admin select {
+  width: 100%;
+  max-width: none;
+  border-radius: 10px;
+  border: 1px solid #c6cfdb;
+  background: #ffffff;
+  color: #131720;
+  min-height: 42px;
+}
+
+.mad-push-admin textarea {
+  min-height: 96px;
+}
+
+.mad-push-admin input::placeholder,
+.mad-push-admin textarea::placeholder {
+  color: #7b8594;
+}
+
+.mad-push-admin input:focus,
+.mad-push-admin textarea:focus,
+.mad-push-admin select:focus {
+  border-color: #d7a300;
+  box-shadow: 0 0 0 1px rgba(215, 163, 0, 0.25);
+  outline: none;
+}
+
+.mad-push-admin .mad-push-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.mad-push-admin .button.button-primary {
+  background: #f5c400;
+  color: #111;
+  border-color: #f5c400;
+  font-weight: 800;
+}
+
+.mad-push-admin .button {
+  border-color: #c8d0dd;
+}
+
+.mad-push-admin table.widefat {
+  border-color: #d9dde5;
+}
+
+.mad-push-admin table.widefat thead th {
+  background: #f3f6fb;
+  color: #1b2533;
+}
+
+.mad-push-admin table.widefat td {
+  color: #1f2935;
+}

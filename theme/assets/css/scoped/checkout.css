@@ -1,0 +1,515 @@
+/* Checkout and cart scoped polish */
+.woocommerce-cart .cart_totals,
+.woocommerce-checkout #customer_details,
+.woocommerce-checkout #order_review,
+.woocommerce-checkout .woocommerce-checkout-payment {
+  border-radius: 16px;
+  padding: clamp(0.95rem, 1.9vw, 1.25rem);
+}
+
+.woocommerce-cart table.shop_table td,
+.woocommerce-checkout .woocommerce-checkout-review-order-table td,
+.woocommerce-checkout .woocommerce-checkout-review-order-table th {
+  padding-top: 0.7rem;
+  padding-bottom: 0.7rem;
+}
+
+.woocommerce-checkout .mad-fresh-rolling--checkout {
+  margin-bottom: 0.8rem;
+}
+
+/* Checkout text contrast and readability */
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout p,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout li,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout td,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout th {
+  color: #eef1f6;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout h1,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout h2,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout h3,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout legend,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout #order_review_heading {
+  color: #ffffff;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-checkout-review-order-table th,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-checkout-review-order-table td,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout #payment,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout #payment label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .wc_payment_methods label {
+  color: #fff202;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-checkout-review-order-table .product-name,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-checkout-review-order-table .product-total,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .order-total .amount {
+  color: #ffffff;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-shipping-totals td,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-checkout-review-order-table tfoot th,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-checkout-review-order-table tfoot td,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .payment_method_paypal .about_paypal {
+  color: #cfd5df;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-info,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-message {
+  color: #dbefff;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout a {
+  color: #fff202;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout a:hover,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout a:focus-visible {
+  color: #fff76a;
+}
+
+/* Checkout readability hard override (labels/placeholders/selects) */
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-billing-fields label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-fields label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row > label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-form__label {
+  color: #ffe94a !important;
+  font-weight: 650 !important;
+  letter-spacing: 0.01em;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row .required,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row .asterisk {
+  color: #fff202 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row .optional {
+  color: rgba(234, 234, 234, 0.85) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row input.input-text,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row select,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row textarea,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form.checkout_coupon input.input-text,
+body.mad-baits-theme.woocommerce-checkout .woocommerce .woocommerce-form-coupon input.input-text {
+  background: #ffffff !important;
+  color: #111111 !important;
+  border: 1px solid rgba(16, 16, 16, 0.2) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row input.input-text::placeholder,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row textarea::placeholder,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form.checkout_coupon input.input-text::placeholder,
+body.mad-baits-theme.woocommerce-checkout .woocommerce .woocommerce-form-coupon input.input-text::placeholder {
+  color: #666666 !important;
+  opacity: 1;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row input.input-text:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row select:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row textarea:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form.checkout_coupon input.input-text:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce .woocommerce-form-coupon input.input-text:focus {
+  border-color: #fff202 !important;
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.22) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row select,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .form-row select option {
+  color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container .select2-selection--single {
+  background: #ffffff !important;
+  border: 1px solid rgba(16, 16, 16, 0.2) !important;
+  color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container .select2-selection--single .select2-selection__rendered {
+  color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container .select2-selection--single .select2-selection__arrow b {
+  border-color: #333333 transparent transparent transparent !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container--focus .select2-selection--single,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container--open .select2-selection--single {
+  border-color: #fff202 !important;
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.22) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-dropdown,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-results__option,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-search__field {
+  background: #ffffff !important;
+  color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-search__field {
+  border: 1px solid rgba(16, 16, 16, 0.24) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-results__option--highlighted[aria-selected] {
+  background: rgba(255, 242, 2, 0.3) !important;
+  color: #111111 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-invalid-required-field input.input-text,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-invalid-required-field select,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-invalid-required-field textarea {
+  border-color: rgba(216, 46, 46, 0.9) !important;
+  box-shadow: 0 0 0 3px rgba(216, 46, 46, 0.18) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-error,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-notices-wrapper {
+  color: #ffeaea;
+}
+
+@media (max-width: 760px) {
+  .woocommerce-checkout #customer_details,
+  .woocommerce-checkout #order_review,
+  .woocommerce-checkout .woocommerce-checkout-payment,
+  .woocommerce-cart .cart_totals {
+    padding: 0.82rem;
+  }
+
+  body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .woocommerce-error + .woocommerce-error,
+  body.mad-baits-theme.woocommerce-checkout .woocommerce-notices-wrapper .woocommerce-error + .woocommerce-error {
+    display: none;
+  }
+
+  body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout-review-order,
+  body.mad-baits-theme.woocommerce-checkout #payment {
+    margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* -------------------------------------------------------------------------
+   Checkout labels + fields (classic + WooCommerce Blocks)
+   ------------------------------------------------------------------------- */
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-billing-fields > h3,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-fields > h3,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-additional-fields > h3,
+body.mad-baits-theme.woocommerce-checkout #order_review_heading,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkout-step-title,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-title,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-panel__button-title {
+  color: #ffffff !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.01em;
+}
+
+/* Labels on dark checkout panels (not inside white block field shells) */
+body.mad-baits-theme.woocommerce-checkout #customer_details > .woocommerce-billing-fields > label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-account-fields label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form.checkout > label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkout-step__description {
+  color: #fff9d6 !important;
+  font-weight: 650 !important;
+  opacity: 1 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.45);
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row .required,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row .asterisk,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-label__required {
+  color: #fff202 !important;
+}
+
+/* Block checkout: white field shells with readable in-field labels */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea {
+  background: #ffffff !important;
+  border: 1px solid rgba(18, 18, 18, 0.22) !important;
+  border-radius: 12px !important;
+  color: #121212 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="email"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="tel"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input[type="text"],
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox input,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea textarea {
+  background: transparent !important;
+  color: #121212 !important;
+  border: 0 !important;
+  box-shadow: none !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.is-active label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.has-error label {
+  color: #2a2a2a !important;
+  font-weight: 600 !important;
+  text-shadow: none !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.is-active label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input.has-label label {
+  color: #3a3a3a !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input input::placeholder,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea textarea::placeholder {
+  color: #666666 !important;
+  opacity: 1 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-text-input:focus-within,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-combobox:focus-within,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-textarea:focus-within {
+  border-color: #fff202 !important;
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.22) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkout-order-summary,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-sidebar-layout__sidebar,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-wrapper,
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__sidebar {
+  color: #eef1f6;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-order-summary-item__product-name,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-product-name,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-item__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-totals-item__value {
+  color: #f3f3f3 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-order-summary-item__individual-prices,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-formatted-money-amount {
+  color: #ffffff !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control__label {
+  color: #f2f2f2 !important;
+  text-shadow: none !important;
+}
+
+/* Blocks checkout notices — error panels use Woo's light background; keep text dark and readable */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-error,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-error .wc-block-components-notice-banner__content {
+  color: #1a1a1a !important;
+  -webkit-text-fill-color: #1a1a1a !important;
+  background: #fff5f5 !important;
+  border-color: rgba(192, 57, 43, 0.55) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-error a {
+  color: #8b1a10 !important;
+}
+
+/* Success/info notices on dark checkout panels */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-success,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-success .wc-block-components-notice-banner__content,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-info,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-info .wc-block-components-notice-banner__content {
+  color: #f5f5f5;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack-notice,
+.mad-baits-theme .mad-checkout-delivery-ack-notice.wc-block-components-notice-banner.is-error,
+.mad-baits-theme .mad-checkout-delivery-ack-notice.wc-block-components-notice-banner.is-error .wc-block-components-notice-banner__content {
+  color: #5c1010 !important;
+  -webkit-text-fill-color: #5c1010 !important;
+  background: #fff5f5 !important;
+  border-color: rgba(192, 57, 43, 0.55) !important;
+}
+
+/* Classic checkout field stack (labels above white inputs on dark panels) */
+body.mad-baits-theme.woocommerce-checkout #customer_details .form-row,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-billing-fields .form-row,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-fields .form-row {
+  display: grid;
+  gap: 0.4rem;
+}
+
+body.mad-baits-theme.woocommerce-checkout #customer_details .form-row label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-billing-fields .form-row label,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-shipping-fields .form-row label {
+  display: block;
+  margin: 0;
+  padding: 0;
+  line-height: 1.35;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row input.input-text,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row select,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row textarea,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form.checkout_coupon input.input-text,
+body.mad-baits-theme.woocommerce-checkout .woocommerce .woocommerce-form-coupon input.input-text,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container .select2-selection--single {
+  background: #ffffff !important;
+  color: #121212 !important;
+  border: 1px solid rgba(18, 18, 18, 0.22) !important;
+  border-radius: 12px !important;
+  min-height: 47px;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row input.input-text::placeholder,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row textarea::placeholder {
+  color: #666666 !important;
+  opacity: 1 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row input.input-text:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row select:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce form .form-row textarea:focus,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container--focus .select2-selection--single,
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container--open .select2-selection--single {
+  border-color: #fff202 !important;
+  box-shadow: 0 0 0 3px rgba(255, 242, 2, 0.22) !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .woocommerce-checkout .select2-container .select2-selection--single .select2-selection__rendered {
+  color: #121212 !important;
+}
+
+body.woocommerce-checkout #payment .payment_methods label,
+body.mad-baits-theme.woocommerce-checkout #payment .payment_methods label,
+body.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-radio-control--payment-method .wc-block-components-radio-control__label,
+body.woocommerce-checkout .wc-block-components-payment-method-label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-payment-method-label {
+  color: #fff202 !important;
+  -webkit-text-fill-color: #fff202 !important;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack {
+  margin: 0.85rem 0 0.75rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(18, 18, 18, 0.14);
+  border-radius: 12px;
+  background: #fafafa;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack__title {
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+  color: #121212;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack__lead {
+  margin: 0 0 0.65rem;
+  color: #333333;
+  line-height: 1.45;
+}
+
+/* Blocks checkout is dark — legal copy must stay readable */
+body.mad-baits-theme.woocommerce-checkout .mad-checkout-delivery-ack--blocks {
+  margin: 0.85rem 0 1rem;
+  padding: 0.95rem 1rem;
+  border: 1px solid rgba(255, 242, 2, 0.35);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.07);
+}
+
+body.mad-baits-theme.woocommerce-checkout .mad-checkout-delivery-ack--blocks .mad-checkout-delivery-ack__title,
+body.mad-baits-theme.woocommerce-checkout .mad-checkout-delivery-ack--blocks .mad-checkout-delivery-ack__lead,
+body.mad-baits-theme.woocommerce-checkout .mad-checkout-delivery-ack--blocks p {
+  color: #f5f5f5 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .mad-checkout-delivery-ack--blocks .mad-checkout-delivery-ack__title {
+  color: #fff202 !important;
+  font-size: 0.95rem;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-address-form__mad-baits-delivery-safe-place-ack .wc-block-components-checkbox__label {
+  color: #fff9d6 !important;
+  font-weight: 650;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack .woocommerce-form__label-for-checkbox {
+  display: flex;
+  gap: 0.65rem;
+  align-items: flex-start;
+  margin: 0;
+  line-height: 1.45;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack__label {
+  color: #121212;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack__legal {
+  margin: 0 0 0.85rem;
+  color: #333333;
+  font-size: 0.92rem;
+  line-height: 1.45;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack-notice {
+  margin: 0 0 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(192, 57, 43, 0.45);
+  background: #fff5f5;
+  color: #5c1010;
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack--paypal-blocked {
+  filter: grayscale(0.15);
+}
+
+.mad-baits-theme .mad-checkout-delivery-ack-express-note {
+  margin: 0.65rem 0 0;
+  padding: 0;
+  font-size: 0.78rem;
+  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+/* Do NOT force pointer-events on .wc-block-components-express-payment *.
+   Stripe Apple Pay / Google Pay iframes rely on layered pointer-events:none;
+   overriding them makes wallet + nearby cart buttons appear dead. */
+
+/* PayPal fraud-protection reCAPTCHA v2 fallback (only visible once widget renders) */
+body.mad-baits-theme.woocommerce-checkout #ppcp-recaptcha-v2-container:empty {
+  display: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout #ppcp-recaptcha-v2-container:not(:empty) {
+  display: block;
+  margin: 1rem 0 !important;
+  padding: 0.85rem 1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(192, 57, 43, 0.45);
+  background: #fff5f5;
+  color: #1a1a1a;
+}
+
+body.mad-baits-theme.woocommerce-checkout #ppcp-recaptcha-v2-container:not(:empty)::before {
+  content: "Please complete the security check below, then try PayPal again.";
+  display: block;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: #5c1010;
+}
+
+/* Hide empty checkout error banners (stale session notices with no message text) */
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-error:empty,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-notice-banner.is-error .wc-block-components-notice-banner__content:empty {
+  display: none !important;
+}
+
+body.mad-baits-theme.woocommerce-checkout .wc-block-checkout__additional-fields .wc-block-components-checkbox__label,
+body.mad-baits-theme.woocommerce-checkout .wc-block-components-checkbox .wc-block-components-checkbox__label {
+  line-height: 1.45;
+}

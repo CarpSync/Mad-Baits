@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <title>Mad Baits | Offline</title>
+  <meta name="theme-color" content="#000000">
+  <meta name="robots" content="noindex, nofollow">
+  <style>
+    :root {
+      --mb-bg: #000000;
+      --mb-surface: rgba(12, 12, 12, 0.94);
+      --mb-border: rgba(255, 242, 2, 0.22);
+      --mb-text: #f5f5f5;
+      --mb-muted: rgba(245, 245, 245, 0.72);
+      --mb-accent: #fff202;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      min-height: 100%;
+      font-family: "Inter", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: var(--mb-text);
+      background: var(--mb-bg);
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right)) max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+    }
+
+    .offline-shell {
+      width: min(420px, 100%);
+      text-align: center;
+      animation: madOfflineFade 0.45s ease;
+    }
+
+    @keyframes madOfflineFade {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .offline-logo {
+      width: min(160px, 52vw);
+      height: auto;
+      margin: 0 auto 1.35rem;
+      filter: drop-shadow(0 0 18px rgba(255, 242, 2, 0.18));
+    }
+
+    h1 {
+      margin: 0 0 0.65rem;
+      font-size: clamp(1.35rem, 4.2vw, 1.75rem);
+      line-height: 1.25;
+      letter-spacing: -0.01em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--mb-muted);
+      line-height: 1.55;
+      font-size: 0.95rem;
+    }
+
+    .offline-actions {
+      margin-top: 1.45rem;
+      display: grid;
+      gap: 0.65rem;
+      justify-items: center;
+    }
+
+    .offline-retry {
+      appearance: none;
+      border: 0;
+      cursor: pointer;
+      min-height: 48px;
+      min-width: 168px;
+      padding: 0.72rem 1.35rem;
+      border-radius: 999px;
+      font-weight: 800;
+      font-size: 0.92rem;
+      letter-spacing: 0.02em;
+      color: #050505;
+      background: linear-gradient(180deg, #fff33e, var(--mb-accent));
+      box-shadow: 0 10px 28px rgba(255, 242, 2, 0.22);
+    }
+
+    .offline-retry:active {
+      transform: scale(0.98);
+      opacity: 0.92;
+    }
+
+    .offline-status {
+      font-size: 0.78rem;
+      color: rgba(255, 242, 2, 0.75);
+      min-height: 1.1rem;
+    }
+
+    .offline-links {
+      margin-top: 1.1rem;
+      display: grid;
+      gap: 0.45rem;
+      text-align: left;
+    }
+
+    .offline-links a {
+      color: var(--mb-text);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      padding: 0.55rem 0.7rem;
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .offline-links strong {
+      display: block;
+      font-size: 0.88rem;
+    }
+
+    .offline-links span {
+      display: block;
+      margin-top: 0.1rem;
+      color: var(--mb-muted);
+      font-size: 0.78rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="offline-shell">
+    <img class="offline-logo" src="/wp-content/themes/mad-baits/assets/img/CUP-LOGOv2-1.svg" alt="Mad Baits">
+    <h1>You&rsquo;re offline</h1>
+    <p>Check your connection and try again. Your basket and account are waiting when you&rsquo;re back online.</p>
+    <div class="offline-actions">
+      <button type="button" class="offline-retry" id="offline-retry">Try again</button>
+      <p class="offline-status" id="offline-status" aria-live="polite"></p>
+    </div>
+    <div class="offline-links" id="offline-links" hidden></div>
+  </main>
+  <script>
+    (function () {
+      var retryBtn = document.getElementById("offline-retry");
+      var statusEl = document.getElementById("offline-status");
+
+      function setStatus(text) {
+        if (statusEl) {
+          statusEl.textContent = text || "";
+        }
+      }
+
+      function tryReconnect() {
+        if (navigator.onLine) {
+          setStatus("Back online — reloading…");
+          window.location.reload();
+          return;
+        }
+        setStatus("Still offline. Check Wi‑Fi or mobile data.");
+      }
+
+      if (retryBtn) {
+        retryBtn.addEventListener("click", tryReconnect);
+      }
+
+      window.addEventListener("online", tryReconnect);
+
+      try {
+        var items = JSON.parse(localStorage.getItem("madBaitsRecentlyViewed") || "[]");
+        if (!Array.isArray(items) || !items.length) {
+          return;
+        }
+        var wrap = document.getElementById("offline-links");
+        if (!wrap) {
+          return;
+        }
+        wrap.hidden = false;
+        items.slice(0, 3).forEach(function (item) {
+          if (!item || !item.url) {
+            return;
+          }
+          var a = document.createElement("a");
+          a.href = item.url;
+          a.innerHTML =
+            "<strong>" +
+            (item.name || "Recently viewed") +
+            "</strong><span>" +
+            (item.price || "Open when connection returns") +
+            "</span>";
+          wrap.appendChild(a);
+        });
+      } catch (_err) {}
+    })();
+  </script>
+</body>
+</html>

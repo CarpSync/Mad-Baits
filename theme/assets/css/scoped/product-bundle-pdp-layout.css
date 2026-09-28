@@ -1,0 +1,374 @@
+/**
+ * Bundle builder PDP only — isolates theme from standard single-product polish.
+ * Loads only on body.mad-bundle-builder-pdp / body.mbbb-product.
+ * Builder UI remains in mad-baits-bundle-builder plugin CSS.
+ */
+
+/* -------------------------------------------------------------------------
+   Reset theme .mad-pdp-product “card shell” (product.css) on bundle pages
+   ------------------------------------------------------------------------- */
+body.mad-bundle-builder-pdp.single-product div.product.mad-pdp-product,
+body.mbbb-product.mad-bundle-builder-pdp.single-product div.product.mad-pdp-product,
+body.mbbb-product.single-product .woocommerce .mad-pdp-product {
+  display: grid !important;
+  float: none !important;
+  width: 100% !important;
+  max-width: 1280px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  align-items: start !important;
+  clear: both !important;
+  box-sizing: border-box !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.mbbb-product.single-product div.product.mad-pdp-product::before,
+body.mbbb-product.single-product div.product.mad-pdp-product::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.mbbb-product.single-product div.product.mad-pdp-product > .woocommerce-tabs,
+body.mbbb-product.single-product div.product.mad-pdp-product > .mad-session-upsell,
+body.mbbb-product.single-product div.product.mad-pdp-product > .mad-pdp-module,
+body.mbbb-product.single-product div.product.mad-pdp-product > section,
+body.mbbb-product.single-product div.product.mad-pdp-product > .related,
+body.mbbb-product.single-product div.product.mad-pdp-product > .up-sells {
+  grid-column: 1 / -1 !important;
+  width: 100% !important;
+  max-width: 1280px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  float: none !important;
+  position: relative !important;
+  inset: auto !important;
+  transform: none !important;
+}
+
+/* Undo standard summary “glass card” */
+body.mbbb-product.single-product div.product.mad-pdp-product > .summary.entry-summary,
+body.mbbb-product.single-product .woocommerce .mad-pdp-product > .summary.entry-summary {
+  float: none !important;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+body.mbbb-product.single-product .woocommerce .mad-pdp-product form.cart {
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+body.mbbb-product.single-product .woocommerce .mad-pdp-product form.cart .mad-pdp-express {
+  display: none !important;
+}
+
+/* Bundle PDPs with a single Description tab — hide redundant pill nav */
+body.mbbb-product.single-product.mad-bundle-product-page .woocommerce-tabs ul.tabs:has(> li:only-child),
+body.mbbb-product.single-product.mad-bundle-builder-pdp .woocommerce-tabs ul.tabs:has(> li:only-child) {
+  display: none !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page .woocommerce-tabs .woocommerce-Tabs-panel,
+body.mbbb-product.single-product.mad-bundle-builder-pdp .woocommerce-tabs .woocommerce-Tabs-panel {
+  display: block !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page .woocommerce-tabs .panel,
+body.mbbb-product.single-product.mad-bundle-builder-pdp .woocommerce-tabs .panel {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page .woocommerce-tabs .woocommerce-Tabs-panel > h2:first-child,
+body.mbbb-product.single-product.mad-bundle-builder-pdp .woocommerce-tabs .woocommerce-Tabs-panel > h2:first-child {
+  font-size: clamp(1.15rem, 4vw, 1.45rem);
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 242, 2, 0.2);
+  color: #fff;
+}
+
+/* Gallery — no tiny image in tall 1:1 frame */
+body.mbbb-product.single-product .woocommerce .mad-pdp-product > .woocommerce-product-gallery,
+body.mbbb-product.single-product .woocommerce .mad-pdp-product > .images,
+body.mbbb-product.single-product div.product.mad-pdp-product > .woocommerce-product-gallery,
+body.mbbb-product.single-product div.product.mad-pdp-product > .images {
+  float: none !important;
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: clamp(1rem, 1.5vw, 1.35rem) !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255, 255, 255, 0.11) !important;
+  background:
+    radial-gradient(circle at 12% 10%, rgba(255, 242, 2, 0.09), transparent 44%),
+    linear-gradient(180deg, #141414, #090909) !important;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.35) !important;
+  box-sizing: border-box !important;
+  position: static !important;
+  top: auto !important;
+  align-self: auto !important;
+}
+
+body.mbbb-product.single-product .woocommerce .mad-pdp-product:not(.mad-bundle-product-template) .woocommerce-product-gallery__image a,
+body.mbbb-product.single-product div.product.mad-pdp-product:not(.mad-bundle-product-template) .woocommerce-product-gallery__image a,
+body.mbbb-product.single-product div.product.mad-pdp-product:not(.mad-bundle-product-template) div.images .woocommerce-product-gallery__image a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100% !important;
+  min-height: clamp(400px, 38vw, 560px) !important;
+  max-height: min(600px, 62vh) !important;
+  aspect-ratio: auto !important;
+  background: linear-gradient(180deg, #151515, #0b0b0b) !important;
+  box-sizing: border-box !important;
+}
+
+body.mbbb-product.single-product .woocommerce .mad-pdp-product:not(.mad-bundle-product-template) .woocommerce-product-gallery__image img,
+body.mbbb-product.single-product div.product.mad-pdp-product:not(.mad-bundle-product-template) .woocommerce-product-gallery__image img,
+body.mbbb-product.single-product .woocommerce div.product:not(.mad-bundle-product-template) div.images .woocommerce-product-gallery__image img {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: min(540px, 58vh) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+}
+
+/* Dedicated bundle template — gallery height follows image, no tall empty frame */
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__hero {
+  min-height: 0 !important;
+  align-items: start !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media .woocommerce-product-gallery__wrapper,
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media .woocommerce-product-gallery__image {
+  height: auto !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media .woocommerce-product-gallery__image a,
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media div.images .woocommerce-product-gallery__image a {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  height: auto !important;
+  aspect-ratio: auto !important;
+  background: transparent !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media .woocommerce-product-gallery__image img.wp-post-image,
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media div.images .woocommerce-product-gallery__image img.wp-post-image {
+  position: static !important;
+  width: auto !important;
+  height: auto !important;
+  max-width: 100% !important;
+  max-height: clamp(200px, 32vw, 380px) !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+}
+
+body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media .woocommerce-product-gallery__image .zoomImg {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 767px) {
+  body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media .woocommerce-product-gallery__image img.wp-post-image,
+  body.mbbb-product.single-product.mad-bundle-product-page div.mad-bundle-product-template.mad-pdp-product .mad-bundle-product-template__media div.images .woocommerce-product-gallery__image img.wp-post-image {
+    max-height: min(42vw, 210px) !important;
+  }
+}
+
+/* Bundle session cards — always show full product image, no zoom/crop */
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card__image-link,
+body.mbbb-product.single-product .mad-session-upsell__grid .mad-product-card__image-link,
+body.mbbb-product.single-product .mad-session-upsell ul.products .mad-product-card__image-link {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  aspect-ratio: 1 / 1 !important;
+  min-height: 190px !important;
+  overflow: hidden !important;
+  padding: 14px !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card__image-link .mad-product-card__image,
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card__image-link > img.mad-product-card__image,
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card__image-link > img {
+  position: static !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  transform: none !important;
+  transition: none !important;
+}
+
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card:hover .mad-product-card__image-link .mad-product-card__image,
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card:hover .mad-product-card__image-link > img.mad-product-card__image,
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card:focus-within .mad-product-card__image-link .mad-product-card__image,
+body.mbbb-product.single-product .mad-session-upsell .mad-product-card:focus-within .mad-product-card__image-link > img.mad-product-card__image {
+  transform: none !important;
+}
+
+/* -------------------------------------------------------------------------
+   Desktop bundle grid (gallery + hero top, builder full width below)
+   ------------------------------------------------------------------------- */
+@media (min-width: 1024px) {
+  body.mbbb-product.single-product div.product.mad-pdp-product,
+  body.mbbb-product.mad-bundle-builder-pdp.single-product div.product.mad-pdp-product,
+  body.mbbb-product.single-product.woocommerce div.product.mad-pdp-product {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    grid-template-areas:
+      "mbbb-gallery mbbb-hero"
+      "mbbb-builder mbbb-builder" !important;
+    column-gap: clamp(2rem, 4vw, 3.5rem) !important;
+    row-gap: clamp(1.75rem, 3vw, 2.75rem) !important;
+    padding: 0 clamp(1.25rem, 2.5vw, 2rem) clamp(2rem, 3vw, 3rem) !important;
+    max-width: 1280px !important;
+  }
+
+  body.mbbb-product.single-product div.product.mad-pdp-product > .woocommerce-product-gallery,
+  body.mbbb-product.single-product div.product.mad-pdp-product > .images,
+  body.mbbb-product.single-product div.product.mad-pdp-product > div.images {
+    grid-area: mbbb-gallery !important;
+    grid-column: auto !important;
+    grid-row: auto !important;
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  body.mbbb-product.single-product div.product.mad-pdp-product > .summary.entry-summary {
+    display: contents !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    width: auto !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  body.mbbb-product.single-product .mad-pdp-summary-inner {
+    grid-area: mbbb-hero !important;
+    max-width: none !important;
+    width: 100% !important;
+    justify-self: stretch !important;
+    min-width: 0 !important;
+    padding: clamp(1.75rem, 2.2vw, 2.25rem) !important;
+    border-radius: 24px !important;
+    border: 1px solid rgba(255, 242, 2, 0.22) !important;
+    background:
+      radial-gradient(circle at 100% 0%, rgba(255, 242, 2, 0.08), transparent 42%),
+      linear-gradient(168deg, rgba(20, 20, 20, 0.98), rgba(8, 8, 8, 0.98)) !important;
+    box-shadow:
+      0 0 0 1px rgba(255, 242, 2, 0.06),
+      0 24px 48px rgba(0, 0, 0, 0.42) !important;
+    box-sizing: border-box !important;
+  }
+
+  body.mbbb-product.single-product form.variations_form.cart,
+  body.mbbb-product.single-product div.product.mad-pdp-product form.cart.variations_form {
+    grid-area: mbbb-builder !important;
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    max-width: min(1280px, 100%) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+
+  body.mbbb-product.single-product div.product.mad-pdp-product form.cart .variations,
+  body.mbbb-product.single-product div.product.mad-pdp-product form.cart table.variations,
+  body.mbbb-product.single-product div.product.mad-pdp-product form.cart .reset_variations {
+    display: none !important;
+  }
+
+  body.mbbb-product.single-product div.product.mad-pdp-product .woocommerce-variation-add-to-cart {
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
+  body.mbbb-product.mbbb-builder-style-step.single-product .mbbb-slot .mbbb-slot__body,
+  body.mbbb-product.mbbb-builder-style-step.single-product .mbbb-slot:not(.is-active) .mbbb-slot__body {
+    display: block !important;
+  }
+
+  body.mbbb-product.mbbb-builder-style-step.single-product .mbbb-slot .mbbb-slot__body[hidden] {
+    display: block !important;
+  }
+
+  body.mbbb-product.single-product .mbbb-select {
+    display: none !important;
+  }
+}
+
+@media (max-width: 1023px) {
+  body.mbbb-product.single-product div.product.mad-pdp-product,
+  body.mbbb-product.mad-bundle-builder-pdp.single-product div.product.mad-pdp-product {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    grid-template-areas: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0.45rem max(clamp(0.62rem, 3.2vw, 0.9rem), env(safe-area-inset-right)) 0.7rem max(clamp(0.62rem, 3.2vw, 0.9rem), env(safe-area-inset-left)) !important;
+    overflow-x: clip !important;
+  }
+
+  body.mbbb-product.single-product div.product.mad-pdp-product > .summary.entry-summary {
+    min-width: 0 !important;
+    max-width: 100% !important;
+    display: block !important;
+  }
+
+  body.mbbb-product.single-product .mad-pdp-summary-inner {
+    padding: clamp(1.1rem, 3vw, 1.35rem) !important;
+  }
+}
+
+/* Final bundle container calibration — keep configurator inside centered shell */
+@media (min-width: 1024px) {
+  body.mbbb-product.single-product .section--product-flow > .container.mad-product-page,
+  body.mbbb-product.single-product .mad-product-page {
+    width: min(100%, calc(100vw - 40px)) !important;
+    max-width: 1720px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    padding-left: clamp(14px, 1.8vw, 28px) !important;
+    padding-right: clamp(14px, 1.8vw, 28px) !important;
+    box-sizing: border-box !important;
+  }
+
+  body.mbbb-product.single-product div.product.mad-pdp-product,
+  body.mbbb-product.mad-bundle-builder-pdp.single-product div.product.mad-pdp-product {
+    max-width: 1720px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+    overflow-x: hidden !important;
+  }
+}

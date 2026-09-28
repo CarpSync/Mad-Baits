@@ -1,0 +1,278 @@
+.water-finder-page {
+  --wf-bg: #060606;
+  --wf-panel: #121212;
+  --wf-panel-2: #181818;
+  --wf-text: #f7f7f7;
+  --wf-muted: #b2b2b2;
+  --wf-yellow: #fff202;
+  --wf-border: rgba(255, 255, 255, 0.12);
+  background:
+    radial-gradient(circle at 84% 8%, rgba(255, 242, 2, 0.14), transparent 38%),
+    linear-gradient(180deg, #080808 0%, #060606 100%);
+  color: var(--wf-text);
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+.water-finder-page .container {
+  max-width: 980px;
+}
+
+.water-finder-page__hero {
+  padding: clamp(1.25rem, 4vw, 2rem) 0 1rem;
+}
+
+.water-finder-page__kicker {
+  margin: 0 0 0.45rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--wf-yellow);
+}
+
+.water-finder-page h1 {
+  margin: 0;
+  font-size: clamp(1.9rem, 7vw, 2.8rem);
+  line-height: 1.08;
+}
+
+.water-finder-page__hero p {
+  margin: 0.8rem 0 0;
+  max-width: 52ch;
+  color: var(--wf-muted);
+}
+
+.water-finder-page__start {
+  margin-top: 0.95rem;
+}
+
+.water-finder-page__shell {
+  padding-bottom: calc(var(--mad-mobile-nav-height, 86px) + 3.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+.water-finder-page__progress {
+  height: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+  margin-bottom: 1rem;
+}
+
+.water-finder-page__progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, #fff202, #ffe663);
+  box-shadow: 0 0 16px rgba(255, 242, 2, 0.35);
+  transition: width 0.28s ease;
+}
+
+.water-finder-page__quiz,
+.water-finder-page__result,
+.water-finder-page__fallback,
+.water-finder-page__noscript {
+  border: 1px solid var(--wf-border);
+  border-radius: 16px;
+  background: linear-gradient(165deg, rgba(20, 20, 20, 0.98), rgba(9, 9, 9, 0.98));
+  box-shadow: 0 18px 44px rgba(0, 0, 0, 0.42);
+  padding: clamp(0.9rem, 2.8vw, 1.3rem);
+}
+
+.water-finder-page__fallback {
+  margin-top: 0.85rem;
+}
+
+.water-finder-page__fallback h2,
+.water-finder-page__noscript h2 {
+  margin-top: 0;
+  font-size: 1.05rem;
+}
+
+.water-finder-page__fallback ol,
+.water-finder-page__noscript ol {
+  margin: 0.65rem 0 0.85rem;
+  padding-left: 1.1rem;
+  color: var(--wf-muted);
+}
+
+.water-finder-page__fallback p,
+.water-finder-page__noscript p {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.water-finder-page__question-head p {
+  margin: 0;
+  font-size: 0.76rem;
+  color: var(--wf-yellow);
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  font-weight: 800;
+}
+
+.water-finder-page__question-head h2 {
+  margin: 0.35rem 0 0.2rem;
+  font-size: clamp(1.1rem, 4.8vw, 1.55rem);
+  line-height: 1.24;
+}
+
+.water-finder-page__options {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+  margin-top: 0.8rem;
+}
+
+.water-finder-page__option {
+  width: 100%;
+  max-width: 100%;
+  min-height: 54px;
+  padding: 0.72rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: var(--wf-panel);
+  color: var(--wf-text);
+  font: inherit;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease, transform 0.1s ease;
+}
+
+.water-finder-page__option.is-selected {
+  border-color: rgba(255, 242, 2, 0.7);
+  background: rgba(255, 242, 2, 0.08);
+  box-shadow: 0 0 0 1px rgba(255, 242, 2, 0.28), 0 0 18px rgba(255, 242, 2, 0.14);
+}
+
+.water-finder-page__option:active {
+  transform: scale(0.99);
+}
+
+.water-finder-page__result-head p {
+  margin: 0;
+  color: var(--wf-yellow);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 800;
+}
+
+.water-finder-page__result-head h2 {
+  margin: 0.3rem 0 0.7rem;
+  font-size: clamp(1.12rem, 4.5vw, 1.5rem);
+}
+
+.water-finder-page__result-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.water-finder-page__recommendation {
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 12px;
+  background: var(--wf-panel-2);
+  padding: 0.62rem 0.72rem;
+}
+
+.water-finder-page__recommendation strong {
+  display: block;
+  font-size: 0.74rem;
+  color: var(--wf-muted);
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.water-finder-page__recommendation span {
+  display: block;
+  color: var(--wf-yellow);
+  font-weight: 800;
+}
+
+.water-finder-page__products {
+  margin-top: 0.9rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.6rem;
+}
+
+.water-finder-page__product {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  gap: 0.65rem;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: var(--wf-panel);
+  padding: 0.6rem;
+}
+
+.water-finder-page__product img {
+  width: 64px;
+  height: 64px;
+  object-fit: cover;
+  border-radius: 10px;
+}
+
+.water-finder-page__product h3 {
+  margin: 0 0 0.2rem;
+  font-size: 0.9rem;
+  line-height: 1.25;
+}
+
+.water-finder-page__product-price {
+  margin: 0 0 0.45rem;
+  color: var(--wf-yellow);
+  font-weight: 800;
+  font-size: 0.84rem;
+}
+
+.water-finder-page__result-actions {
+  margin-top: 0.95rem;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
+.water-finder-page__floating {
+  position: sticky;
+  bottom: calc(var(--mad-mobile-nav-height, 86px) + env(safe-area-inset-bottom, 0px) + 18px);
+  z-index: 15;
+  margin-top: 0.85rem;
+}
+
+.water-finder-page__floating button {
+  width: 100%;
+}
+
+@media (min-width: 769px) {
+  .water-finder-page__options {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .water-finder-page__result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .water-finder-page__products {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .water-finder-page__shell {
+    padding-bottom: 2.2rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .water-finder-page__option,
+  .water-finder-page__progress span {
+    transition: none;
+  }
+}

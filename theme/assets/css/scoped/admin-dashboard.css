@@ -1,0 +1,304 @@
+/**
+ * Mad Baits branded wp-admin dashboard
+ */
+
+body.mad-baits-dashboard #wpbody-content #dashboard-widgets .postbox:not([id^="mad_baits_dashboard_"]) {
+  display: none;
+}
+
+body.mad-baits-dashboard #welcome-panel {
+  display: none !important;
+}
+
+body.mad-baits-dashboard #screen-meta-links {
+  margin-bottom: 0;
+}
+
+body.mad-baits-dashboard #dashboard-widgets .postbox[id^="mad_baits_dashboard_"] {
+  border: 1px solid #2b2b2b;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+  overflow: hidden;
+}
+
+body.mad-baits-dashboard #dashboard-widgets .postbox[id^="mad_baits_dashboard_"] > .postbox-header {
+  background: linear-gradient(135deg, #111 0%, #1a1a1a 100%);
+  border-bottom: 1px solid #2b2b2b;
+}
+
+body.mad-baits-dashboard #dashboard-widgets .postbox[id^="mad_baits_dashboard_"] > .postbox-header h2 {
+  color: #f5f5f5;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+body.mad-baits-dashboard #dashboard-widgets .postbox[id^="mad_baits_dashboard_"] > .inside {
+  margin: 0;
+  padding: 0;
+}
+
+body.mad-baits-dashboard #mad_baits_dashboard_welcome > .postbox-header h2 {
+  font-size: 0;
+  line-height: 0;
+}
+
+body.mad-baits-dashboard #mad_baits_dashboard_welcome > .postbox-header h2::before {
+  content: "Mad Baits";
+  font-size: 14px;
+  line-height: 1.4;
+  color: #fff202;
+}
+
+.mb-admin-dash {
+  --mb-bg: #0a0a0a;
+  --mb-surface: #141414;
+  --mb-border: #2b2b2b;
+  --mb-text: #f5f5f5;
+  --mb-muted: #b2b2b2;
+  --mb-accent: #fff202;
+  --mb-accent-soft: rgba(255, 242, 2, 0.12);
+  padding: 1.1rem 1.25rem 1.25rem;
+  background: var(--mb-surface);
+  color: var(--mb-text);
+}
+
+.mb-admin-dash--welcome {
+  background:
+    radial-gradient(circle at 8% 0%, rgba(255, 242, 2, 0.1), transparent 38%),
+    linear-gradient(165deg, #121212 0%, #0a0a0a 100%);
+}
+
+.mb-admin-dash__logo {
+  display: block;
+  max-height: 52px;
+  width: auto;
+  margin-bottom: 0.85rem;
+}
+
+.mb-admin-dash__lead {
+  margin: 0 0 0.35rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--mb-text);
+}
+
+.mb-admin-dash__muted {
+  margin: 0 0 1rem;
+  color: var(--mb-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.mb-admin-dash__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.55rem;
+}
+
+.mb-admin-dash__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0.45rem 0.95rem;
+  border-radius: 999px;
+  border: 1px solid var(--mb-border);
+  color: var(--mb-text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.88rem;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.mb-admin-dash__btn:hover,
+.mb-admin-dash__btn:focus {
+  border-color: var(--mb-accent);
+  color: var(--mb-accent);
+}
+
+.mb-admin-dash__btn--primary {
+  background: var(--mb-accent);
+  border-color: var(--mb-accent);
+  color: #111;
+}
+
+.mb-admin-dash__btn--primary:hover,
+.mb-admin-dash__btn--primary:focus {
+  background: #fff76a;
+  border-color: #fff76a;
+  color: #111;
+}
+
+.mb-admin-dash__stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.75rem;
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.mb-admin-dash__stats li {
+  background: var(--mb-bg);
+  border: 1px solid var(--mb-border);
+  border-radius: 10px;
+  padding: 0.75rem 0.65rem;
+  text-align: center;
+}
+
+.mb-admin-dash__stat-value {
+  display: block;
+  font-size: 1.55rem;
+  font-weight: 800;
+  line-height: 1.1;
+  color: var(--mb-accent);
+}
+
+.mb-admin-dash__stat-label {
+  display: block;
+  margin-top: 0.25rem;
+  font-size: 0.78rem;
+  color: var(--mb-muted);
+}
+
+.mb-admin-dash__notice {
+  margin: 0 0 0.85rem;
+  padding: 0.55rem 0.7rem;
+  border-radius: 8px;
+  background: var(--mb-accent-soft);
+  border: 1px solid rgba(255, 242, 2, 0.35);
+  color: var(--mb-text);
+  font-size: 0.88rem;
+}
+
+.mb-admin-dash__links a {
+  color: var(--mb-accent);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.mb-admin-dash__links a:hover,
+.mb-admin-dash__links a:focus {
+  text-decoration: underline;
+}
+
+.mb-admin-dash__shortcut-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mb-admin-dash__shortcut {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  color: var(--mb-text);
+  text-decoration: none;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.mb-admin-dash__shortcut .dashicons {
+  color: var(--mb-accent);
+  width: 18px;
+  height: 18px;
+  font-size: 18px;
+}
+
+.mb-admin-dash__shortcut:hover,
+.mb-admin-dash__shortcut:focus {
+  background: var(--mb-bg);
+  border-color: var(--mb-border);
+  color: var(--mb-accent);
+}
+
+.mb-admin-dash__shortcut-label {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mb-admin-dash__content-stats {
+  margin: 0 0 1rem;
+  padding: 0;
+  list-style: none;
+}
+
+.mb-admin-dash__content-stats li {
+  margin-bottom: 0.55rem;
+  font-size: 0.92rem;
+  color: var(--mb-muted);
+}
+
+.mb-admin-dash__content-stats strong {
+  color: var(--mb-accent);
+  margin-right: 0.35rem;
+}
+
+.mb-admin-dash__badge {
+  display: inline-block;
+  margin-left: 0.45rem;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--mb-accent-soft);
+  color: var(--mb-accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.mb-admin-dash__subhead {
+  margin: 0 0 0.55rem;
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--mb-muted);
+}
+
+.mb-admin-dash__event-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mb-admin-dash__event-list li {
+  padding: 0.45rem 0;
+  border-top: 1px solid var(--mb-border);
+}
+
+.mb-admin-dash__event-list li:first-child {
+  border-top: 0;
+  padding-top: 0;
+}
+
+.mb-admin-dash__event-list a {
+  color: var(--mb-text);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.mb-admin-dash__event-list a:hover,
+.mb-admin-dash__event-list a:focus {
+  color: var(--mb-accent);
+}
+
+.mb-admin-dash__event-date {
+  display: block;
+  margin-top: 0.15rem;
+  font-size: 0.82rem;
+  color: var(--mb-muted);
+}
+
+@media (min-width: 1200px) {
+  body.mad-baits-dashboard #dashboard-widgets #postbox-container-1 {
+    width: 34%;
+  }
+
+  body.mad-baits-dashboard #dashboard-widgets #postbox-container-2 {
+    width: 66%;
+  }
+}

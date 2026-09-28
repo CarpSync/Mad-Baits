@@ -1,0 +1,19 @@
+# Mad Baits — Redirection plugin import (backup if theme redirects are disabled)
+# Source → Target (301)
+
+/product-category/deals/ /product-category/bundles-deals/
+/product-category/accesories/ /product-category/accessories/
+/product-category/bundles/ /product-category/bundles-deals/
+/product-category/bundle-deals/ /product-category/bundles-deals/
+/product-category/bundle-offers/ /product-category/bundles-deals/
+/product-category/asbo/ /product-tag/asbo/
+/product-category/pandemic/ /product-tag/pandemic/
+/product-category/p-fish/ /product-tag/p-fish-2/
+/product-category/p-fish-2/ /product-tag/p-fish-2/
+/product-category/nutz-plus/ /product-tag/nutz-plus/
+/product-category/nutz-banana/ /product-tag/nutz-banana/
+/product-category/wicked-white/ /product-tag/wicked-white/
+/product-category/bbb/ /product-tag/bbb/
+/product-category/calamino/ /product-tag/calamino/
+/product-category/compulsive/ /product-tag/compulsive-angler/
+/product-category/compulsive-angler/ /product-tag/compulsive-angler/

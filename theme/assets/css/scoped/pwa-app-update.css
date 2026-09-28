@@ -1,0 +1,162 @@
+/**
+ * PWA app update modal — full-screen prompt for installed app users.
+ */
+
+.mad-pwa-update-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10200;
+  display: grid;
+  place-items: center;
+  padding: max(1rem, env(safe-area-inset-top)) max(1rem, env(safe-area-inset-right))
+    max(1rem, env(safe-area-inset-bottom)) max(1rem, env(safe-area-inset-left));
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.24s ease;
+}
+
+.mad-pwa-update-modal.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mad-pwa-update-modal[hidden] {
+  display: none;
+}
+
+.mad-pwa-update-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: rgba(0, 0, 0, 0.72);
+  cursor: pointer;
+}
+
+.mad-pwa-update-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(420px, 100%);
+  max-height: min(88vh, 640px);
+  overflow: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background:
+    radial-gradient(circle at 84% 8%, rgba(255, 242, 2, 0.16), transparent 42%),
+    linear-gradient(155deg, rgba(14, 14, 14, 0.98), rgba(8, 8, 8, 0.96));
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55);
+  padding: 1.15rem 1.1rem 1.05rem;
+  display: grid;
+  gap: 0.75rem;
+  transform: translateY(10px);
+  transition: transform 0.24s ease;
+}
+
+.mad-pwa-update-modal.is-visible .mad-pwa-update-modal__panel {
+  transform: translateY(0);
+}
+
+.mad-pwa-update-modal__eyebrow {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 242, 2, 0.82);
+}
+
+.mad-pwa-update-modal__title {
+  margin: 0;
+  font-size: clamp(1.15rem, 4.5vw, 1.35rem);
+  line-height: 1.25;
+  color: #fff9be;
+}
+
+.mad-pwa-update-modal__lead {
+  margin: 0;
+  color: rgba(240, 240, 240, 0.9);
+  line-height: 1.5;
+  font-size: 0.92rem;
+}
+
+.mad-pwa-update-modal__steps {
+  margin: 0;
+  padding-left: 1.15rem;
+  color: rgba(235, 235, 235, 0.88);
+  font-size: 0.88rem;
+  line-height: 1.45;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.mad-pwa-update-modal__version {
+  margin: 0;
+  padding: 0.5rem 0.62rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 242, 2, 0.22);
+  background: rgba(255, 242, 2, 0.06);
+  color: rgba(255, 248, 190, 0.95);
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.mad-pwa-update-modal .mad-pwa-update__actions {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 0.15rem;
+}
+
+body.mad-pwa-update-open {
+  overflow: hidden;
+}
+
+@media (min-width: 481px) {
+  .mad-pwa-update-modal .mad-pwa-update__actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Legacy toast positioning (fallback if main.js toast is used) */
+@media (max-width: 768px) {
+  .mad-app-update-toast.mad-pwa-update {
+    top: auto;
+    bottom: calc(var(--mad-mobile-nav-height, 86px) + env(safe-area-inset-bottom, 0px) + 118px);
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%) translateY(12px);
+    width: min(420px, calc(100vw - 1rem));
+    z-index: 10150;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease;
+    display: grid;
+    gap: 0.55rem;
+    padding: 0.72rem 0.82rem;
+  }
+
+  .mad-app-update-toast.mad-pwa-update.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  body.mbbb-sticky-active .mad-app-update-toast.mad-pwa-update {
+    bottom: calc(var(--mad-mobile-nav-height, 86px) + env(safe-area-inset-bottom, 0px) + 168px);
+  }
+
+  body.is-standalone-app .mad-app-update-toast.mad-pwa-update,
+  html.is-standalone-app .mad-app-update-toast.mad-pwa-update {
+    bottom: calc(var(--mad-mobile-nav-height, 86px) + env(safe-area-inset-bottom, 0px) + 122px);
+  }
+
+  body.is-standalone-app.mbbb-sticky-active .mad-app-update-toast.mad-pwa-update {
+    bottom: calc(var(--mad-mobile-nav-height, 86px) + env(safe-area-inset-bottom, 0px) + 172px);
+  }
+}
+
+@media (min-width: 769px) {
+  .mad-app-update-toast.mad-pwa-update {
+    top: max(1rem, env(safe-area-inset-top));
+    bottom: auto;
+  }
+}
