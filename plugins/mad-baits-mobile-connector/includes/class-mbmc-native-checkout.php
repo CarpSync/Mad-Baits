@@ -31,14 +31,59 @@ class MBMC_Native_Checkout {
 		$currency = function_exists( 'get_woocommerce_currency' ) ? get_woocommerce_currency() : 'GBP';
 
 		return array(
-			'nativeCheckoutEnabled' => null !== $keys,
-			'paymentProvider'       => null !== $keys ? 'stripe' : null,
-			'stripePublishableKey'  => $keys ? $keys['publishable'] : null,
-			'currency'              => $currency,
-			'defaultCountry'        => 'GB',
-			'merchantDisplayName'   => 'Mad Baits',
+			'nativeCheckoutEnabled'   => null !== $keys,
+			'paymentProvider'         => null !== $keys ? 'stripe' : null,
+			'stripePublishableKey'    => $keys ? $keys['publishable'] : null,
+			'currency'                => $currency,
+			'defaultCountry'          => 'GB',
+			'merchantDisplayName'     => 'Mad Baits',
 			'supportedPaymentMethods' => array( 'card', 'apple_pay', 'klarna', 'paypal' ),
+			// Base thank-you URL pattern (order-specific returnUrl is returned from prepare).
+			'checkoutReturnUrl'       => self::get_checkout_return_url_base(),
 		);
+	}
+
+	/**
+	 * WooCommerce order-received URL base (no order id) for Stripe redirect flows.
+	 *
+	 * Matches WooCommerce Stripe gateway: checkout/order-received/?utm_nooverride=1
+	 *
+	 * @return string
+	 */
+	public static function get_checkout_return_url_base() {
+		if ( function_exists( 'wc_get_checkout_url' ) && function_exists( 'wc_get_endpoint_url' ) ) {
+			$url = wc_get_endpoint_url( 'order-received', '', wc_get_checkout_url() );
+		} else {
+			$url = home_url( '/checkout/order-received/' );
+		}
+
+		$url = add_query_arg( 'utm_nooverride', '1', $url );
+
+		/**
+		 * Filter the base Stripe return URL for native checkout (before order id is known).
+		 *
+		 * @param string $url Checkout order-received base URL.
+		 */
+		return apply_filters( 'mbmc_native_checkout_return_url_base', $url );
+	}
+
+	/**
+	 * Stripe return_url for a specific order (required for 3DS / Klarna / redirect methods).
+	 *
+	 * @param WC_Order $order Order.
+	 * @return string
+	 */
+	public static function get_payment_return_url( WC_Order $order ) {
+		$url = $order->get_checkout_order_received_url();
+		$url = add_query_arg( 'utm_nooverride', '1', $url );
+
+		/**
+		 * Filter the return URL passed to Stripe for native mobile checkout.
+		 *
+		 * @param string   $url   Return URL.
+		 * @param WC_Order $order Order.
+		 */
+		return apply_filters( 'mbmc_native_checkout_return_url', $url, $order );
 	}
 
 	/**
@@ -186,15 +231,16 @@ class MBMC_Native_Checkout {
 		$order->save();
 
 		return array(
-			'orderId'               => (string) $order->get_id(),
-			'orderNumber'           => (string) $order->get_order_number(),
-			'orderKey'              => (string) $order->get_order_key(),
-			'isGuest'               => $customer_id <= 0,
-			'paymentIntentId'       => $intent_id,
+			'orderId'                   => (string) $order->get_id(),
+			'orderNumber'               => (string) $order->get_order_number(),
+			'orderKey'                  => (string) $order->get_order_key(),
+			'isGuest'                   => $customer_id <= 0,
+			'paymentIntentId'           => $intent_id,
 			'paymentIntentClientSecret' => $client_secret,
-			'stripePublishableKey'  => $keys['publishable'],
-			'currency'              => $order->get_currency(),
-			'totals'                => self::map_order_totals( $order ),
+			'returnUrl'                 => self::get_payment_return_url( $order ),
+			'stripePublishableKey'      => $keys['publishable'],
+			'currency'                  => $order->get_currency(),
+			'totals'                    => self::map_order_totals( $order ),
 		);
 	}
 
@@ -204,12 +250,14 @@ class MBMC_Native_Checkout {
 	 * @param int    $order_id          Order ID.
 	 * @param string $order_key         Order key.
 	 * @param string $payment_intent_id Stripe PaymentIntent ID.
+	 * @param string $payment_method_id Optional Stripe PaymentMethod ID for server-side confirm.
 	 * @return array<string, mixed>|WP_Error
 	 */
-	public static function confirm( $order_id, $order_key, $payment_intent_id ) {
+	public static function confirm( $order_id, $order_key, $payment_intent_id, $payment_method_id = '' ) {
 		$order_id          = absint( $order_id );
 		$order_key         = sanitize_text_field( (string) $order_key );
 		$payment_intent_id = sanitize_text_field( (string) $payment_intent_id );
+		$payment_method_id = sanitize_text_field( (string) $payment_method_id );
 
 		if ( $order_id <= 0 || '' === $order_key || '' === $payment_intent_id ) {
 			return new WP_Error(
@@ -260,6 +308,21 @@ class MBMC_Native_Checkout {
 		}
 
 		$status = isset( $intent['status'] ) ? (string) $intent['status'] : '';
+
+		if ( 'succeeded' !== $status && '' !== $payment_method_id ) {
+			$confirm = self::stripe_confirm_payment_intent(
+				$keys['secret'],
+				$payment_intent_id,
+				self::get_payment_return_url( $order ),
+				$payment_method_id
+			);
+			if ( is_wp_error( $confirm ) ) {
+				return $confirm;
+			}
+			$intent = $confirm;
+			$status = isset( $intent['status'] ) ? (string) $intent['status'] : '';
+		}
+
 		if ( 'succeeded' !== $status ) {
 			return new WP_Error(
 				'mbmc_payment_not_complete',
@@ -444,6 +507,29 @@ class MBMC_Native_Checkout {
 	 */
 	private static function stripe_create_payment_intent( $secret_key, $body ) {
 		return self::stripe_request( $secret_key, 'POST', 'payment_intents', $body );
+	}
+
+	/**
+	 * Confirm a PaymentIntent on Stripe (server-side) with required return_url.
+	 *
+	 * @param string $secret_key        Secret key.
+	 * @param string $payment_intent_id PaymentIntent ID.
+	 * @param string $return_url        Redirect URL after authentication.
+	 * @param string $payment_method_id PaymentMethod ID.
+	 * @return array<string, mixed>|WP_Error
+	 */
+	private static function stripe_confirm_payment_intent( $secret_key, $payment_intent_id, $return_url, $payment_method_id ) {
+		$body = array(
+			'return_url'     => $return_url,
+			'payment_method' => $payment_method_id,
+		);
+
+		return self::stripe_request(
+			$secret_key,
+			'POST',
+			'payment_intents/' . rawurlencode( $payment_intent_id ) . '/confirm',
+			$body
+		);
 	}
 
 	/**
