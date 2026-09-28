@@ -1,0 +1,260 @@
+.mbpo-admin__debug {
+  margin: 1rem 0;
+  padding: 0.75rem 1rem;
+  max-width: 960px;
+}
+
+.mbpo-admin__range-counts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem 0.75rem;
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.mbpo-admin__range-counts li.is-active a {
+  font-weight: 700;
+}
+
+.mbpo-admin__range-empty {
+  color: #646970;
+}
+
+.mbpo-admin__toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.mbpo-admin__filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+}
+
+.mbpo-admin__filters label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.mbpo-admin__count {
+  margin: 0 0 0.75rem;
+}
+
+.mbpo-admin__empty {
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border-left: 4px solid #dba617;
+}
+
+.mbpo-admin__list {
+  margin: 0;
+  max-width: 820px;
+}
+
+.mbpo-admin__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 0 0.35rem;
+  padding: 0.55rem 0.7rem;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mbpo-admin__item.is-dragging {
+  cursor: grabbing;
+  opacity: 0.92;
+}
+
+.mbpo-admin__placeholder {
+  height: 52px;
+  margin-bottom: 0.35rem;
+  border: 2px dashed #2271b1;
+  background: #f0f6fc;
+  border-radius: 4px;
+}
+
+.mbpo-admin__handle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  background: #f6f7f7;
+  cursor: inherit;
+  touch-action: none;
+  user-select: none;
+}
+
+.mbpo-admin__handle:active {
+  cursor: grabbing;
+}
+
+.mbpo-admin__item.ui-sortable-helper {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.mbpo-admin__image img {
+  width: 40px;
+  height: 40px;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.mbpo-admin__meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.mbpo-admin__id {
+  color: #646970;
+  font-size: 12px;
+}
+
+.mbpo-admin__badge-wrap {
+  flex: 1 1 220px;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.mbpo-admin__badge {
+  align-self: flex-start;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid #c3c4c7;
+  background: #f0f6fc;
+  color: #135e96;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.mbpo-admin__reason {
+  color: #50575e;
+  font-size: 11px;
+  line-height: 1.35;
+}
+
+.mbpo-admin__section-debug ul {
+  margin: 0.35rem 0 0;
+  padding-left: 1.2rem;
+}
+
+.mbpo-admin__tag-cleanup {
+  margin: 1.25rem 0 1.5rem;
+  padding: 1rem 1.1rem;
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  max-width: 100%;
+}
+
+.mbpo-admin__tag-cleanup h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1em;
+}
+
+.mbpo-admin__tag-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin: 0.75rem 0;
+}
+
+.mbpo-admin__tag-table-wrap {
+  max-height: 420px;
+  overflow: auto;
+  border: 1px solid #dcdcde;
+}
+
+.mbpo-admin__tag-table td {
+  vertical-align: top;
+}
+
+.mbpo-admin__tag-remove {
+  color: #b32d2e;
+  font-weight: 600;
+}
+
+.mbpo-admin__show-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-weight: 600;
+}
+
+.mbpo-admin__bulk-assign {
+  margin: 1rem 0;
+  padding: 0.85rem 1rem;
+  background: #f6f7f7;
+  border: 1px solid #dcdcde;
+  border-radius: 4px;
+}
+
+.mbpo-admin__bulk-assign h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1em;
+}
+
+.mbpo-admin__bulk-assign-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 0.75rem 1rem;
+  margin-top: 0.65rem;
+}
+
+.mbpo-admin__bulk-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.mbpo-admin__tag-multiselect {
+  min-width: 280px;
+  max-width: 100%;
+}
+
+.mbpo-admin__tag-table .check-column {
+  width: 2.5rem;
+  vertical-align: middle;
+}
+
+.mbpo-admin__actions,
+.mbpo-admin__recalc {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.mbpo-admin__status {
+  font-weight: 600;
+}

@@ -1,0 +1,347 @@
+/* Mad Baits Team Access — black / yellow private UI */
+.mbta-invite,
+.mbta-portal,
+.mbta-private-denied__card {
+  --mbta-bg: #0a0a0a;
+  --mbta-surface: #141414;
+  --mbta-yellow: #f5d000;
+  --mbta-text: #f4f4f4;
+  --mbta-muted: #a8a8a8;
+  color: var(--mbta-text);
+}
+
+.mbta-invite {
+  max-width: 520px;
+  margin: 2.5rem auto;
+  padding: 2rem;
+  background: var(--mbta-surface);
+  border: 1px solid rgba(245, 208, 0, 0.25);
+  border-radius: 12px;
+}
+
+.mbta-invite__eyebrow,
+.mbta-portal__eyebrow,
+.mbta-private-denied__eyebrow {
+  color: var(--mbta-yellow);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 0.5rem;
+}
+
+.mbta-invite__error {
+  background: rgba(220, 50, 50, 0.15);
+  border-left: 3px solid #dc3232;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+}
+
+.mbta-field-row {
+  margin-bottom: 1rem;
+}
+
+.mbta-field-row label {
+  display: block;
+  margin-bottom: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.mbta-field-row input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border-radius: 8px;
+  border: 1px solid #333;
+  background: #0f0f0f;
+  color: var(--mbta-text);
+}
+
+.mbta-btn {
+  display: inline-block;
+  padding: 0.7rem 1.2rem;
+  border-radius: 999px;
+  border: 1px solid var(--mbta-yellow);
+  color: var(--mbta-yellow);
+  background: transparent;
+  text-decoration: none;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.mbta-btn--primary {
+  background: var(--mbta-yellow);
+  color: #111;
+  border-color: var(--mbta-yellow);
+}
+
+.mbta-portal {
+  margin: 2rem 0 4rem;
+}
+
+.mbta-portal__hero {
+  margin-bottom: 2rem;
+}
+
+.mbta-role-badge {
+  display: inline-block;
+  margin-top: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  background: var(--mbta-yellow);
+  color: #111;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.mbta-portal__grid {
+  display: grid;
+  gap: 1.5rem;
+  grid-template-columns: minmax(260px, 320px) 1fr;
+}
+
+@media (max-width: 768px) {
+  .mbta-portal__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mbta-portal__panel {
+  background: var(--mbta-surface);
+  border: 1px solid rgba(245, 208, 0, 0.2);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.mbta-portal__push-status {
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+  color: var(--mbta-muted);
+}
+
+.mbta-portal__products {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 1rem;
+}
+
+.mbta-portal__product a {
+  display: block;
+  background: var(--mbta-surface);
+  border: 1px solid #2a2a2a;
+  border-radius: 10px;
+  overflow: hidden;
+  color: var(--mbta-text);
+  text-decoration: none;
+}
+
+.mbta-portal__product-title,
+.mbta-portal__product-price {
+  display: block;
+  padding: 0.5rem 0.75rem;
+}
+
+.mbta-private-denied__card {
+  max-width: 560px;
+  margin: 3rem auto;
+  padding: 2rem;
+  background: var(--mbta-surface);
+  border-radius: 12px;
+  border: 1px solid rgba(245, 208, 0, 0.25);
+}
+
+.mbta-admin__form {
+  margin: 1.5rem 0 2rem;
+  max-width: 720px;
+}
+
+/* Header nav badge */
+.mbta-nav-item__badge,
+.primary-nav .mbta-nav-item__badge,
+.mobile-nav__menu .mbta-nav-item__badge {
+  display: inline-block;
+  margin-left: 0.35rem;
+  padding: 0.12rem 0.45rem;
+  border-radius: 999px;
+  border: 1px solid var(--mbta-yellow, #f5d000);
+  color: var(--mbta-yellow, #f5d000);
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  vertical-align: middle;
+  line-height: 1.2;
+}
+
+/* Team & Tester Range page */
+.mbta-range-page {
+  margin: 2rem 0 4rem;
+  max-width: 1280px;
+}
+
+.mbta-range-page__hero {
+  margin-bottom: 1.5rem;
+}
+
+.mbta-range-page__intro {
+  margin: 0 0 1.5rem;
+  color: var(--mbta-muted, #a8a8a8);
+  font-size: 1rem;
+  line-height: 1.6;
+}
+
+.mbta-range-page__state {
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 208, 0, 0.25);
+  background: var(--mbta-surface, #141414);
+}
+
+.mbta-range-page__state h2 {
+  margin: 0 0 0.65rem;
+  font-size: 1.35rem;
+}
+
+.mbta-range-page__state p {
+  margin: 0 0 1rem;
+  color: var(--mbta-muted, #a8a8a8);
+}
+
+.mbta-range-page__grid {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.25rem;
+}
+
+.mbta-range-card {
+  display: flex;
+  flex-direction: column;
+  background: var(--mbta-surface, #141414);
+  border: 1px solid rgba(245, 208, 0, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.mbta-range-card__image {
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background: #0f0f0f;
+}
+
+.mbta-range-card__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.mbta-portal__product > a {
+  position: relative;
+  display: block;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.mbta-portal__product > a img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+.mbta-range-card__body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 0.85rem;
+  flex: 1 1 auto;
+}
+
+.mbta-range-card__access {
+  display: inline-block;
+  align-self: flex-start;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(245, 208, 0, 0.45);
+  color: var(--mbta-yellow, #f5d000);
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mbta-range-card__title {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.mbta-range-card__title a {
+  color: var(--mbta-text, #f4f4f4);
+  text-decoration: none;
+}
+
+.mbta-range-card__price {
+  margin: 0;
+  color: var(--mbta-yellow, #f5d000);
+  font-weight: 700;
+}
+
+.mbta-range-card__stock {
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.mbta-range-card__stock--in {
+  color: #8fd48f;
+}
+
+.mbta-range-card__stock--out {
+  color: #e88;
+}
+
+.mbta-range-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.35rem;
+}
+
+.mbta-range-card__atc,
+.mbta-range-card__view {
+  font-size: 0.82rem;
+  padding: 0.55rem 0.85rem;
+}
+
+.mbta-account-range-card {
+  margin: 1rem 0 1.5rem;
+  padding: 1.25rem;
+  border-radius: 12px;
+  border: 1px solid rgba(245, 208, 0, 0.28);
+  background: rgba(20, 20, 20, 0.95);
+}
+
+.mbta-account-range-card__eyebrow {
+  margin: 0 0 0.35rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #f5d000;
+}
+
+.mbta-account-range-card__title {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+.mbta-account-range-card__copy {
+  margin: 0 0 0.85rem;
+  color: rgba(255, 255, 255, 0.78);
+}

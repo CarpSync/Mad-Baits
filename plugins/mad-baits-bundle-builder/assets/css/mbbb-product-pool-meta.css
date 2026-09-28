@@ -1,0 +1,70 @@
+/**
+ * Bundle Deals meta box on WooCommerce product edit.
+ */
+
+#mbbb-bundle-pool-option .inside {
+	margin: 0;
+	padding: 12px;
+}
+
+.mbbb-variation-bundle-actions {
+	margin: 0 0 12px;
+	font-size: 13px;
+}
+
+.mbbb-variation-bundle-actions .button-link {
+	padding: 0;
+	min-height: 0;
+	line-height: 1.4;
+	vertical-align: baseline;
+}
+
+.mbbb-variation-bundle-options {
+	display: grid;
+	gap: 12px;
+	max-width: 100%;
+}
+
+.mbbb-variation-bundle-option {
+	border: 1px solid #dcdcde;
+	border-radius: 4px;
+	background: #fafafa;
+	padding: 12px;
+	box-sizing: border-box;
+	max-width: 100%;
+}
+
+.mbbb-variation-bundle-option__toggle {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+	margin: 0 0 8px;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.mbbb-variation-bundle-option__toggle input {
+	margin: 2px 0 0;
+	flex-shrink: 0;
+}
+
+.mbbb-variation-bundle-option__fields {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 8px 12px;
+	padding-top: 8px;
+	border-top: 1px solid #e8e8e8;
+}
+
+.mbbb-variation-bundle-option:not(.is-enabled) .mbbb-variation-bundle-option__fields {
+	opacity: 0.65;
+}
+
+.mbbb-variation-bundle-option__fields p {
+	margin: 0;
+}
+
+.mbbb-variation-bundle-option__fields .widefat {
+	max-width: 100%;
+	box-sizing: border-box;
+}
