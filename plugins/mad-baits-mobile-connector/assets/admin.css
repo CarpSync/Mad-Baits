@@ -1,0 +1,96 @@
+.mbmc-meta-grid {
+  display: grid;
+  gap: 16px;
+}
+
+.mbmc-field label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.mbmc-field input[type="text"],
+.mbmc-field input[type="url"],
+.mbmc-field input[type="datetime-local"],
+.mbmc-field select {
+  max-width: 520px;
+}
+
+.mbmc-field .description {
+  display: block;
+  margin-top: 6px;
+  color: #646970;
+}
+
+.mbmc-field-checkbox label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.column-mbmc_featured {
+  width: 72px;
+  text-align: center;
+}
+
+.column-mbmc_event_date {
+  width: 160px;
+}
+
+.column-mbmc_event_type {
+  width: 140px;
+}
+
+.mbmc-admin-wrap .mbmc-stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+  margin: 24px 0;
+}
+
+.mbmc-admin-wrap .mbmc-stat-card {
+  background: #fff;
+  border: 1px solid #c3c4c7;
+  border-radius: 4px;
+  padding: 16px 20px;
+}
+
+.mbmc-admin-wrap .mbmc-stat-card h2 {
+  margin: 0 0 4px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.mbmc-admin-wrap .mbmc-stat-card p {
+  margin: 0 0 12px;
+  color: #646970;
+}
+
+.mbmc-admin-wrap .mbmc-table {
+  margin-top: 12px;
+}
+
+.mbmc-admin-wrap .mbmc-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.mbmc-admin-wrap .mbmc-badge-ok {
+  background: #edfaef;
+  color: #1e7e34;
+}
+
+.mbmc-admin-wrap .mbmc-badge-warn {
+  background: #fff8e5;
+  color: #996800;
+}
+
+.mbmc-admin-wrap .mbmc-code {
+  background: #f6f7f7;
+  border: 1px solid #c3c4c7;
+  padding: 12px 16px;
+  max-width: 520px;
+}
