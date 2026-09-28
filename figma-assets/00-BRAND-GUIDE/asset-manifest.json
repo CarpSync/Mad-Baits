@@ -1,0 +1,603 @@
+{
+  "files": [
+    {
+      "source": "theme/assets/img/CUP-LOGOv2-1.svg",
+      "dest": "01-LOGOS/SVG/madbaits-cup-logo.svg",
+      "size_bytes": 26832,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/mad-yellow-logo-1.png",
+      "dest": "01-LOGOS/PNG/mad-yellow-logo.png",
+      "size_bytes": 8006,
+      "dimensions": "331x164"
+    },
+    {
+      "source": "theme/assets/img/email/website-launch/mad-logo.png",
+      "dest": "01-LOGOS/PNG/mad-logo-email-transparent.png",
+      "size_bytes": 82936,
+      "dimensions": "1024x969"
+    },
+    {
+      "source": "theme/assets/img/icons/madbaits-app-icon.png",
+      "dest": "01-LOGOS/PNG/madbaits-app-icon-1024.png",
+      "size_bytes": 282202,
+      "dimensions": "1024x1024"
+    },
+    {
+      "source": "theme/assets/img/icons/madbaits-app-icon.png",
+      "dest": "08-ICONS/madbaits-app-icon-1024.png",
+      "size_bytes": 282202,
+      "dimensions": "1024x1024"
+    },
+    {
+      "source": "theme/assets/img/icons/app-icon-512.png",
+      "dest": "08-ICONS/app-icon-512.png",
+      "size_bytes": 91223,
+      "dimensions": "512x512"
+    },
+    {
+      "source": "theme/assets/img/icons/app-icon-maskable-512.png",
+      "dest": "08-ICONS/app-icon-maskable-512.png",
+      "size_bytes": 65424,
+      "dimensions": "512x512"
+    },
+    {
+      "source": "theme/assets/img/icons/app-icon-monochrome-512.png",
+      "dest": "08-ICONS/app-icon-monochrome-512.png",
+      "size_bytes": 5383,
+      "dimensions": "512x512"
+    },
+    {
+      "source": "theme/assets/img/compulsive-triple-hookbaits.png",
+      "dest": "02-PRODUCTS/compulsive-triple-hookbaits.png",
+      "size_bytes": 127393,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/compulsive-orange-popups-night.png",
+      "dest": "02-PRODUCTS/compulsive-orange-popups-night.png",
+      "size_bytes": 63733,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/compulsive-pink-popups-hand.png",
+      "dest": "02-PRODUCTS/compulsive-pink-popups-hand.png",
+      "size_bytes": 81836,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/compulsive-yellow-popups-bank.png",
+      "dest": "02-PRODUCTS/compulsive-yellow-popups-bank.png",
+      "size_bytes": 98259,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/hookbaits-hero.png",
+      "dest": "02-PRODUCTS/hookbaits-hero.png",
+      "size_bytes": 127393,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/bait-spikez-product.webp",
+      "dest": "02-PRODUCTS/bait-spikez-product.webp",
+      "size_bytes": 111738,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/bbb-boilie-white.png",
+      "dest": "02-PRODUCTS/bbb-boilie-white.png",
+      "size_bytes": 1222304,
+      "dimensions": "2048x1536"
+    },
+    {
+      "source": "theme/assets/img/mon-cran-pops-chubby.jpg",
+      "dest": "02-PRODUCTS/mon-cran-pops-chubby.jpg",
+      "size_bytes": 129481,
+      "dimensions": "1021x1381"
+    },
+    {
+      "source": "theme/assets/img/bp-squid-pops-chubby.jpg",
+      "dest": "02-PRODUCTS/bp-squid-pops-chubby.jpg",
+      "size_bytes": 205940,
+      "dimensions": "1430x1946"
+    },
+    {
+      "source": "theme/assets/img/plum-shell-pops-chubby-scaled.jpg",
+      "dest": "02-PRODUCTS/plum-shell-pops-chubby.jpg",
+      "size_bytes": 315988,
+      "dimensions": "1875x2560"
+    },
+    {
+      "source": "theme/assets/img/tippers-cornplex.jpg",
+      "dest": "02-PRODUCTS/tippers-cornplex.jpg",
+      "size_bytes": 222836,
+      "dimensions": "1492x1600"
+    },
+    {
+      "source": "theme/assets/img/session-pack.png",
+      "dest": "02-PRODUCTS/session-pack-bundle.png",
+      "size_bytes": 1755765,
+      "dimensions": "1609x978"
+    },
+    {
+      "source": "theme/assets/img/terminal-tackle-hero.png",
+      "dest": "02-PRODUCTS/terminal-tackle-hero.png",
+      "size_bytes": 119096,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/p-fish-glug-waterline.png",
+      "dest": "02-PRODUCTS/p-fish-glug-waterline.png",
+      "size_bytes": 85797,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/asbo-boilie-close-1.jpg",
+      "dest": "02-PRODUCTS/asbo-boilie-close.jpg",
+      "size_bytes": 210993,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/p-fish-open-boilie-shot.jpg",
+      "dest": "02-PRODUCTS/p-fish-open-boilie-shot.jpg",
+      "size_bytes": 246639,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/wicked-white-boilie-open (1).jpg",
+      "dest": "02-PRODUCTS/wicked-white-boilie-open.jpg",
+      "size_bytes": 224440,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/Photoroom_20240306_123557.jpeg",
+      "dest": "02-PRODUCTS/product-cutout-photoroom.jpeg",
+      "size_bytes": 785873,
+      "dimensions": "1800x2400"
+    },
+    {
+      "source": "theme/assets/img/asbo-hero-scene.jpg",
+      "dest": "03-RANGES/ASBO/asbo-hero-scene.jpg",
+      "size_bytes": 72805,
+      "dimensions": "960x640"
+    },
+    {
+      "source": "theme/assets/img/asbo-boilie-close-1.jpg",
+      "dest": "03-RANGES/ASBO/asbo-boilie-close.jpg",
+      "size_bytes": 210993,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/asbo.jpeg",
+      "dest": "03-RANGES/ASBO/asbo-range-portrait.jpeg",
+      "size_bytes": 149651,
+      "dimensions": "912x1368"
+    },
+    {
+      "source": "theme/assets/img/pandemic-hero-scene.jpg",
+      "dest": "03-RANGES/Pandemic/pandemic-hero-scene.jpg",
+      "size_bytes": 73036,
+      "dimensions": "960x640"
+    },
+    {
+      "source": "theme/assets/img/p-fish-open-boilie-shot.jpg",
+      "dest": "03-RANGES/P-Fish/p-fish-open-boilie-shot.jpg",
+      "size_bytes": 246639,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/p-fish-glug-waterline.png",
+      "dest": "03-RANGES/P-Fish/p-fish-glug-waterline.png",
+      "size_bytes": 85797,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/nutz-plus-hero-scene.jpg",
+      "dest": "03-RANGES/Nutz-Plus/nutz-plus-hero-scene.jpg",
+      "size_bytes": 150463,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/wicked-whites-hero-scene.jpg",
+      "dest": "03-RANGES/Wicked-Whites/wicked-whites-hero-scene.jpg",
+      "size_bytes": 71987,
+      "dimensions": "960x640"
+    },
+    {
+      "source": "theme/assets/img/wicked-white-boilie-open (1).jpg",
+      "dest": "03-RANGES/Wicked-Whites/wicked-white-boilie-open.jpg",
+      "size_bytes": 224440,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/bbb-boilie-white.png",
+      "dest": "03-RANGES/BBB/bbb-boilie-white.png",
+      "size_bytes": 1222304,
+      "dimensions": "2048x1536"
+    },
+    {
+      "source": "theme/assets/img/compulsive-hero-scene.jpg",
+      "dest": "03-RANGES/Compulsive-Angler/compulsive-hero-scene.jpg",
+      "size_bytes": 392539,
+      "dimensions": "1920x1523"
+    },
+    {
+      "source": "theme/assets/img/compulsive.jpeg",
+      "dest": "03-RANGES/Compulsive-Angler/compulsive-range-portrait.jpeg",
+      "size_bytes": 923966,
+      "dimensions": "1170x928"
+    },
+    {
+      "source": "theme/assets/img/compulsive-triple-hookbaits.png",
+      "dest": "03-RANGES/Compulsive-Angler/compulsive-triple-hookbaits.png",
+      "size_bytes": 127393,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/compulsive-orange-popups-night.png",
+      "dest": "03-RANGES/Compulsive-Angler/compulsive-orange-popups-night.png",
+      "size_bytes": 63733,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/compulsive-pink-popups-hand.png",
+      "dest": "03-RANGES/Compulsive-Angler/compulsive-pink-popups-hand.png",
+      "size_bytes": 81836,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/compulsive-yellow-popups-bank.png",
+      "dest": "03-RANGES/Compulsive-Angler/compulsive-yellow-popups-bank.png",
+      "size_bytes": 98259,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/jerry-rigging-bivvy.png",
+      "dest": "04-LIFESTYLE/jerry-rigging-bivvy.png",
+      "size_bytes": 203875,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/jerry-sunset-cast.png",
+      "dest": "04-LIFESTYLE/jerry-sunset-cast.png",
+      "size_bytes": 151928,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/jerry-wading-rod-setup.png",
+      "dest": "04-LIFESTYLE/jerry-wading-rod-setup.png",
+      "size_bytes": 77747,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/HAMMONDAPRIL_22_031.jpg",
+      "dest": "04-LIFESTYLE/hammond-april-22-031.jpg",
+      "size_bytes": 176460,
+      "dimensions": "960x1440"
+    },
+    {
+      "source": "theme/assets/img/Jerry_Hammond_March_22_Englefield_Lagoon_014.jpg",
+      "dest": "04-LIFESTYLE/jerry-hammond-englefield-lagoon-014.jpg",
+      "size_bytes": 165517,
+      "dimensions": "960x1440"
+    },
+    {
+      "source": "theme/assets/img/Jerry_Hammond_March_22_Englefield_Lagoon_016.jpg",
+      "dest": "04-LIFESTYLE/jerry-hammond-englefield-lagoon-016.jpg",
+      "size_bytes": 764026,
+      "dimensions": "1280x1920"
+    },
+    {
+      "source": "theme/assets/img/02_02_22_Jerry_Hammond_058-e1676481405465.jpg",
+      "dest": "04-LIFESTYLE/jerry-hammond-058.jpg",
+      "size_bytes": 314696,
+      "dimensions": "1280x1641"
+    },
+    {
+      "source": "theme/assets/img/IMG_0820-scaled.jpeg",
+      "dest": "04-LIFESTYLE/img-0820-bank-session.jpeg",
+      "size_bytes": 505255,
+      "dimensions": "2560x2075"
+    },
+    {
+      "source": "theme/assets/img/IMG_2905.jpeg",
+      "dest": "04-LIFESTYLE/img-2905-bank-session.jpeg",
+      "size_bytes": 212911,
+      "dimensions": "1066x1600"
+    },
+    {
+      "source": "theme/assets/img/IMG_6209.jpeg",
+      "dest": "04-LIFESTYLE/img-6209-bank-session.jpeg",
+      "size_bytes": 314172,
+      "dimensions": "1693x2048"
+    },
+    {
+      "source": "theme/assets/img/IMG_6270-1.jpeg",
+      "dest": "04-LIFESTYLE/img-6270-bank-session.jpeg",
+      "size_bytes": 450891,
+      "dimensions": "1550x1916"
+    },
+    {
+      "source": "theme/assets/img/IMG_6271.jpeg",
+      "dest": "04-LIFESTYLE/img-6271-bank-session.jpeg",
+      "size_bytes": 302586,
+      "dimensions": "1343x1879"
+    },
+    {
+      "source": "theme/assets/img/IMG_6273.jpeg",
+      "dest": "04-LIFESTYLE/img-6273-bank-session.jpeg",
+      "size_bytes": 217555,
+      "dimensions": "1297x1550"
+    },
+    {
+      "source": "theme/assets/img/IMG_6276.jpeg",
+      "dest": "04-LIFESTYLE/img-6276-bank-session.jpeg",
+      "size_bytes": 923966,
+      "dimensions": "1170x928"
+    },
+    {
+      "source": "theme/assets/img/IMG_6277.jpeg",
+      "dest": "04-LIFESTYLE/img-6277-bank-session.jpeg",
+      "size_bytes": 262970,
+      "dimensions": "2006x2048"
+    },
+    {
+      "source": "theme/assets/img/38be84c3-b017-42b2-b281-6bd60fbb9b42.jpeg",
+      "dest": "04-LIFESTYLE/bank-session-landscape.jpeg",
+      "size_bytes": 273517,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/7324a060-71f1-4b96-a54a-1c36580bd55b.jpeg",
+      "dest": "04-LIFESTYLE/bank-session-portrait.jpeg",
+      "size_bytes": 147098,
+      "dimensions": "1066x1600"
+    },
+    {
+      "source": "theme/assets/img/unnamed-file-1.jpeg",
+      "dest": "04-LIFESTYLE/bank-session-unnamed.jpeg",
+      "size_bytes": 100413,
+      "dimensions": "960x1439"
+    },
+    {
+      "source": "theme/assets/img/616755959_1291491536355974_5632341884187218227_n.jpg",
+      "dest": "05-CATCHES/catch-social-01.jpg",
+      "size_bytes": 130330,
+      "dimensions": "1080x1080"
+    },
+    {
+      "source": "theme/assets/img/622805471_1299432215561906_5168403610348621861_n.jpg",
+      "dest": "05-CATCHES/catch-social-02.jpg",
+      "size_bytes": 244130,
+      "dimensions": "854x853"
+    },
+    {
+      "source": "theme/assets/img/652683570_1340175298154264_5204164835026563315_n.jpg",
+      "dest": "05-CATCHES/catch-social-03.jpg",
+      "size_bytes": 118939,
+      "dimensions": "779x778"
+    },
+    {
+      "source": "theme/assets/img/659716768_1352968063541654_3383998167977111748_n.jpg",
+      "dest": "05-CATCHES/catch-social-04.jpg",
+      "size_bytes": 137380,
+      "dimensions": "1040x1040"
+    },
+    {
+      "source": "theme/assets/img/666741513_1357645413073919_1279038550678901996_n.jpg",
+      "dest": "05-CATCHES/catch-social-05.jpg",
+      "size_bytes": 582011,
+      "dimensions": "1638x2048"
+    },
+    {
+      "source": "theme/assets/img/666985205_1357645386407255_8492427219021887388_n.jpg",
+      "dest": "05-CATCHES/catch-social-06.jpg",
+      "size_bytes": 406510,
+      "dimensions": "1638x2048"
+    },
+    {
+      "source": "theme/assets/img/672672954_1367799305391863_4564302479248868930_n.jpg",
+      "dest": "05-CATCHES/catch-social-07.jpg",
+      "size_bytes": 216665,
+      "dimensions": "894x1117"
+    },
+    {
+      "source": "theme/assets/img/674428011_1367653648739762_4070790238323540856_n.jpg",
+      "dest": "05-CATCHES/catch-social-08.jpg",
+      "size_bytes": 130139,
+      "dimensions": "854x853"
+    },
+    {
+      "source": "theme/assets/img/687010193_1379724624199331_3268605535905024665_n.jpg",
+      "dest": "05-CATCHES/catch-social-09.jpg",
+      "size_bytes": 322613,
+      "dimensions": "1538x1922"
+    },
+    {
+      "source": "theme/assets/img/689016190_2800385393646376_1803788910077909566_n.jpg",
+      "dest": "05-CATCHES/catch-social-10.jpg",
+      "size_bytes": 492569,
+      "dimensions": "2048x1536"
+    },
+    {
+      "source": "theme/assets/img/691923285_1384938840344576_3662234827090708538_n.jpg",
+      "dest": "05-CATCHES/catch-social-11.jpg",
+      "size_bytes": 505374,
+      "dimensions": "1737x1225"
+    },
+    {
+      "source": "theme/assets/img/692016372_1381729077332219_3371254397684347095_n.jpg",
+      "dest": "05-CATCHES/catch-social-12.jpg",
+      "size_bytes": 211357,
+      "dimensions": "1170x1170"
+    },
+    {
+      "source": "theme/assets/img/692077897_1384936577011469_8768150977320645629_n.jpg",
+      "dest": "05-CATCHES/catch-social-13.jpg",
+      "size_bytes": 340496,
+      "dimensions": "1772x2048"
+    },
+    {
+      "source": "theme/assets/img/HAMMONDAPRIL_22_031-scene.jpg",
+      "dest": "06-HERO-MARKETING/hammond-april-22-031-hero-scene.jpg",
+      "size_bytes": 253251,
+      "dimensions": "1280x1920"
+    },
+    {
+      "source": "theme/assets/img/IMG_0820-scaled-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-0820-hero-scene.jpg",
+      "size_bytes": 460787,
+      "dimensions": "1920x1556"
+    },
+    {
+      "source": "theme/assets/img/IMG_2905-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-2905-hero-scene.jpg",
+      "size_bytes": 333447,
+      "dimensions": "1279x1920"
+    },
+    {
+      "source": "theme/assets/img/IMG_6209-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-6209-hero-scene.jpg",
+      "size_bytes": 370731,
+      "dimensions": "1587x1920"
+    },
+    {
+      "source": "theme/assets/img/IMG_6270-1-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-6270-hero-scene.jpg",
+      "size_bytes": 543249,
+      "dimensions": "1553x1920"
+    },
+    {
+      "source": "theme/assets/img/IMG_6271-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-6271-hero-scene.jpg",
+      "size_bytes": 387069,
+      "dimensions": "1372x1920"
+    },
+    {
+      "source": "theme/assets/img/IMG_6273-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-6273-hero-scene.jpg",
+      "size_bytes": 376510,
+      "dimensions": "1606x1920"
+    },
+    {
+      "source": "theme/assets/img/IMG_6276-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-6276-hero-scene.jpg",
+      "size_bytes": 392539,
+      "dimensions": "1920x1523"
+    },
+    {
+      "source": "theme/assets/img/IMG_6277-scene.jpg",
+      "dest": "06-HERO-MARKETING/img-6277-hero-scene.jpg",
+      "size_bytes": 307293,
+      "dimensions": "1880x1920"
+    },
+    {
+      "source": "theme/assets/img/Jerry_Hammond_March_22_Englefield_Lagoon_014-scene.jpg",
+      "dest": "06-HERO-MARKETING/jerry-hammond-lagoon-014-hero-scene.jpg",
+      "size_bytes": 299243,
+      "dimensions": "1280x1920"
+    },
+    {
+      "source": "theme/assets/img/Jerry_Hammond_March_22_Englefield_Lagoon_016-scene.jpg",
+      "dest": "06-HERO-MARKETING/jerry-hammond-lagoon-016-hero-scene.jpg",
+      "size_bytes": 671104,
+      "dimensions": "1280x1920"
+    },
+    {
+      "source": "theme/assets/img/Photoroom_20240306_123557-scene.jpg",
+      "dest": "06-HERO-MARKETING/product-cutout-hero-scene.jpg",
+      "size_bytes": 515050,
+      "dimensions": "1440x1920"
+    },
+    {
+      "source": "theme/assets/img/session-pack-scene.jpg",
+      "dest": "06-HERO-MARKETING/session-pack-hero-scene.jpg",
+      "size_bytes": 370585,
+      "dimensions": "1920x1167"
+    },
+    {
+      "source": "theme/assets/img/asbo-hero-scene.jpg",
+      "dest": "06-HERO-MARKETING/asbo-hero-scene.jpg",
+      "size_bytes": 72805,
+      "dimensions": "960x640"
+    },
+    {
+      "source": "theme/assets/img/pandemic-hero-scene.jpg",
+      "dest": "06-HERO-MARKETING/pandemic-hero-scene.jpg",
+      "size_bytes": 73036,
+      "dimensions": "960x640"
+    },
+    {
+      "source": "theme/assets/img/nutz-plus-hero-scene.jpg",
+      "dest": "06-HERO-MARKETING/nutz-plus-hero-scene.jpg",
+      "size_bytes": 150463,
+      "dimensions": "2048x1365"
+    },
+    {
+      "source": "theme/assets/img/wicked-whites-hero-scene.jpg",
+      "dest": "06-HERO-MARKETING/wicked-whites-hero-scene.jpg",
+      "size_bytes": 71987,
+      "dimensions": "960x640"
+    },
+    {
+      "source": "theme/assets/img/compulsive-hero-scene.jpg",
+      "dest": "06-HERO-MARKETING/compulsive-hero-scene.jpg",
+      "size_bytes": 392539,
+      "dimensions": "1920x1523"
+    },
+    {
+      "source": "theme/assets/img/app-mockup-bundle-deals.png",
+      "dest": "06-HERO-MARKETING/app-mockup-bundle-deals.png",
+      "size_bytes": 90596,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/email/website-launch/app-screenshot.png",
+      "dest": "06-HERO-MARKETING/app-screenshot-email.png",
+      "size_bytes": 309942,
+      "dimensions": "458x733"
+    },
+    {
+      "source": "theme/assets/img/email/website-launch/product-hero.png",
+      "dest": "06-HERO-MARKETING/product-hero-email.png",
+      "size_bytes": 142157,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/ecac2f50a97548228dc72bbf424d39bes1900x490.png",
+      "dest": "06-HERO-MARKETING/terminal-tackle-banner.png",
+      "size_bytes": 119096,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/64c887023957c9001d76c77e.jpg",
+      "dest": "06-HERO-MARKETING/event-banner.jpg",
+      "size_bytes": 12671,
+      "dimensions": "1024x455"
+    },
+    {
+      "source": "theme/assets/img/app-platform-badges.png",
+      "dest": "07-GRAPHICS/app-platform-badges.png",
+      "size_bytes": 12671,
+      "dimensions": null
+    },
+    {
+      "source": "theme/assets/img/CUP-LOGOv2-1.svg",
+      "dest": "07-GRAPHICS/madbaits-cup-logo-mark.svg",
+      "size_bytes": 26832,
+      "dimensions": null
+    }
+  ],
+  "stats": {
+    "logos": 4,
+    "products": 18,
+    "ranges": 16,
+    "lifestyle": 18,
+    "catches": 13,
+    "hero": 23,
+    "graphics": 2,
+    "icons": 4,
+    "fonts": 0
+  }
+}
