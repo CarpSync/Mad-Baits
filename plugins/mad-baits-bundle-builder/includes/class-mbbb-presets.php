@@ -76,6 +76,7 @@ final class MBBB_Presets {
 					'Nutz Plus 12mm Shelf Life', 'Nutz Plus 15mm Shelf Life', 'Nutz Plus 18mm Shelf Life',
 					'Wicked White 12mm', 'Wicked White 15mm', 'Wicked White 18mm',
 					'Nutz Banana 12mm', 'Nutz Banana 15mm', 'Nutz Banana 18mm',
+					'STP 15mm Shelf Life', 'STP 18mm Shelf Life',
 				),
 			),
 			'standard-hookbait-choices' => array(
@@ -91,7 +92,7 @@ final class MBBB_Presets {
 			),
 			'standard-pellet-choices' => array(
 				'name'    => 'Standard Pellet Choices',
-				'options' => array('ASBO', 'Nutz Plus', 'P-Fish', 'Pandemic', 'Nutz Banana', 'Calamino', 'BBB'),
+				'options' => array('ASBO', 'Nutz Plus', 'P-Fish', 'Pandemic', 'Nutz Banana', 'Calamino'),
 			),
 			'standard-250ml-dip-choices' => array(
 				'name'    => 'Standard 250ml Dip Choices',

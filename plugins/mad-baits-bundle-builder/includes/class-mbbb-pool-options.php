@@ -259,7 +259,10 @@ final class MBBB_Pool_Options {
 	 */
 	public static function is_known_range_slug($slug) {
 		$slug = sanitize_title((string) $slug);
-		if ('' === $slug) {
+		if ('' === $slug || 'bbb' === $slug) {
+			return false;
+		}
+		if ('swan-mussel' === $slug && (! function_exists('mad_baits_range_is_storefront_visible') || ! mad_baits_range_is_storefront_visible('swan-mussel'))) {
 			return false;
 		}
 		if (isset(self::get_registered_ranges()[ $slug ])) {
@@ -270,7 +273,7 @@ final class MBBB_Pool_Options {
 		}
 		return in_array(
 			$slug,
-			array('asbo', 'p-fish-2', 'pandemic', 'nutz-plus', 'nutz-banana', 'wicked-white'),
+			array('asbo', 'p-fish-2', 'pandemic', 'nutz-plus', 'nutz-banana', 'wicked-white', 'stp'),
 			true
 		);
 	}

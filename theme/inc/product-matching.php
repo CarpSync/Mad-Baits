@@ -23,7 +23,6 @@ function mad_baits_get_core_range_slugs() {
 
 	return array(
 		'asbo',
-		'bbb',
 		'calamino',
 		'compulsive-angler',
 		'nutz-plus',
@@ -31,6 +30,7 @@ function mad_baits_get_core_range_slugs() {
 		'pandemic',
 		'p-fish-2',
 		'wicked-white',
+		'stp',
 	);
 }
 
@@ -51,8 +51,9 @@ function mad_baits_get_range_tag_search_slugs($range_slug) {
 
 	$aliases = array(
 		'asbo'              => array('asbo'),
-		'bbb'               => array('bbb'),
 		'calamino'          => array('calamino'),
+		'stp'               => array('stp'),
+		'swan-mussel'       => array('swan-mussel', 'swan'),
 		'compulsive-angler' => array('compulsive-angler', 'compulsive'),
 		'nutz-plus'         => array('nutz-plus', 'nutzplus', 'nutz-plus-2'),
 		'nutz-banana'       => array('nutz-banana', 'nutzbanana', 'banana'),

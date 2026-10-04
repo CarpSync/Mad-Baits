@@ -107,8 +107,8 @@
 		'nutz-banana': function (label) {
 			return FILTER_MATCHERS.nutz(label);
 		},
-		bbb: function (label) {
-			return /\bbbb\b/i.test(label);
+		stp: function (label) {
+			return /\bstp\b/i.test(label);
 		},
 		calamino: function (label) {
 			return /calamino/i.test(label);
@@ -146,7 +146,7 @@
 		'p-fish-2',
 		'pandemic',
 		'nutz',
-		'bbb',
+		'stp',
 		'calamino',
 		'compulsive-angler',
 		'pellets',

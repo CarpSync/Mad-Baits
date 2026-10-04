@@ -115,9 +115,15 @@ final class MBBB_Deal_Builder {
 	 */
 	private static function is_deal_boilie_range_slug($slug) {
 		$slug = sanitize_title((string) $slug);
+		if ('bbb' === $slug) {
+			return false;
+		}
+		if ('swan-mussel' === $slug) {
+			return function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel');
+		}
 		if (in_array(
 			$slug,
-			array('asbo', 'p-fish-2', 'pandemic', 'nutz-plus', 'nutz-banana', 'wicked-white'),
+			array('asbo', 'p-fish-2', 'pandemic', 'nutz-plus', 'nutz-banana', 'wicked-white', 'stp'),
 			true
 		)) {
 			return true;

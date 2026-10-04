@@ -49,19 +49,21 @@ if (isset($name_overrides[ $current_slug ])) {
 $current_intro  = isset($category_intros[ $current_slug ]) ? (string) $category_intros[ $current_slug ] : '';
 $term_link      = ($current_term instanceof WP_Term) ? get_term_link($current_term) : '';
 $range_profile  = function_exists('mad_baits_get_range_brand_profile') ? mad_baits_get_range_brand_profile($current_slug) : array();
-$range_hub_slugs = array(
-	'asbo',
-	'bbb',
-	'nutz-plus',
-	'nutz-banana',
-	'pandemic',
-	'p-fish-2',
-	'p-fish',
-	'wicked-white',
-	'wicked-whites',
-	'calamino',
-	'compulsive-angler',
-);
+$range_hub_slugs = function_exists('mad_baits_get_storefront_range_hub_slugs')
+	? mad_baits_get_storefront_range_hub_slugs()
+	: array(
+		'asbo',
+		'nutz-plus',
+		'nutz-banana',
+		'pandemic',
+		'p-fish-2',
+		'p-fish',
+		'wicked-white',
+		'wicked-whites',
+		'calamino',
+		'compulsive-angler',
+		'stp',
+	);
 
 $is_range_hub = ! empty($range_profile) && in_array($current_slug, $range_hub_slugs, true);
 $range_type      = isset($_GET['range_type']) ? sanitize_key((string) wp_unslash($_GET['range_type'])) : 'all';

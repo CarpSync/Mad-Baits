@@ -76,6 +76,12 @@ $campaign_sections = array(
 		</div>
 	</section>
 
+	<?php
+	if (function_exists('mad_baits_render_compulsive_specials_section')) {
+		mad_baits_render_compulsive_specials_section();
+	}
+	?>
+
 	<section class="section section--contrast mb-premium-products">
 		<div class="container">
 			<div class="section__heading section__heading--with-actions">

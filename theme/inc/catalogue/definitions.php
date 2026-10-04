@@ -20,9 +20,11 @@ function mad_baits_catalogue_get_ranges() {
 		'Nutz Plus'          => array('slug' => 'nutz-plus', 'label' => 'Nutz Plus'),
 		'Nutz Banana'        => array('slug' => 'nutz-banana', 'label' => 'Nutz Banana'),
 		'Wicked White'       => array('slug' => 'wicked-white', 'label' => 'Wicked White'),
-		'BBB'                => array('slug' => 'bbb', 'label' => 'BBB'),
+		'BBB'                => array('slug' => 'bbb', 'label' => 'BBB', 'storefront' => false),
 		'Calamino'           => array('slug' => 'calamino', 'label' => 'Calamino'),
 		'Compulsive Angler'  => array('slug' => 'compulsive-angler', 'label' => 'Compulsive Angler'),
+		'STP'                => array('slug' => 'stp', 'label' => 'STP'),
+		'Swan Mussel'        => array('slug' => 'swan-mussel', 'label' => 'Swan Mussel', 'storefront' => false),
 	);
 }
 
@@ -92,7 +94,7 @@ function mad_baits_catalogue_get_parents() {
  */
 function mad_baits_catalogue_get_tag_groups() {
 	return array(
-		'Range'        => array('ASBO', 'Pandemic', 'P-Fish', 'Nutz Plus', 'Nutz Banana', 'Wicked White', 'BBB', 'Calamino', 'Compulsive Angler'),
+		'Range'        => array('ASBO', 'Pandemic', 'P-Fish', 'Nutz Plus', 'Nutz Banana', 'Wicked White', 'BBB', 'Calamino', 'Compulsive Angler', 'STP', 'Swan Mussel'),
 		'Profile'      => array('Fishmeal', 'Krill', 'Marine', 'Meaty', 'Savoury', 'High Protein', 'Sweet', 'Cream', 'White Chocolate', 'Nutty', 'Milky', 'Fruity'),
 		'Attraction'   => array('High Leakage', 'Instant Action', 'Clouding', 'Food Source', 'Year Round', 'Cold Water'),
 		'Season'       => array('Winter', 'Spring', 'Summer', 'Autumn', 'All Season'),
@@ -100,7 +102,7 @@ function mad_baits_catalogue_get_tag_groups() {
 		'Usage'        => array('Match The Hatch', 'Snowman', 'Bottom Bait', 'Zig Fishing', 'Bag Fishing', 'Spod Mix', 'PVA Friendly', 'Margin Fishing'),
 		'Target'       => array('Big Carp', 'Natural Attraction', 'Match Style', 'Heavy Feeding', 'Instant Session', 'Long Session', 'Day Ticket', 'French Trips'),
 		'Visual'       => array('Bright Hookbaits', 'Washed Out', 'Pastel', 'Fluoro', 'Dark Mix', 'Natural Colour'),
-		'Selling'      => array('Best Seller', 'New', 'Team Favourite', 'Limited', 'Exclusive', 'Popular', 'Premium Range'),
+		'Selling'      => array('Best Seller', 'New', 'Team Favourite', 'Limited', 'Exclusive', 'Popular', 'Premium Range', 'Compulsive Special'),
 	);
 }
 
@@ -163,7 +165,7 @@ function mad_baits_catalogue_get_attributes() {
 		),
 		'Range'           => array(
 			'slug'  => 'range',
-			'terms' => array('ASBO', 'BBB', 'Calamino', 'Compulsive Angler', 'Nutz Banana', 'Nutz Plus', 'P-Fish', 'Pandemic', 'Wicked White'),
+			'terms' => array('ASBO', 'BBB', 'Calamino', 'Compulsive Angler', 'Nutz Banana', 'Nutz Plus', 'P-Fish', 'Pandemic', 'Wicked White', 'STP', 'Swan Mussel'),
 		),
 	);
 }
@@ -200,6 +202,8 @@ function mad_baits_catalogue_get_range_colour($range_key) {
 		'BBB'               => '#212529',
 		'Calamino'          => '#9d4edd',
 		'Compulsive Angler' => '#d62828',
+		'STP'               => '#c9a227',
+		'Swan Mussel'       => '#1d4e89',
 	);
 
 	return isset($colours[ $range_key ]) ? $colours[ $range_key ] : '#646970';

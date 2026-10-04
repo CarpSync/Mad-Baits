@@ -68,6 +68,8 @@ class MBPO_Product_Tags {
 			'wicked-whites',
 			'bbb',
 			'nutz-banana',
+			'stp',
+			'swan-mussel',
 			'nutzbanana',
 			'compulsive-angler',
 			'compulsive',

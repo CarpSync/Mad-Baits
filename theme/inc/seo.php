@@ -163,8 +163,9 @@ function mad_baits_seo_get_category_meta_descriptions() {
 function mad_baits_seo_get_range_meta_descriptions() {
 	return array(
 		'asbo'              => 'Shop the ASBO range from Mad Baits — bold, high-attraction bait built for confident carp fishing.',
-		'bbb'               => 'Shop the BBB range from Mad Baits — trusted bait options for confident feeding and consistent results.',
 		'calamino'          => 'Shop the Calamino range from Mad Baits, built for attraction and confidence across your session.',
+		'stp'               => 'Shop STP shelf life boilies from Mad Baits. Choose 15mm or 18mm in 1kg bags.',
+		'swan-mussel'       => 'Shop Swan Mussel shelf life boilies from Mad Baits. Choose 15mm or 18mm in 1kg bags.',
 		'compulsive-angler' => 'Shop the Compulsive Angler range from Mad Baits — specialist bait options for committed carp anglers.',
 		'nutz-banana'       => 'Shop the Nutz Banana range from Mad Baits — sweet banana attraction across boilies, hookbaits and liquids.',
 		'nutz-plus'         => 'Shop the Nutz Plus range from Mad Baits — nut-based attraction across proven carp bait products.',
@@ -913,7 +914,10 @@ function mad_baits_seo_collect_schema_nodes() {
 		if (! $product instanceof WC_Product && function_exists('wc_get_product')) {
 			$product = wc_get_product(get_queried_object_id());
 		}
-		$product_schema = mad_baits_seo_build_product_schema($product instanceof WC_Product ? $product : null);
+		$schema_hidden = $product instanceof WC_Product
+			&& function_exists('mad_baits_product_is_storefront_hidden')
+			&& mad_baits_product_is_storefront_hidden($product->get_id());
+		$product_schema = $schema_hidden ? array() : mad_baits_seo_build_product_schema($product instanceof WC_Product ? $product : null);
 		if (! empty($product_schema)) {
 			$nodes[] = $product_schema;
 		}
@@ -1088,7 +1092,9 @@ function mad_baits_seo_legacy_taxonomy_redirects() {
 		'product-category/nutz-plus'         => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('nutz-plus', $shop_fallback) : home_url('/product-tag/nutz-plus/'),
 		'product-category/nutz-banana'       => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('nutz-banana', $shop_fallback) : home_url('/product-tag/nutz-banana/'),
 		'product-category/wicked-white'      => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('wicked-white', $shop_fallback) : home_url('/product-tag/wicked-white/'),
-		'product-category/bbb'               => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('bbb', $shop_fallback) : home_url('/product-tag/bbb/'),
+		'product-category/bbb'               => function_exists('mad_baits_get_compulsive_angler_url') ? mad_baits_get_compulsive_angler_url() : $shop_fallback,
+		'product-category/boilies-bbb'   => function_exists('mad_baits_get_compulsive_angler_url') ? mad_baits_get_compulsive_angler_url() : $shop_fallback,
+		'product-tag/bbb'                => function_exists('mad_baits_get_compulsive_angler_url') ? mad_baits_get_compulsive_angler_url() : $shop_fallback,
 		'product-category/calamino'          => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('calamino', $shop_fallback) : home_url('/product-tag/calamino/'),
 		'product-category/compulsive'        => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('compulsive-angler', $shop_fallback) : home_url('/product-tag/compulsive-angler/'),
 		'product-category/compulsive-angler' => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('compulsive-angler', $shop_fallback) : home_url('/product-tag/compulsive-angler/'),

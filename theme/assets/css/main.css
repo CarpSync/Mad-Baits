@@ -11938,7 +11938,7 @@ body.woocommerce-account.logged-in .mad-account-dashboard__next-links a:focus-vi
   background-position: center 36%;
 }
 
-.mb-range-brand--bbb::before,
+.mb-range-brand--stp::before,
 .mb-range-brand--compulsive::before {
   background:
     linear-gradient(112deg, rgba(0, 0, 0, 0.88) 14%, rgba(0, 0, 0, 0.58) 58%, rgba(0, 0, 0, 0.8) 100%),

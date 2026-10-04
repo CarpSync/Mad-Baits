@@ -13,9 +13,8 @@ defined('ABSPATH') || exit;
  * @return array<string, string> slug => label
  */
 function mad_baits_get_range_tag_catalog() {
-	return array(
+	$catalog = array(
 		'asbo'              => 'ASBO',
-		'bbb'               => 'BBB',
 		'calamino'          => 'Calamino',
 		'nutz-plus'         => 'Nutz Plus',
 		'nutz-banana'       => 'Nutz Banana',
@@ -23,7 +22,13 @@ function mad_baits_get_range_tag_catalog() {
 		'p-fish-2'          => 'P-Fish',
 		'wicked-white'      => 'Wicked Whites',
 		'compulsive-angler' => 'Compulsive Angler',
+		'stp'               => 'STP',
 	);
+	if (function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel')) {
+		$catalog['swan-mussel'] = 'Swan Mussel';
+	}
+
+	return $catalog;
 }
 
 /**
@@ -53,7 +58,6 @@ function mad_baits_get_range_display_label($slug, $fallback = '') {
  */
 function mad_baits_get_range_landing_intro_map() {
 	return array(
-		'bbb'               => __('The iconic Big Black Berry profile with deep food signal and proven campaign consistency across seasons.', 'mad-baits'),
 		'asbo'              => __('A bold, aggressive attractor profile built to trigger quick bites and keep pressure on feeding fish.', 'mad-baits'),
 		'calamino'          => __('Balanced attraction and confidence across boilies, hookbaits and liquids — built for consistent session results.', 'mad-baits'),
 		'wicked-white'      => __('High-visibility confidence baiting with a proven milk-protein edge for singles, traps and spread feed.', 'mad-baits'),
@@ -62,6 +66,8 @@ function mad_baits_get_range_landing_intro_map() {
 		'nutz-plus'         => __('Nut-based attraction with creamy depth and balanced nutrition designed for steady, repeatable results.', 'mad-baits'),
 		'nutz-banana'       => __('Sweet nut and banana notes blended for instant pull and sustained feeding response in pressured waters.', 'mad-baits'),
 		'compulsive-angler' => __('Compulsive Angler editions tuned for standout presentation, confidence and decisive takes.', 'mad-baits'),
+		'stp'               => __('STP shelf life boilies in 15mm and 18mm 1kg bags, with a separate bulk deal when it is live.', 'mad-baits'),
+		'swan-mussel'       => __('Swan Mussel shelf life boilies in 15mm and 18mm 1kg bags.', 'mad-baits'),
 	);
 }
 
@@ -98,6 +104,8 @@ function mad_baits_resolve_range_tag_slug($slug) {
 		'pfish'          => 'p-fish-2',
 		'wicked-whites'  => 'wicked-white',
 		'wickedwhite'    => 'wicked-white',
+		'swan'           => 'swan-mussel',
+		'swan-mussel'    => 'swan-mussel',
 	);
 
 	if (isset($aliases[ $slug ])) {

@@ -38,6 +38,12 @@ function mad_baits_catalogue_get_suggestion_rules() {
 			$patterns[] = 'compulsive';
 			$patterns[] = 'compulsive[\s\-]?angler';
 		}
+		if ('STP' === $key) {
+			$patterns = array('\\bSTP\\b');
+		}
+		if ('Swan Mussel' === $key) {
+			$patterns[] = 'swan[\s\-]?mussel';
+		}
 		$range_patterns[ $key ] = array_unique($patterns);
 	}
 

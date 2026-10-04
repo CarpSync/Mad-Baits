@@ -198,6 +198,12 @@ $faq_items = array(
 		</div>
 	</section>
 
+	<?php
+	if (function_exists('mad_baits_render_split_range_deal_groups')) {
+		mad_baits_render_split_range_deal_groups();
+	}
+	?>
+
 	<section class="section bundle-page__product-section">
 		<div class="container">
 			<div class="section__heading section__heading--with-actions">
