@@ -914,7 +914,10 @@ function mad_baits_seo_collect_schema_nodes() {
 		if (! $product instanceof WC_Product && function_exists('wc_get_product')) {
 			$product = wc_get_product(get_queried_object_id());
 		}
-		$product_schema = mad_baits_seo_build_product_schema($product instanceof WC_Product ? $product : null);
+		$schema_hidden = $product instanceof WC_Product
+			&& function_exists('mad_baits_product_is_storefront_hidden')
+			&& mad_baits_product_is_storefront_hidden($product->get_id());
+		$product_schema = $schema_hidden ? array() : mad_baits_seo_build_product_schema($product instanceof WC_Product ? $product : null);
 		if (! empty($product_schema)) {
 			$nodes[] = $product_schema;
 		}

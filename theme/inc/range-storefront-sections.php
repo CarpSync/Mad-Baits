@@ -178,36 +178,114 @@ function mad_baits_get_compulsive_special_product_ids($limit = 8) {
 		return array();
 	}
 
+	$range_query = mad_baits_compulsive_range_tax_query();
+	if (empty($range_query)) {
+		return array();
+	}
+
 	$query_args = array(
 		'post_type'              => 'product',
 		'post_status'            => 'publish',
-		'posts_per_page'         => $limit,
+		'posts_per_page'         => max($limit, 24),
 		'fields'                 => 'ids',
 		'no_found_rows'          => true,
 		'tax_query'              => array( // phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_tax_query
+			'relation' => 'AND',
 			array(
 				'taxonomy' => 'product_tag',
 				'field'    => 'term_id',
 				'terms'    => array((int) $tag->term_id),
 			),
+			$range_query,
 		),
 	);
 
-	$ids = get_posts($query_args);
-	$ids = mad_baits_filter_public_product_ids((array) $ids);
-	if (! mad_baits_compulsive_specials_hide_out_of_stock() || ! function_exists('wc_get_product')) {
-		return array_slice($ids, 0, $limit);
-	}
-
-	$instock = array();
+	$ids = mad_baits_filter_public_product_ids((array) get_posts($query_args));
+	$hide_oos = mad_baits_compulsive_specials_hide_out_of_stock();
+	$matched  = array();
 	foreach ($ids as $product_id) {
-		$product = wc_get_product($product_id);
-		if ($product instanceof WC_Product && $product->is_in_stock()) {
-			$instock[] = (int) $product_id;
+		$product_id = (int) $product_id;
+		$terms      = mad_baits_compulsive_membership_terms($product_id);
+		$in_stock   = true;
+		if ($hide_oos && function_exists('wc_get_product')) {
+			$product  = wc_get_product($product_id);
+			$in_stock = $product instanceof WC_Product && $product->is_in_stock();
+		}
+		if (! mad_baits_compulsive_special_qualifies($terms['tags'], $terms['cats'], $terms['ranges'], $in_stock, $hide_oos)) {
+			continue;
+		}
+		$matched[] = $product_id;
+		if (count($matched) >= $limit) {
+			break;
 		}
 	}
 
-	return array_slice($instock, 0, $limit);
+	return $matched;
+}
+
+/**
+ * Taxonomy clause that requires Compulsive range membership.
+ *
+ * @return array<string, mixed>
+ */
+function mad_baits_compulsive_range_tax_query() {
+	$clauses = array('relation' => 'OR');
+	$tag_slugs = array('compulsive-angler', 'compulsive');
+	$cat_slugs = array('compulsive', 'compulsive-angler', 'compulsive-anglers', 'boilies-compulsive', 'boilies-compulsive-angler', 'boilies-compulsive-anglers');
+	$range_slugs = array('compulsive', 'compulsive-angler', 'compulsive-anglers');
+
+	if (taxonomy_exists('product_tag')) {
+		$clauses[] = array(
+			'taxonomy' => 'product_tag',
+			'field'    => 'slug',
+			'terms'    => $tag_slugs,
+		);
+	}
+	if (taxonomy_exists('product_cat')) {
+		$clauses[] = array(
+			'taxonomy' => 'product_cat',
+			'field'    => 'slug',
+			'terms'    => $cat_slugs,
+		);
+	}
+	if (taxonomy_exists('pa_range')) {
+		$clauses[] = array(
+			'taxonomy' => 'pa_range',
+			'field'    => 'slug',
+			'terms'    => $range_slugs,
+		);
+	}
+
+	return count($clauses) > 1 ? $clauses : array();
+}
+
+/**
+ * Tag, category and range slugs used to confirm Compulsive membership.
+ *
+ * @param int $product_id Product ID.
+ * @return array{tags: string[], cats: string[], ranges: string[]}
+ */
+function mad_baits_compulsive_membership_terms($product_id) {
+	$product_id = absint($product_id);
+	$parent_id  = (int) wp_get_post_parent_id($product_id);
+	if ($parent_id > 0) {
+		$product_id = $parent_id;
+	}
+
+	$slugs = static function ($taxonomy) use ($product_id) {
+		if (! taxonomy_exists($taxonomy)) {
+			return array();
+		}
+		$terms = wp_get_post_terms($product_id, $taxonomy, array('fields' => 'slugs'));
+
+		return is_array($terms) ? array_map('strval', $terms) : array();
+	};
+
+	return array(
+		'tags'   => $slugs('product_tag'),
+		'cats'   => $slugs('product_cat'),
+		'ranges' => $slugs('pa_range'),
+	);
 }
 
 /**

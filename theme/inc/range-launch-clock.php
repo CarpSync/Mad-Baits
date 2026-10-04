@@ -127,3 +127,247 @@ function mad_baits_storefront_item_is_hidden(array $args) {
 
 	return false;
 }
+
+/**
+ * Normalise a slug without WordPress.
+ *
+ * @param string $value Raw slug.
+ * @return string
+ */
+function mad_baits_launch_slug($value) {
+	$value = strtolower(trim((string) $value));
+	$value = str_replace(array('_', ' '), '-', $value);
+	$value = preg_replace('/[^a-z0-9-]/', '', $value);
+
+	return trim((string) $value, '-');
+}
+
+/**
+ * Slugs that mean a product belongs to the Compulsive range.
+ *
+ * @return string[]
+ */
+function mad_baits_compulsive_range_slugs() {
+	return array('compulsive', 'compulsive-angler', 'compulsive-anglers');
+}
+
+/**
+ * Whether taxonomy slugs place a product in the Compulsive range.
+ *
+ * The Compulsive Special tag on its own is not a range.
+ *
+ * @param string[] $tag_slugs   Product tag slugs.
+ * @param string[] $cat_slugs   Product category slugs.
+ * @param string[] $range_slugs pa_range slugs.
+ * @return bool
+ */
+function mad_baits_terms_match_compulsive_range(array $tag_slugs, array $cat_slugs, array $range_slugs) {
+	$allowed = mad_baits_compulsive_range_slugs();
+	$category_slugs = array_merge(
+		$allowed,
+		array('boilies-compulsive', 'boilies-compulsive-angler', 'boilies-compulsive-anglers')
+	);
+
+	foreach (array($tag_slugs, $range_slugs) as $slugs) {
+		foreach ($slugs as $slug) {
+			if (in_array(mad_baits_launch_slug($slug), $allowed, true)) {
+				return true;
+			}
+		}
+	}
+
+	foreach ($cat_slugs as $slug) {
+		if (in_array(mad_baits_launch_slug($slug), $category_slugs, true)) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+/**
+ * A Compulsive special must be in the Compulsive range, carry the special tag,
+ * and follow the sold-out rule.
+ *
+ * @param string[] $tag_slugs   Product tag slugs.
+ * @param string[] $cat_slugs   Product category slugs.
+ * @param string[] $range_slugs pa_range slugs.
+ * @param bool     $in_stock    Whether WooCommerce reports the product in stock.
+ * @param bool     $hide_oos    Whether sold-out specials are hidden.
+ * @return bool
+ */
+function mad_baits_compulsive_special_qualifies(array $tag_slugs, array $cat_slugs, array $range_slugs, $in_stock, $hide_oos) {
+	$tags = array();
+	foreach ($tag_slugs as $slug) {
+		$tags[] = mad_baits_launch_slug($slug);
+	}
+
+	if (! in_array('compulsive-special', $tags, true)) {
+		return false;
+	}
+
+	if (! mad_baits_terms_match_compulsive_range($tag_slugs, $cat_slugs, $range_slugs)) {
+		return false;
+	}
+
+	if ($hide_oos && ! $in_stock) {
+		return false;
+	}
+
+	return true;
+}
+
+/**
+ * WooCommerce post status for Swan Mussel.
+ *
+ * Live after the earliest date publishes the product. Every earlier state stays draft.
+ *
+ * @param string                   $mode     hidden|live.
+ * @param int                      $now      Current unix timestamp.
+ * @param DateTimeZone|string|null $timezone Timezone.
+ * @return string publish|draft
+ */
+function mad_baits_swan_storefront_post_status($mode, $now, $timezone = null) {
+	$hidden = mad_baits_storefront_item_is_hidden(
+		array(
+			'range_mode'     => $mode,
+			'range_earliest' => mad_baits_swan_mussel_earliest_default(),
+			'now'            => $now,
+			'timezone'       => $timezone,
+		)
+	);
+
+	return $hidden ? 'draft' : 'publish';
+}
+
+/**
+ * Whether a price can be sold. Blank and zero stay unsellable.
+ *
+ * @param mixed $price Price.
+ * @return bool
+ */
+function mad_baits_price_is_sellable($price) {
+	if (is_string($price)) {
+		$price = trim($price);
+	}
+	if (null === $price || false === $price || '' === $price || ! is_numeric($price)) {
+		return false;
+	}
+
+	return (float) $price > 0;
+}
+
+/**
+ * Whether one variation has a stock setup a customer can buy.
+ *
+ * @param array<string, mixed> $variation Variation snapshot.
+ * @return bool
+ */
+function mad_baits_variation_stock_is_sellable(array $variation) {
+	$status = strtolower(trim((string) ($variation['stock_status'] ?? '')));
+	$manage = ! empty($variation['manage_stock']);
+	$qty    = $variation['stock_qty'] ?? null;
+	$backs  = strtolower(trim((string) ($variation['backorders'] ?? 'no')));
+
+	if (! $manage) {
+		return 'instock' === $status;
+	}
+
+	$qty_ok = is_numeric($qty) && (float) $qty > 0;
+	if ('instock' === $status && $qty_ok) {
+		return true;
+	}
+
+	return 'onbackorder' === $status && in_array($backs, array('yes', 'notify'), true);
+}
+
+/**
+ * Whether an STP 10kg or 20kg deal is complete enough to sell.
+ *
+ * Prices are never filled in here. A blank price keeps the deal unavailable.
+ * Tax must be the standard taxable class (empty tax class) or a real tax-class slug.
+ * The product must stay a physical, shippable good.
+ *
+ * @param array<string, mixed> $snapshot {
+ *     @type bool   $virtual
+ *     @type bool   $downloadable
+ *     @type bool   $needs_shipping
+ *     @type string $tax_status
+ *     @type string $tax_class
+ *     @type array  $variations Keyed by 15mm and 18mm.
+ * }
+ * @return bool
+ */
+function mad_baits_stp_bulk_snapshot_is_purchasable(array $snapshot) {
+	if (! empty($snapshot['virtual']) || ! empty($snapshot['downloadable'])) {
+		return false;
+	}
+	if (array_key_exists('needs_shipping', $snapshot) && empty($snapshot['needs_shipping'])) {
+		return false;
+	}
+
+	$tax_status = strtolower(trim((string) ($snapshot['tax_status'] ?? '')));
+	if ('taxable' !== $tax_status) {
+		return false;
+	}
+
+	$tax_class = strtolower(trim((string) ($snapshot['tax_class'] ?? '')));
+	if ('' !== $tax_class && ! preg_match('/^[a-z0-9_-]+$/', $tax_class)) {
+		return false;
+	}
+
+	$variations = isset($snapshot['variations']) && is_array($snapshot['variations']) ? $snapshot['variations'] : array();
+	foreach (array('15mm', '18mm') as $size) {
+		$variation = isset($variations[ $size ]) && is_array($variations[ $size ]) ? $variations[ $size ] : null;
+		if (null === $variation) {
+			return false;
+		}
+		if (! mad_baits_price_is_sellable($variation['price'] ?? '')) {
+			return false;
+		}
+		if (! mad_baits_variation_stock_is_sellable($variation)) {
+			return false;
+		}
+		if (! empty($variation['virtual']) || ! empty($variation['downloadable'])) {
+			return false;
+		}
+
+		$variation_tax = strtolower(trim((string) ($variation['tax_status'] ?? '')));
+		if ('' === $variation_tax || 'parent' === $variation_tax) {
+			$variation_tax = $tax_status;
+		}
+		if ('taxable' !== $variation_tax) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+/**
+ * Public only when the STP launch instant has passed and the catalogue snapshot can be sold.
+ *
+ * @param int                      $now      Current unix timestamp.
+ * @param DateTimeZone|string|null $timezone Timezone.
+ * @param array<string, mixed>     $snapshot Catalogue snapshot.
+ * @param string                   $launch_at Launch datetime. Defaults to 23 October 2026.
+ * @return bool
+ */
+function mad_baits_stp_bulk_is_public($now, $timezone, array $snapshot, $launch_at = '') {
+	if ('' === (string) $launch_at) {
+		$launch_at = mad_baits_stp_bulk_launch_default();
+	}
+
+	$date_hidden = mad_baits_storefront_item_is_hidden(
+		array(
+			'public_from' => $launch_at,
+			'now'         => $now,
+			'timezone'    => $timezone,
+		)
+	);
+	if ($date_hidden) {
+		return false;
+	}
+
+	return mad_baits_stp_bulk_snapshot_is_purchasable($snapshot);
+}

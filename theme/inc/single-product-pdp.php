@@ -324,7 +324,12 @@ function mad_baits_get_complete_session_product_ids($product_id, $limit = 4) {
 		}
 	}
 
-	return array_slice(array_values(array_unique(array_map('absint', $ids))), 0, $limit);
+	$ids = array_slice(array_values(array_unique(array_map('absint', $ids))), 0, $limit);
+	if (function_exists('mad_baits_filter_public_product_ids')) {
+		$ids = mad_baits_filter_public_product_ids($ids);
+	}
+
+	return $ids;
 }
 
 /**

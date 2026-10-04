@@ -220,11 +220,142 @@ function mad_baits_product_is_storefront_hidden($product_id) {
 		return true;
 	}
 
+	if ('stp' === $deal_range && ! mad_baits_stp_bulk_product_is_ready($product_id)) {
+		return true;
+	}
+
 	if ('' === $public_from && '' === $range_mode && '1' === (string) get_post_meta($product_id, MAD_BAITS_RANGE_HIDDEN_META, true)) {
 		return true;
 	}
 
 	return false;
+}
+
+/**
+ * Read the sellable fields for an STP bulk deal without changing them.
+ *
+ * @param WC_Product $product Product.
+ * @return array<string, mixed>
+ */
+function mad_baits_stp_bulk_snapshot_from_product($product) {
+	if (! $product instanceof WC_Product) {
+		return array();
+	}
+
+	$parent = $product;
+	if ($product->is_type('variation')) {
+		$parent = wc_get_product($product->get_parent_id());
+		if (! $parent instanceof WC_Product) {
+			return array();
+		}
+	}
+
+	$variations = array();
+	$children   = get_posts(
+		array(
+			'post_type'              => 'product_variation',
+			'post_status'            => array('publish', 'private', 'draft', 'pending'),
+			'post_parent'            => $parent->get_id(),
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'suppress_filters'       => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		)
+	);
+	foreach ($children as $child_id) {
+		$child = wc_get_product($child_id);
+		if (! $child instanceof WC_Product_Variation) {
+			continue;
+		}
+		$attributes = $child->get_attributes();
+		$size       = isset($attributes['pa_size']) ? mad_baits_launch_slug((string) $attributes['pa_size']) : '';
+		if (! in_array($size, array('15mm', '18mm'), true)) {
+			continue;
+		}
+		$variations[ $size ] = array(
+			'price'        => $child->get_price(),
+			'manage_stock' => (bool) $child->get_manage_stock(),
+			'stock_status' => (string) $child->get_stock_status(),
+			'stock_qty'    => $child->get_stock_quantity(),
+			'backorders'   => (string) $child->get_backorders(),
+			'virtual'      => (bool) $child->get_virtual(),
+			'downloadable' => (bool) $child->get_downloadable(),
+			'tax_status'   => (string) $child->get_tax_status(),
+		);
+	}
+
+	$virtual      = (bool) $parent->get_virtual();
+	$downloadable = (bool) $parent->get_downloadable();
+
+	return array(
+		'virtual'         => $virtual,
+		'downloadable'    => $downloadable,
+		'needs_shipping'  => ! $virtual && ! $downloadable,
+		'tax_status'      => (string) $parent->get_tax_status(),
+		'tax_class'       => (string) $parent->get_tax_class(),
+		'variations'      => $variations,
+	);
+}
+
+/**
+ * STP 10kg and 20kg deals stay unsellable until price, stock, tax and shipping are complete.
+ *
+ * @param int $product_id Product ID.
+ * @return bool
+ */
+function mad_baits_stp_bulk_product_is_ready($product_id) {
+	$product_id = absint($product_id);
+	if ($product_id < 1 || ! function_exists('wc_get_product')) {
+		return false;
+	}
+
+	$product = wc_get_product($product_id);
+	if (! $product instanceof WC_Product) {
+		return false;
+	}
+
+	return mad_baits_stp_bulk_snapshot_is_purchasable(mad_baits_stp_bulk_snapshot_from_product($product));
+}
+
+/**
+ * Short status for the Range launches screen.
+ *
+ * @return string
+ */
+function mad_baits_stp_bulk_readiness_admin_note() {
+	if (! function_exists('wc_get_product_id_by_sku')) {
+		return '';
+	}
+
+	$notes = array();
+	foreach (array('MB-STP-10KG' => '10kg', 'MB-STP-20KG' => '20kg') as $sku => $label) {
+		$product_id = (int) wc_get_product_id_by_sku($sku);
+		if ($product_id < 1) {
+			$notes[] = sprintf(
+				/* translators: %s: 10kg or 20kg */
+				__('%s deal is not in the catalogue yet.', 'mad-baits'),
+				$label
+			);
+			continue;
+		}
+		if (mad_baits_stp_bulk_product_is_ready($product_id)) {
+			$notes[] = sprintf(
+				/* translators: %s: 10kg or 20kg */
+				__('%s deal is complete and will follow the launch date.', 'mad-baits'),
+				$label
+			);
+		} else {
+			$notes[] = sprintf(
+				/* translators: %s: 10kg or 20kg */
+				__('%s deal is incomplete, so it stays unavailable after 23 October until price, stock, tax and shipping are set.', 'mad-baits'),
+				$label
+			);
+		}
+	}
+
+	return implode(' ', $notes);
 }
 
 /**
@@ -332,6 +463,7 @@ function mad_baits_get_hidden_storefront_product_ids($refresh = false) {
 			}
 		)
 	);
+	$ids = mad_baits_expand_hidden_ids_with_variations($ids);
 
 	set_transient($cache_key, $ids, 10 * MINUTE_IN_SECONDS);
 	$building = false;
@@ -357,6 +489,34 @@ function mad_baits_filter_public_product_ids($product_ids) {
 	}
 
 	return $public;
+}
+
+/**
+ * Include variation IDs so search and sitemaps cannot list a hidden size on its own.
+ *
+ * @param int[] $product_ids Parent product IDs.
+ * @return int[]
+ */
+function mad_baits_expand_hidden_ids_with_variations(array $product_ids) {
+	$product_ids = array_values(array_unique(array_filter(array_map('absint', $product_ids))));
+	if (empty($product_ids)) {
+		return array();
+	}
+
+	$children = get_posts(
+		array(
+			'post_type'              => 'product_variation',
+			'post_status'            => array('publish', 'private', 'draft', 'pending'),
+			'post_parent__in'        => $product_ids,
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		)
+	);
+
+	return array_values(array_unique(array_merge($product_ids, array_map('absint', (array) $children))));
 }
 
 /**
@@ -464,16 +624,73 @@ function mad_baits_apply_product_visibility($product_id, $hidden) {
 		update_post_meta($product_id, MAD_BAITS_RANGE_HIDDEN_META, $flag);
 	}
 
+	$range_slug = sanitize_title((string) get_post_meta($product_id, MAD_BAITS_RANGE_SLUG_META, true));
+	$deal_range = sanitize_title((string) get_post_meta($product_id, MAD_BAITS_DEAL_RANGE_META, true));
+	$controls_status = ('swan-mussel' === $range_slug) || ('stp' === $deal_range);
+
+	if ($controls_status) {
+		$status = $hidden ? 'draft' : 'publish';
+		if ('swan-mussel' === $range_slug) {
+			$status = mad_baits_swan_storefront_post_status(
+				mad_baits_get_swan_mussel_mode(),
+				mad_baits_launch_now(),
+				mad_baits_launch_timezone()
+			);
+			$hidden = 'publish' !== $status;
+			$target = $hidden ? 'hidden' : 'visible';
+			update_post_meta($product_id, MAD_BAITS_RANGE_HIDDEN_META, $hidden ? '1' : '0');
+		}
+		$product->set_status($status);
+		$product->set_catalog_visibility($target);
+		$product->save();
+		mad_baits_set_variation_post_statuses($product_id, $status);
+		return;
+	}
+
 	if ($product->get_catalog_visibility() !== $target && in_array($product->get_status(), array('publish', 'private'), true)) {
 		$product->set_catalog_visibility($target);
 		$product->save();
 	}
+}
 
-	$range_slug = sanitize_title((string) get_post_meta($product_id, MAD_BAITS_RANGE_SLUG_META, true));
-	if ('swan-mussel' === $range_slug && ! $hidden && 'publish' !== $product->get_status()) {
-		$product->set_status('publish');
-		$product->set_catalog_visibility('visible');
-		$product->save();
+/**
+ * Keep variation records aligned with a parent that is drafted or published by a launch rule.
+ *
+ * @param int    $parent_id Parent product ID.
+ * @param string $status    publish or draft.
+ * @return void
+ */
+function mad_baits_set_variation_post_statuses($parent_id, $status) {
+	$parent_id = absint($parent_id);
+	$status    = 'publish' === $status ? 'publish' : 'draft';
+	if ($parent_id < 1) {
+		return;
+	}
+
+	$children = get_posts(
+		array(
+			'post_type'              => 'product_variation',
+			'post_status'            => array('publish', 'private', 'draft', 'pending'),
+			'post_parent'            => $parent_id,
+			'posts_per_page'         => -1,
+			'fields'                 => 'ids',
+			'no_found_rows'          => true,
+			'suppress_filters'       => true,
+			'update_post_meta_cache' => false,
+			'update_post_term_cache' => false,
+		)
+	);
+
+	foreach ((array) $children as $child_id) {
+		$child_id = absint($child_id);
+		if ($child_id < 1 || get_post_status($child_id) === $status) {
+			continue;
+		}
+		$variation = wc_get_product($child_id);
+		if ($variation instanceof WC_Product) {
+			$variation->set_status($status);
+			$variation->save();
+		}
 	}
 }
 
@@ -510,12 +727,41 @@ function mad_baits_maybe_sync_storefront_visibility() {
 add_action('init', 'mad_baits_maybe_sync_storefront_visibility', 30);
 
 /**
- * @param bool       $visible Whether WooCommerce considers the product visible.
- * @param int        $product_id Product ID.
+ * Admin screens and order-item search keep retired products available to staff.
+ *
+ * Storefront Ajax still hides them.
+ *
+ * @return bool
+ */
+function mad_baits_is_privileged_catalog_request() {
+	if (! is_admin()) {
+		return false;
+	}
+	if (! wp_doing_ajax()) {
+		return true;
+	}
+
+	$action = isset($_REQUEST['action']) ? sanitize_key((string) wp_unslash($_REQUEST['action'])) : '';
+
+	return in_array(
+		$action,
+		array(
+			'woocommerce_json_search_products',
+			'woocommerce_json_search_products_and_variations',
+			'woocommerce_load_variations',
+			'woocommerce_add_order_item',
+		),
+		true
+	);
+}
+
+/**
+ * @param bool $visible Whether WooCommerce considers the product visible.
+ * @param int  $product_id Product ID.
  * @return bool
  */
 function mad_baits_filter_product_is_visible($visible, $product_id) {
-	if (is_admin() && ! wp_doing_ajax()) {
+	if (mad_baits_is_privileged_catalog_request()) {
 		return $visible;
 	}
 	if (mad_baits_product_is_storefront_hidden((int) $product_id)) {
@@ -548,6 +794,92 @@ function mad_baits_filter_related_product_ids($related) {
 	return mad_baits_filter_public_product_ids((array) $related);
 }
 add_filter('woocommerce_related_products', 'mad_baits_filter_related_product_ids', 20);
+add_filter('woocommerce_upsell_ids', 'mad_baits_filter_related_product_ids', 20);
+add_filter('woocommerce_cross_sell_ids', 'mad_baits_filter_related_product_ids', 20);
+
+/**
+ * Refuse add-to-cart for a hidden or incomplete product. Checkout of other products is unchanged.
+ *
+ * @param bool $passed     Validation result.
+ * @param int  $product_id Product or variation ID.
+ * @return bool
+ */
+function mad_baits_block_hidden_add_to_cart($passed, $product_id) {
+	if (mad_baits_product_is_storefront_hidden((int) $product_id)) {
+		return false;
+	}
+
+	return $passed;
+}
+add_filter('woocommerce_add_to_cart_validation', 'mad_baits_block_hidden_add_to_cart', 10, 2);
+
+/**
+ * @param array<string, mixed>|null $markup  Product schema.
+ * @param WC_Product                $product Product.
+ * @return array<string, mixed>|null
+ */
+function mad_baits_filter_hidden_product_schema($markup, $product) {
+	if ($product instanceof WC_Product && mad_baits_product_is_storefront_hidden($product->get_id())) {
+		return null;
+	}
+
+	return $markup;
+}
+add_filter('woocommerce_structured_data_product', 'mad_baits_filter_hidden_product_schema', 10, 2);
+
+/**
+ * @param array<string, mixed> $args      Sitemap query args.
+ * @param string               $post_type Post type.
+ * @return array<string, mixed>
+ */
+function mad_baits_exclude_hidden_products_from_core_sitemap($args, $post_type) {
+	if (! in_array((string) $post_type, array('product', 'product_variation'), true)) {
+		return $args;
+	}
+
+	$hidden = mad_baits_get_hidden_storefront_product_ids();
+	if (empty($hidden)) {
+		return $args;
+	}
+
+	$existing = isset($args['post__not_in']) ? array_map('absint', (array) $args['post__not_in']) : array();
+	$args['post__not_in'] = array_values(array_unique(array_merge($existing, $hidden)));
+
+	return $args;
+}
+add_filter('wp_sitemaps_posts_query_args', 'mad_baits_exclude_hidden_products_from_core_sitemap', 10, 2);
+
+/**
+ * @param int[] $excluded_post_ids Post IDs Yoast already excludes.
+ * @return int[]
+ */
+function mad_baits_exclude_hidden_products_from_yoast_sitemap($excluded_post_ids) {
+	$excluded_post_ids = is_array($excluded_post_ids) ? $excluded_post_ids : array();
+
+	return array_values(array_unique(array_merge(array_map('absint', $excluded_post_ids), mad_baits_get_hidden_storefront_product_ids())));
+}
+add_filter('wpseo_exclude_from_sitemap_by_post_ids', 'mad_baits_exclude_hidden_products_from_yoast_sitemap');
+
+/**
+ * @param mixed $entry  Sitemap entry.
+ * @param mixed $type   Entry type.
+ * @param mixed $object Source object.
+ * @return mixed
+ */
+function mad_baits_exclude_hidden_products_from_rank_math_sitemap($entry, $type, $object) {
+	unset($type);
+	$post = $object instanceof WP_Post ? $object : null;
+	if (! $post instanceof WP_Post || ! in_array($post->post_type, array('product', 'product_variation'), true)) {
+		return $entry;
+	}
+	if (mad_baits_product_is_storefront_hidden((int) $post->ID)) {
+		return false;
+	}
+
+	return $entry;
+}
+add_filter('rank_math/sitemap/entry', 'mad_baits_exclude_hidden_products_from_rank_math_sitemap', 10, 3);
+add_filter('wpseo_sitemap_entry', 'mad_baits_exclude_hidden_products_from_rank_math_sitemap', 10, 3);
 
 /**
  * Keep hidden products out of shop, search and custom product loops.
@@ -558,7 +890,7 @@ add_filter('woocommerce_related_products', 'mad_baits_filter_related_product_ids
 function mad_baits_exclude_hidden_products_from_queries($query) {
 	static $running = false;
 
-	if ($running || ! $query instanceof WP_Query || is_admin()) {
+	if ($running || ! $query instanceof WP_Query || mad_baits_is_privileged_catalog_request()) {
 		return;
 	}
 
@@ -589,7 +921,16 @@ add_action('pre_get_posts', 'mad_baits_exclude_hidden_products_from_queries', 25
  * @return void
  */
 function mad_baits_redirect_hidden_range_requests() {
-	if (is_admin() || wp_doing_ajax() || wp_doing_cron()) {
+	if (is_admin() || wp_doing_ajax() || wp_doing_cron() || (defined('REST_REQUEST') && REST_REQUEST)) {
+		return;
+	}
+	if (function_exists('is_checkout') && is_checkout()) {
+		return;
+	}
+	if (function_exists('is_cart') && is_cart()) {
+		return;
+	}
+	if (function_exists('is_account_page') && is_account_page()) {
 		return;
 	}
 
@@ -598,10 +939,10 @@ function mad_baits_redirect_hidden_range_requests() {
 
 	if (function_exists('is_product') && is_product()) {
 		$product_id = (int) get_queried_object_id();
-		if ($product_id > 0 && mad_baits_product_is_storefront_hidden($product_id) && ! current_user_can('manage_woocommerce')) {
-			$target = mad_baits_product_uses_retired_range($product_id) ? $compulsive : $shop_url;
-			wp_safe_redirect($target, 302);
-			exit;
+		$can_edit   = $product_id > 0 && current_user_can('edit_post', $product_id);
+		if ($product_id > 0 && mad_baits_product_is_storefront_hidden($product_id) && ! $can_edit) {
+			$retired = mad_baits_product_uses_retired_range($product_id);
+			mad_baits_safe_storefront_redirect($retired ? $compulsive : $shop_url, $retired ? 301 : 302);
 		}
 	}
 
@@ -623,13 +964,13 @@ function mad_baits_redirect_hidden_range_requests() {
 	}
 
 	if (mad_baits_range_is_retired($range_slug)) {
-		wp_safe_redirect($compulsive, 301);
-		exit;
+		mad_baits_safe_storefront_redirect($compulsive, 301);
+		return;
 	}
 
-	if ('swan-mussel' === $range_slug && ! mad_baits_range_is_storefront_visible('swan-mussel') && ! current_user_can('manage_woocommerce')) {
-		wp_safe_redirect($shop_url, 302);
-		exit;
+	if ('swan-mussel' === $range_slug && ! mad_baits_range_is_storefront_visible('swan-mussel') && ! current_user_can('edit_posts')) {
+		mad_baits_safe_storefront_redirect($shop_url, 302);
+		return;
 	}
 
 	if (function_exists('is_shop') && is_shop()) {
@@ -640,16 +981,39 @@ function mad_baits_redirect_hidden_range_requests() {
 			$requested = sanitize_title(wp_unslash((string) $_GET['filter_range']));
 		}
 		if (mad_baits_range_is_retired($requested)) {
-			wp_safe_redirect($compulsive, 301);
-			exit;
+			mad_baits_safe_storefront_redirect($compulsive, 301);
+			return;
 		}
-		if ('swan-mussel' === $requested && ! mad_baits_range_is_storefront_visible('swan-mussel') && ! current_user_can('manage_woocommerce')) {
-			wp_safe_redirect($shop_url, 302);
-			exit;
+		if ('swan-mussel' === $requested && ! mad_baits_range_is_storefront_visible('swan-mussel') && ! current_user_can('edit_posts')) {
+			mad_baits_safe_storefront_redirect($shop_url, 302);
 		}
 	}
 }
 add_action('template_redirect', 'mad_baits_redirect_hidden_range_requests', 5);
+
+/**
+ * Redirect only when the target is a different public URL.
+ *
+ * @param string $target Destination URL.
+ * @param int    $status HTTP status. 301 for retired BBB URLs, 302 for scheduled ranges.
+ * @return void
+ */
+function mad_baits_safe_storefront_redirect($target, $status) {
+	$target = is_string($target) ? $target : '';
+	if ('' === $target) {
+		return;
+	}
+
+	$request_uri  = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+	$request_path = trim((string) wp_parse_url($request_uri, PHP_URL_PATH), '/');
+	$target_path  = trim((string) wp_parse_url($target, PHP_URL_PATH), '/');
+	if ('' !== $target_path && $target_path === $request_path) {
+		return;
+	}
+
+	wp_safe_redirect($target, (int) $status);
+	exit;
+}
 
 /**
  * Remove BBB from menus that were saved in Appearance → Menus.
@@ -880,7 +1244,10 @@ function mad_baits_render_range_launch_admin_page() {
 					<th scope="row"><label for="stp_bulk_public_from"><?php esc_html_e('STP 10kg and 20kg deals', 'mad-baits'); ?></label></th>
 					<td>
 						<input type="datetime-local" id="stp_bulk_public_from" name="stp_bulk_public_from" value="<?php echo esc_attr($stp_local); ?>" />
-						<p class="description"><?php esc_html_e('Uses the site timezone. The deals stay off the shop, search, related products and bundle sections until this moment. Default is 23 October 2026 at 00:00. This does not apply to Swan Mussel.', 'mad-baits'); ?></p>
+						<p class="description"><?php esc_html_e('Uses the site timezone. The deals stay off the shop, search, related products, menus and sitemaps until this moment. Default is 23 October 2026 at 00:00. Reaching the date is not enough: each deal stays drafted until both 15mm and 18mm have a price above zero, a sellable stock status, taxable VAT, and normal physical shipping. No price is filled in automatically. This does not apply to Swan Mussel.', 'mad-baits'); ?></p>
+						<?php if (function_exists('mad_baits_stp_bulk_readiness_admin_note')) : ?>
+							<p class="description"><?php echo esc_html(mad_baits_stp_bulk_readiness_admin_note()); ?></p>
+						<?php endif; ?>
 					</td>
 				</tr>
 				<tr>
@@ -888,7 +1255,7 @@ function mad_baits_render_range_launch_admin_page() {
 					<td>
 						<label><input type="radio" name="swan_mussel_mode" value="hidden" <?php checked('hidden', $swan_mode); ?> /> <?php esc_html_e('Hidden', 'mad-baits'); ?></label><br />
 						<label><input type="radio" name="swan_mussel_mode" value="live" <?php checked('live', $swan_mode); ?> <?php disabled(! $swan_can_go_live); ?> /> <?php esc_html_e('Live on the storefront', 'mad-baits'); ?></label>
-						<p class="description"><?php esc_html_e('The range and its 15mm / 18mm shelf-life boilies are prepared now. They stay hidden until you choose Live, and Live is blocked before 1 January 2027.', 'mad-baits'); ?></p>
+						<p class="description"><?php esc_html_e('The range and its 15mm / 18mm shelf-life boilies are prepared now and stored as drafts. Choosing Live on or after 1 January 2027 publishes the product and makes the catalogue visible. Live is blocked before that date, including if it is switched early.', 'mad-baits'); ?></p>
 					</td>
 				</tr>
 				<tr>
@@ -900,7 +1267,7 @@ function mad_baits_render_range_launch_admin_page() {
 							echo esc_html(
 								sprintf(
 									/* translators: %s: product tag name */
-									__('Tag a Compulsive product with “%s” to add it to the Compulsive Specials section. Remove the tag, or mark it out of stock, to take a limited run off the section.', 'mad-baits'),
+									__('Tag a product with “%s” and keep it in the Compulsive range. Products from other ranges are ignored. Remove the tag, or mark it out of stock, to take a limited run off the section.', 'mad-baits'),
 									'Compulsive Special'
 								)
 							);
@@ -1004,5 +1371,26 @@ function mad_baits_save_product_launch_meta_box($post_id) {
 	}
 
 	delete_option('mad_baits_visibility_sig');
+	delete_transient('mad_baits_hidden_storefront_ids');
 }
 add_action('save_post_product', 'mad_baits_save_product_launch_meta_box');
+
+/**
+ * A price or stock save on an STP deal variation should be rechecked on the next request.
+ *
+ * @param int $variation_id Variation ID.
+ * @return void
+ */
+function mad_baits_refresh_visibility_after_variation_save($variation_id) {
+	$parent_id = (int) wp_get_post_parent_id((int) $variation_id);
+	if ($parent_id < 1) {
+		return;
+	}
+	if ('stp' !== sanitize_title((string) get_post_meta($parent_id, MAD_BAITS_DEAL_RANGE_META, true))) {
+		return;
+	}
+
+	delete_option('mad_baits_visibility_sig');
+	delete_transient('mad_baits_hidden_storefront_ids');
+}
+add_action('woocommerce_save_product_variation', 'mad_baits_refresh_visibility_after_variation_save');

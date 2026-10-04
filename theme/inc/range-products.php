@@ -10,7 +10,7 @@
 
 defined('ABSPATH') || exit;
 
-const MAD_BAITS_RANGE_PRODUCTS_VERSION = '2026-10-04.1';
+const MAD_BAITS_RANGE_PRODUCTS_VERSION = '2026-10-04.2';
 
 /**
  * Create or refresh STP, Swan Mussel and Compulsive Special catalogue data.
@@ -92,7 +92,7 @@ function mad_baits_provision_range_products() {
 				'range_slug'    => 'stp',
 				'range_label'   => 'STP',
 				'weight'        => $weight,
-				'status'        => 'publish',
+				'status'        => 'draft',
 				'visibility'    => 'hidden',
 				'public_from'   => $stp_launch,
 				'deal_range'    => 'stp',
@@ -211,13 +211,29 @@ function mad_baits_upsert_shelf_life_boilie(array $config) {
 		$product->set_description((string) $config['description']);
 	}
 
-	if ('swan-mussel' !== (string) $config['range_slug']) {
+	if ('swan-mussel' === (string) $config['range_slug']) {
+		$product->set_status(
+			mad_baits_swan_storefront_post_status(
+				mad_baits_get_swan_mussel_mode(),
+				mad_baits_launch_now(),
+				mad_baits_launch_timezone()
+			)
+		);
+		$product->set_catalog_visibility('publish' === $product->get_status() ? 'visible' : 'hidden');
+	} elseif ('stp' === (string) $config['deal_range']) {
+		$product->set_status('draft');
+		$product->set_catalog_visibility('hidden');
+	} else {
 		$product->set_status((string) $config['status']);
-	} elseif ($created || 'publish' !== $product->get_status() || ! mad_baits_range_is_storefront_visible('swan-mussel')) {
-		$product->set_status(mad_baits_range_is_storefront_visible('swan-mussel') ? 'publish' : 'draft');
+		$product->set_catalog_visibility((string) $config['visibility']);
 	}
 
-	$product->set_catalog_visibility((string) $config['visibility']);
+	if ($created) {
+		$product->set_tax_status('taxable');
+		$product->set_tax_class('');
+		$product->set_virtual(false);
+		$product->set_downloadable(false);
+	}
 	$product->set_reviews_allowed(true);
 	$product->set_sold_individually(false);
 
@@ -262,8 +278,9 @@ function mad_baits_upsert_shelf_life_boilie(array $config) {
 		update_post_meta($product_id, MAD_BAITS_RANGE_PUBLIC_FROM_META, $public_from);
 	}
 
+	$variation_status = 'publish' === $product->get_status() ? 'publish' : 'draft';
 	foreach (array('15mm', '18mm') as $size) {
-		mad_baits_upsert_size_variation($product_id, (string) $config['variation_sku'], $size);
+		mad_baits_upsert_size_variation($product_id, (string) $config['variation_sku'], $size, $variation_status);
 	}
 
 	if (class_exists('WC_Product_Variable')) {
@@ -297,9 +314,10 @@ function mad_baits_make_taxonomy_attribute($taxonomy, array $term_ids, $variatio
  * @param int    $parent_id Parent product ID.
  * @param string $sku_base  Parent SKU.
  * @param string $size      Size label, 15mm or 18mm.
+ * @param string $status    publish when the parent is public, otherwise draft.
  * @return int
  */
-function mad_baits_upsert_size_variation($parent_id, $sku_base, $size) {
+function mad_baits_upsert_size_variation($parent_id, $sku_base, $size, $status = 'publish') {
 	$sku = $sku_base . '-' . sanitize_title($size);
 	$variation_id = (int) wc_get_product_id_by_sku($sku);
 	$variation = $variation_id > 0 ? wc_get_product($variation_id) : null;
@@ -312,9 +330,16 @@ function mad_baits_upsert_size_variation($parent_id, $sku_base, $size) {
 	}
 
 	$variation->set_attributes(array('pa_size' => sanitize_title($size)));
-	$variation->set_status('publish');
-	$variation->set_manage_stock(false);
-	if ($created || '' === (string) $variation->get_stock_status()) {
+	$variation->set_status('publish' === $status ? 'publish' : 'draft');
+	if ($created) {
+		$variation->set_manage_stock(false);
+		$variation->set_stock_status('instock');
+		$variation->set_tax_status('taxable');
+		$variation->set_tax_class('');
+		$variation->set_virtual(false);
+		$variation->set_downloadable(false);
+		$variation->set_regular_price('');
+	} elseif ('' === (string) $variation->get_stock_status()) {
 		$variation->set_stock_status('instock');
 	}
 	$variation->save();
