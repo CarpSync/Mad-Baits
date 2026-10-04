@@ -19,6 +19,81 @@ function mad_baits_stp_bulk_launch_default() {
 }
 
 /**
+ * Confirmed STP prices in pounds.
+ *
+ * 10kg is two 5kg units and 20kg is four. The 1kg price is not derived from that rate.
+ * Both sizes of a pack share the pack price. Swan has no price here.
+ *
+ * @return array<string, array<string, string>>
+ */
+function mad_baits_stp_confirmed_prices() {
+	return array(
+		'MB-STP-SL'   => array(
+			'15mm' => '12.95',
+			'18mm' => '12.95',
+		),
+		'MB-STP-10KG' => array(
+			'15mm' => '119.90',
+			'18mm' => '119.90',
+		),
+		'MB-STP-20KG' => array(
+			'15mm' => '239.80',
+			'18mm' => '239.80',
+		),
+	);
+}
+
+/**
+ * @param string $sku_base Parent SKU, such as MB-STP-SL.
+ * @param string $size     15mm or 18mm.
+ * @return string Empty when this variation has no confirmed price.
+ */
+function mad_baits_stp_confirmed_variation_price($sku_base, $size) {
+	$prices = mad_baits_stp_confirmed_prices();
+	$sku    = strtoupper(trim((string) $sku_base));
+	$size   = mad_baits_launch_slug($size);
+	if (! isset($prices[ $sku ][ $size ])) {
+		return '';
+	}
+
+	return $prices[ $sku ][ $size ];
+}
+
+/**
+ * Convert a pounds string to pence without floating point.
+ *
+ * @param string $amount Amount such as 12.95.
+ * @return int|null
+ */
+function mad_baits_money_to_pence($amount) {
+	$amount = trim((string) $amount);
+	if (! preg_match('/^\d+(?:\.\d{1,2})?$/', $amount)) {
+		return null;
+	}
+
+	$parts  = explode('.', $amount, 2);
+	$pounds = (int) $parts[0];
+	$pence  = isset($parts[1]) ? (int) str_pad(substr($parts[1], 0, 2), 2, '0', STR_PAD_RIGHT) : 0;
+
+	return ($pounds * 100) + $pence;
+}
+
+/**
+ * Fill a blank variation price. A price already above zero is left unchanged.
+ *
+ * @param mixed  $current   Current regular price.
+ * @param string $confirmed Confirmed price.
+ * @return bool
+ */
+function mad_baits_should_apply_confirmed_price($current, $confirmed) {
+	if (! mad_baits_price_is_sellable($confirmed)) {
+		return false;
+	}
+
+	return ! mad_baits_price_is_sellable($current);
+}
+
+/**
  * Earliest local datetime Swan Mussel may be made public.
  */
 function mad_baits_swan_mussel_earliest_default() {

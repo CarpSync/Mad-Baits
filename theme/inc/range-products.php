@@ -10,7 +10,7 @@
 
 defined('ABSPATH') || exit;
 
-const MAD_BAITS_RANGE_PRODUCTS_VERSION = '2026-10-04.3';
+const MAD_BAITS_RANGE_PRODUCTS_VERSION = '2026-10-04.4';
 
 /**
  * Create or refresh STP, Swan Mussel and Compulsive Special catalogue data.
@@ -349,9 +349,14 @@ function mad_baits_upsert_size_variation($parent_id, $sku_base, $size, $status =
 		$variation->set_tax_class('');
 		$variation->set_virtual(false);
 		$variation->set_downloadable(false);
-		$variation->set_regular_price('');
 	} elseif ('' === (string) $variation->get_stock_status()) {
 		$variation->set_stock_status('instock');
+	}
+
+	$confirmed_price = mad_baits_stp_confirmed_variation_price($sku_base, $size);
+	$current_price   = $created ? '' : (string) $variation->get_regular_price();
+	if (mad_baits_should_apply_confirmed_price($current_price, $confirmed_price)) {
+		$variation->set_regular_price($confirmed_price);
 	}
 	$variation->save();
 

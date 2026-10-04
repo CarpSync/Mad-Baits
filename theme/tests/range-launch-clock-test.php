@@ -296,6 +296,62 @@ $expect(
 	false
 );
 
+$expect('STP 1kg 15mm is £12.95', mad_baits_stp_confirmed_variation_price('MB-STP-SL', '15mm'), '12.95');
+$expect('STP 1kg 18mm is £12.95', mad_baits_stp_confirmed_variation_price('MB-STP-SL', '18mm'), '12.95');
+$expect('STP 10kg 15mm is £119.90', mad_baits_stp_confirmed_variation_price('MB-STP-10KG', '15mm'), '119.90');
+$expect('STP 10kg 18mm is £119.90', mad_baits_stp_confirmed_variation_price('MB-STP-10KG', '18mm'), '119.90');
+$expect('STP 20kg 15mm is £239.80', mad_baits_stp_confirmed_variation_price('MB-STP-20KG', '15mm'), '239.80');
+$expect('STP 20kg 18mm is £239.80', mad_baits_stp_confirmed_variation_price('MB-STP-20KG', '18mm'), '239.80');
+$expect('Swan has no confirmed STP price', mad_baits_stp_confirmed_variation_price('MB-SWAN-SL', '15mm'), '');
+$expect('A saved non-zero price is not replaced', mad_baits_should_apply_confirmed_price('10.00', '12.95'), false);
+$expect('A blank price receives the confirmed price', mad_baits_should_apply_confirmed_price('', '12.95'), true);
+
+$rate_pence = mad_baits_money_to_pence('59.95');
+$expect('10kg is two times £59.95', mad_baits_money_to_pence('119.90'), $rate_pence * 2);
+$expect('20kg is four times £59.95', mad_baits_money_to_pence('239.80'), $rate_pence * 4);
+
+$priced_10kg = $ready_snapshot;
+$priced_10kg['variations']['15mm']['price'] = mad_baits_stp_confirmed_variation_price('MB-STP-10KG', '15mm');
+$priced_10kg['variations']['18mm']['price'] = mad_baits_stp_confirmed_variation_price('MB-STP-10KG', '18mm');
+$priced_20kg = $ready_snapshot;
+$priced_20kg['variations']['15mm']['price'] = mad_baits_stp_confirmed_variation_price('MB-STP-20KG', '15mm');
+$priced_20kg['variations']['18mm']['price'] = mad_baits_stp_confirmed_variation_price('MB-STP-20KG', '18mm');
+$priced_1kg = $ready_snapshot;
+$priced_1kg['has_image'] = false;
+$priced_1kg['variations']['15mm']['price'] = mad_baits_stp_confirmed_variation_price('MB-STP-SL', '15mm');
+$priced_1kg['variations']['18mm']['price'] = mad_baits_stp_confirmed_variation_price('MB-STP-SL', '18mm');
+
+$expect(
+	'Priced STP 10kg stays hidden at 22 October 2026 23:59:59 Europe/London',
+	mad_baits_stp_bulk_is_public($now_before_stp, $tz, $priced_10kg),
+	false
+);
+$expect(
+	'Priced STP 20kg stays hidden at 22 October 2026 23:59:59 Europe/London',
+	mad_baits_stp_bulk_is_public($now_before_stp, $tz, $priced_20kg),
+	false
+);
+$expect(
+	'Priced STP 10kg can open at 23 October 2026 00:00:00 Europe/London',
+	mad_baits_stp_bulk_is_public($now_at_stp, $tz, $priced_10kg),
+	true
+);
+$expect(
+	'Priced STP 20kg can open at 23 October 2026 00:00:00 Europe/London',
+	mad_baits_stp_bulk_is_public($now_at_stp, $tz, $priced_20kg),
+	true
+);
+$expect(
+	'Priced STP 1kg stays draft until it is published',
+	mad_baits_stp_shelf_life_is_public($priced_1kg, false),
+	false
+);
+$expect(
+	'Priced STP 1kg still needs an image before it is publish-ready',
+	mad_baits_stp_shelf_life_is_public(array_merge($priced_1kg, array('has_image' => false)), true),
+	false
+);
+
 if (! empty($failures)) {
 	fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
 	exit(1);
