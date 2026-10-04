@@ -229,7 +229,7 @@ final class MBBB_Frontend {
 					'p-fish-2',
 					'pandemic',
 					'nutz',
-					'bbb',
+					'stp',
 					'calamino',
 					'compulsive-angler',
 					'pellets',
@@ -809,7 +809,7 @@ final class MBBB_Frontend {
 			'p-fish-2'          => 'P-Fish',
 			'pandemic'          => 'Pandemic',
 			'nutz'              => 'Nutz',
-			'bbb'               => 'BBB',
+			'stp'               => 'STP',
 			'calamino'          => 'Calamino',
 			'compulsive-angler' => 'Compulsive Angler',
 			'pop-ups'           => __('Pop Ups', 'mad-baits-bundle-builder'),
@@ -953,8 +953,8 @@ final class MBBB_Frontend {
 		if (preg_match('/(^|[\s:_-])nutz($|[\s:_\-+])|nutz[\s\-_\+]*(plus|banana)|product_(cat|tag):nutz/', $hay)) {
 			$add('nutz');
 		}
-		if (preg_match('/\bbbb\b/', $hay)) {
-			$add('bbb');
+		if (preg_match('/\bstp\b/', $hay)) {
+			$add('stp');
 		}
 		if (false !== strpos($hay, 'calamino')) {
 			$add('calamino');

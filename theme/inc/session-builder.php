@@ -41,16 +41,11 @@ function mad_baits_get_session_builder_types() {
  * @return array<string, array<string, mixed>>
  */
 function mad_baits_get_session_builder_ranges() {
-	return array(
+	$ranges = array(
 		'asbo' => array(
 			'label'      => __('ASBO', 'mad-baits'),
 			'cat_slugs'  => array(),
 			'tag_slugs'  => array('asbo'),
-		),
-		'bbb' => array(
-			'label'      => __('BBB', 'mad-baits'),
-			'cat_slugs'  => array(),
-			'tag_slugs'  => array('bbb'),
 		),
 		'calamino' => array(
 			'label'      => __('Calamino', 'mad-baits'),
@@ -87,7 +82,22 @@ function mad_baits_get_session_builder_ranges() {
 			'cat_slugs'  => array(),
 			'tag_slugs'  => array('wicked-white'),
 		),
+		'stp' => array(
+			'label'      => __('STP', 'mad-baits'),
+			'cat_slugs'  => array('boilies-stp'),
+			'tag_slugs'  => array('stp'),
+		),
 	);
+
+	if (function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel')) {
+		$ranges['swan-mussel'] = array(
+			'label'     => __('Swan Mussel', 'mad-baits'),
+			'cat_slugs' => array('boilies-swan-mussel'),
+			'tag_slugs' => array('swan-mussel'),
+		);
+	}
+
+	return $ranges;
 }
 
 /**

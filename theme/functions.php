@@ -9,6 +9,8 @@ if (! defined('ABSPATH')) {
 	exit;
 }
 
+require_once get_theme_file_path('/inc/range-visibility.php');
+require_once get_theme_file_path('/inc/range-storefront-sections.php');
 require_once get_theme_file_path('/inc/user-roles.php');
 require_once get_theme_file_path('/inc/session-builder.php');
 require_once get_theme_file_path('/inc/bait-comparison.php');
@@ -57,6 +59,7 @@ function mad_baits_load_woocommerce_integrations() {
 	require_once get_theme_file_path('/inc/product-supplier.php');
 	require_once get_theme_file_path('/inc/product-supplier-admin.php');
 	require_once get_theme_file_path('/inc/woocommerce-catalogue-setup.php');
+	require_once get_theme_file_path('/inc/range-products.php');
 	require_once get_theme_file_path('/inc/single-product-pdp.php');
 	require_once get_theme_file_path('/inc/checkout-payment-ui.php');
 }
@@ -637,6 +640,16 @@ function mad_baits_enqueue_visual_consistency_styles() {
 		array('mad-baits-main'),
 		mad_baits_get_asset_version($path)
 	);
+
+	$range_launch_css = get_theme_file_path('assets/css/scoped/range-launches.css');
+	if ($range_launch_css && file_exists($range_launch_css)) {
+		wp_enqueue_style(
+			'mad-baits-range-launches',
+			get_theme_file_uri('assets/css/scoped/range-launches.css'),
+			array('mad-baits-visual-consistency'),
+			mad_baits_get_asset_version($range_launch_css)
+		);
+	}
 }
 add_action('wp_enqueue_scripts', 'mad_baits_enqueue_visual_consistency_styles', 120);
 
@@ -669,7 +682,9 @@ function mad_baits_redirect_legacy_taxonomy_urls() {
 		'product-category/nutz-plus'    => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('nutz-plus', home_url('/shop/')) : home_url('/shop/?product_tag=nutz-plus'),
 		'product-category/nutz-banana'  => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('nutz-banana', home_url('/shop/')) : home_url('/shop/?product_tag=nutz-banana'),
 		'product-category/wicked-white' => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('wicked-white', home_url('/shop/')) : home_url('/shop/?product_tag=wicked-white'),
-		'product-category/bbb'          => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('bbb', home_url('/shop/')) : home_url('/shop/?product_tag=bbb'),
+		'product-category/bbb'          => function_exists('mad_baits_get_compulsive_angler_url') ? mad_baits_get_compulsive_angler_url() : home_url('/shop/'),
+		'product-category/boilies-bbb'  => function_exists('mad_baits_get_compulsive_angler_url') ? mad_baits_get_compulsive_angler_url() : home_url('/shop/'),
+		'product-tag/bbb'               => function_exists('mad_baits_get_compulsive_angler_url') ? mad_baits_get_compulsive_angler_url() : home_url('/shop/'),
 		'product-category/calamino'          => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('calamino', home_url('/shop/')) : home_url('/product-tag/calamino/'),
 		'product-category/compulsive'        => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('compulsive-angler', home_url('/shop/')) : home_url('/shop/?product_tag=compulsive-angler'),
 		'product-category/compulsive-angler' => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('compulsive-angler', home_url('/shop/')) : home_url('/shop/?product_tag=compulsive-angler'),
@@ -1129,17 +1144,22 @@ function mad_baits_get_final_shop_category_definitions() {
  * @return array<string, array{label:string, slug:string}>
  */
 function mad_baits_get_final_shop_range_definitions() {
-	return array(
+	$ranges = array(
 		'asbo' => array('label' => 'ASBO', 'slug' => 'asbo'),
 		'pandemic' => array('label' => 'Pandemic', 'slug' => 'pandemic'),
 		'p-fish' => array('label' => 'P-Fish', 'slug' => 'p-fish-2'),
 		'nutz-plus' => array('label' => 'Nutz Plus', 'slug' => 'nutz-plus'),
 		'nutz-banana' => array('label' => 'Nutz Banana', 'slug' => 'nutz-banana'),
 		'wicked-white' => array('label' => 'Wicked Whites', 'slug' => 'wicked-white'),
-		'bbb' => array('label' => 'BBB', 'slug' => 'bbb'),
 		'calamino' => array('label' => 'Calamino', 'slug' => 'calamino'),
 		'compulsive-angler' => array('label' => 'Compulsive Angler', 'slug' => 'compulsive-angler'),
+		'stp' => array('label' => 'STP', 'slug' => 'stp'),
 	);
+	if (function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel')) {
+		$ranges['swan-mussel'] = array('label' => 'Swan Mussel', 'slug' => 'swan-mussel');
+	}
+
+	return $ranges;
 }
 
 /**
@@ -1150,13 +1170,13 @@ function mad_baits_get_final_shop_range_definitions() {
 function mad_baits_get_choose_edge_ranges() {
 	return array(
 		'asbo'              => 'ASBO',
-		'bbb'               => 'BBB',
+		'compulsive-angler' => 'Compulsive Angler',
 		'nutz-plus'         => 'Nutz Plus',
 		'nutz-banana'       => 'Nutz Banana',
 		'pandemic'          => 'Pandemic',
 		'p-fish'            => 'P-Fish',
 		'wicked-white'      => 'Wicked Whites',
-		'compulsive-angler' => 'Compulsive Angler',
+		'stp'               => 'STP',
 	);
 }
 
@@ -1434,6 +1454,10 @@ function mad_baits_filter_homepage_wc_product_query_args($args) {
  * @return bool
  */
 function mad_baits_should_show_product_on_homepage($product_id) {
+	if ($product_id > 0 && function_exists('mad_baits_product_is_storefront_hidden') && mad_baits_product_is_storefront_hidden($product_id)) {
+		return false;
+	}
+
 	if (! is_front_page() || $product_id < 1) {
 		return true;
 	}
@@ -1528,8 +1552,8 @@ function mad_baits_get_home_choose_your_edge_items() {
 			'label'      => __('ASBO', 'mad-baits'),
 		),
 		array(
-			'range_slug' => 'bbb',
-			'label'      => __('BBB', 'mad-baits'),
+			'range_slug' => 'compulsive-angler',
+			'label'      => __('Compulsive Angler', 'mad-baits'),
 		),
 		array(
 			'range_slug' => 'nutz-plus',
@@ -1552,10 +1576,17 @@ function mad_baits_get_home_choose_your_edge_items() {
 			'label'      => __('Wicked White', 'mad-baits'),
 		),
 		array(
-			'range_slug' => 'compulsive-angler',
-			'label'      => __('Compulsive Angler', 'mad-baits'),
+			'range_slug' => 'stp',
+			'label'      => __('STP', 'mad-baits'),
 		),
 	);
+
+	if (function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel')) {
+		$rows[] = array(
+			'range_slug' => 'swan-mussel',
+			'label'      => __('Swan Mussel', 'mad-baits'),
+		);
+	}
 
 	$out = array();
 
@@ -2458,15 +2489,21 @@ function mad_baits_get_primary_nav_items() {
 		: mad_baits_get_product_cat_link(array('bundles-deals', 'bundle-deals', 'bundles'), $shop_url);
 
 	$range_children = array(
-		array('label' => 'BBB', 'url' => mad_baits_get_range_filter_url('bbb', $shop_url)),
+		array('label' => 'Compulsive Angler', 'url' => mad_baits_get_range_filter_url('compulsive-angler', $shop_url)),
 		array('label' => 'ASBO', 'url' => mad_baits_get_range_filter_url('asbo', $shop_url)),
 		array('label' => 'Wicked Whites', 'url' => mad_baits_get_range_filter_url('wicked-white', $shop_url)),
 		array('label' => 'P-Fish', 'url' => mad_baits_get_range_filter_url('p-fish-2', $shop_url)),
 		array('label' => 'Pandemic', 'url' => mad_baits_get_range_filter_url('pandemic', $shop_url)),
 		array('label' => 'Nutz Plus', 'url' => mad_baits_get_range_filter_url('nutz-plus', $shop_url)),
 		array('label' => 'Nutz Banana', 'url' => mad_baits_get_range_filter_url('nutz-banana', $shop_url)),
-		array('label' => 'Compulsive Angler', 'url' => mad_baits_get_range_filter_url('compulsive-angler', $shop_url)),
+		array('label' => 'STP', 'url' => mad_baits_get_range_filter_url('stp', $shop_url)),
 	);
+	if (function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel')) {
+		$range_children[] = array(
+			'label' => 'Swan Mussel',
+			'url'   => mad_baits_get_range_filter_url('swan-mussel', $shop_url),
+		);
+	}
 
 	$pellets_url = mad_baits_get_product_cat_link(array('pellets', 'pellet'), $shop_url);
 	$groundbait_bag_mix_url = mad_baits_get_product_cat_link(array('groundbait-bag-mix', 'groundbait', 'bag-mix'), $shop_url);
@@ -2971,36 +3008,35 @@ function mad_baits_get_range_brand_profiles() {
 			'pair_with' => __('Pair with spice-led hookbait options to keep the entire setup aggressive and coherent.', 'mad-baits'),
 			'availability' => __('Freezer and shelf-life options vary by listing.', 'mad-baits'),
 		),
-		'bbb' => array(
-			'aliases'    => array('bbb'),
-			'theme'      => 'bbb',
-			'label'      => __('Barnes Black Barrels', 'mad-baits'),
-			'headline'   => __('BBB', 'mad-baits'),
-			'intro'      => __('Originally developed with Julian Barnes, BBB quickly built a reputation for exceptional barbel and carp performance.', 'mad-baits'),
+		'stp' => array(
+			'aliases'    => array('stp'),
+			'theme'      => 'stp',
+			'label'      => __('Shelf Life Boilies', 'mad-baits'),
+			'headline'   => __('STP', 'mad-baits'),
+			'intro'      => __('STP shelf life boilies in 15mm and 18mm, packed in 1kg bags and rolled for session-ready feeding.', 'mad-baits'),
 			'story'      => array(
-				__('BBB uses a dark fishmeal base with fish hydro liquid, liver liquid and powder, squid hydro, shrimp liquid and blue cheese powder for a deep savoury profile.', 'mad-baits'),
-				__('A supporting spice blend and garlic oil finish the mix, delivering a meaty scent profile and iconic jet-black barrel presentation.', 'mad-baits'),
+				__('STP joins the Mad Baits boilie range as a shelf life food bait with the same size choice used across the shop: 15mm or 18mm.', 'mad-baits'),
+				__('The 10kg and 20kg STP bulk deals are listed separately and only appear once their launch date is reached.', 'mad-baits'),
 			),
-			'pull_quote' => __('"A gritty dark profile that keeps producing when subtle confidence matters most."', 'mad-baits'),
+			'pull_quote' => __('"Choose your size, then stock up when the STP bulk deal is live."', 'mad-baits'),
 			'hero'       => array(
 				'position'       => '54% 38%',
 				'accent'         => '78% 12%',
-				'hero_slugs'     => array('bbb'),
-				'semantic_terms' => array('bbb', 'barbel', 'dark', 'campaign'),
-				'candidates'     => array('Jerry_Hammond_March_22_Englefield_Lagoon_014-scene.jpg', 'Jerry_Hammond_March_22_Englefield_Lagoon_014.jpg', 'IMG_2905-scene.jpg', 'IMG_2905.jpeg'),
+				'hero_slugs'     => array('stp'),
+				'semantic_terms' => array('stp', 'shelf life', 'boilie'),
+				'candidates'     => array('compulsive-yellow-popups-bank.png', 'compulsive-pink-popups-hand.png', 'IMG_6277.jpeg', 'IMG_6273.jpeg'),
 			),
 			'ingredients' => array(
-				__('Dark fishmeal base with fish hydro and liver package', 'mad-baits'),
-				__('Squid hydro, shrimp liquid and blue cheese powder', 'mad-baits'),
-				__('Spice blend and garlic oil finish', 'mad-baits'),
+				__('Shelf life boilie', 'mad-baits'),
+				__('15mm and 18mm', 'mad-baits'),
+				__('1kg bags', 'mad-baits'),
 			),
 			'best_for' => array(
-				__('Serious barbel and carp campaigns', 'mad-baits'),
-				__('Low-light and pressured feeding windows', 'mad-baits'),
-				__('Anglers preferring savoury dark-food profiles', 'mad-baits'),
+				__('Session-ready shelf life fishing', 'mad-baits'),
+				__('Anglers choosing between 15mm and 18mm', 'mad-baits'),
 			),
-			'pair_with' => __('Pair with robust savoury hookbaits to preserve BBB profile integrity at hook level.', 'mad-baits'),
-			'availability' => __('Available in Midi Barrel 15x18mm and Large Barrel 18x22mm, freezer and shelf-life.', 'mad-baits'),
+			'pair_with' => __('Pair with hookbaits from the same feeding approach once the full STP story is published.', 'mad-baits'),
+			'availability' => __('15mm and 18mm shelf life boilies, 1kg. Bulk deals of 10kg and 20kg open on their scheduled date.', 'mad-baits'),
 		),
 		'compulsive' => array(
 			'aliases'    => array('compulsive', 'compulsive-anglers', 'compulsive-angler'),
@@ -3018,7 +3054,7 @@ function mad_baits_get_range_brand_profiles() {
 				'accent'         => '84% 11%',
 				'hero_slugs'     => array('compulsive', 'compulsive-anglers', 'compulsive-angler'),
 				'semantic_terms' => array('compulsive', 'elite', 'hookbait', 'campaign'),
-				'candidates'     => array('IMG_6209-scene.jpg', 'IMG_6209.jpeg', 'Jerry_Hammond_March_22_Englefield_Lagoon_016-scene.jpg', 'Jerry_Hammond_March_22_Englefield_Lagoon_016.jpg'),
+				'candidates'     => array('compulsive-orange-popups-night.png', 'compulsive-pink-popups-hand.png', 'compulsive-yellow-popups-bank.png', 'compulsive-triple-hookbaits.png', 'IMG_6209.jpeg'),
 			),
 			'ingredients' => array(
 				__('Long-term tested hookbait flavour systems', 'mad-baits'),
@@ -3045,6 +3081,12 @@ function mad_baits_get_range_brand_profiles() {
 function mad_baits_get_range_brand_profile($slug) {
 	$slug = sanitize_title((string) $slug);
 	if ('' === $slug) {
+		return array();
+	}
+	if (function_exists('mad_baits_range_is_retired') && mad_baits_range_is_retired($slug)) {
+		return array();
+	}
+	if ('swan-mussel' === $slug && function_exists('mad_baits_range_is_storefront_visible') && ! mad_baits_range_is_storefront_visible('swan-mussel')) {
 		return array();
 	}
 
@@ -3466,7 +3508,8 @@ function mad_baits_get_semantic_product_ids($needles, $limit = 12) {
 	}
 
 	if (count($ids) >= $limit) {
-		return array_slice(array_values(array_unique($ids)), 0, $limit);
+		$ids = array_slice(array_values(array_unique($ids)), 0, $limit);
+		return function_exists('mad_baits_filter_public_product_ids') ? mad_baits_filter_public_product_ids($ids) : $ids;
 	}
 
 	$remaining = $limit - count($ids);
@@ -3501,7 +3544,12 @@ function mad_baits_get_semantic_product_ids($needles, $limit = 12) {
 		}
 	}
 
-	return array_slice(array_values(array_unique($ids)), 0, $limit);
+	$ids = array_slice(array_values(array_unique($ids)), 0, $limit);
+	if (function_exists('mad_baits_filter_public_product_ids')) {
+		$ids = array_slice(mad_baits_filter_public_product_ids($ids), 0, $limit);
+	}
+
+	return $ids;
 }
 
 /**
@@ -4119,15 +4167,17 @@ function mad_baits_sort_signature_range_dropdown($items, $args) {
 	foreach ($children_map as $parent_id => $children) {
 		usort($children, static function ($a, $b) {
 			$desired_order = array(
-				'bbb',
+				'compulsive-angler',
+				'compulsive',
 				'asbo',
 				'wicked-white',
+				'wicked-whites',
 				'p-fish',
 				'p-fish-2',
 				'pandemic',
 				'nutz-plus',
 				'nutz-banana',
-				'compulsive-angler',
+				'stp',
 			);
 			$order_index = array_fill_keys($desired_order, 999);
 			foreach ($desired_order as $idx => $slug) {

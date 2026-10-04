@@ -78,13 +78,13 @@ $range_map = array(
 		'tag_slugs'      => array('nutz-banana'),
 		'tag_names'      => array('Nutz Banana'),
 	),
-	'bbb' => array(
-		'label'          => __('BBB', 'mad-baits'),
-		'description'    => __('Classic campaign option tuned for long-game consistency and dependable feeding response.', 'mad-baits'),
-		'category_slugs' => array(),
-		'category_names' => array('BBB'),
-		'tag_slugs'      => array('bbb'),
-		'tag_names'      => array('BBB'),
+	'compulsive-angler' => array(
+		'label'          => __('Compulsive Angler', 'mad-baits'),
+		'description'    => __('Compulsive Angler editions with the same range treatment as the rest of the Mad Baits boilie line.', 'mad-baits'),
+		'category_slugs' => array('compulsive-anglers', 'compulsive'),
+		'category_names' => array('Compulsive Angler'),
+		'tag_slugs'      => array('compulsive-angler'),
+		'tag_names'      => array('Compulsive Angler'),
 	),
 	'p-fish' => array(
 		'label'          => __('P-Fish', 'mad-baits'),
@@ -102,7 +102,26 @@ $range_map = array(
 		'tag_slugs'      => array('pandemic'),
 		'tag_names'      => array('Pandemic'),
 	),
+	'stp' => array(
+		'label'          => __('STP', 'mad-baits'),
+		'description'    => __('Shelf life boilies in 15mm and 18mm, packed in 1kg bags.', 'mad-baits'),
+		'category_slugs' => array('boilies-stp'),
+		'category_names' => array('STP'),
+		'tag_slugs'      => array('stp'),
+		'tag_names'      => array('STP'),
+	),
 );
+
+if (function_exists('mad_baits_range_is_storefront_visible') && mad_baits_range_is_storefront_visible('swan-mussel')) {
+	$range_map['swan-mussel'] = array(
+		'label'          => __('Swan Mussel', 'mad-baits'),
+		'description'    => __('Swan Mussel shelf life boilies in 15mm and 18mm, packed in 1kg bags.', 'mad-baits'),
+		'category_slugs' => array('boilies-swan-mussel'),
+		'category_names' => array('Swan Mussel'),
+		'tag_slugs'      => array('swan-mussel'),
+		'tag_names'      => array('Swan Mussel'),
+	);
+}
 
 $is_admin_debug = current_user_can('manage_options') || current_user_can('manage_woocommerce');
 
@@ -343,6 +362,10 @@ foreach ($range_map as $anchor_key => $range) {
 						</a>
 					</div>
 				</div>
+
+				<?php if ('stp' === (string) $range_section['anchor'] && function_exists('mad_baits_render_range_bulk_deals')) : ?>
+					<?php mad_baits_render_range_bulk_deals('stp', 'boilie-range'); ?>
+				<?php endif; ?>
 
 				<?php if (! empty($range_section['product_ids'])) : ?>
 					<div class="mb-boilie-range__grid">

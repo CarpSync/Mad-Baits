@@ -1,0 +1,47 @@
+.mad-range-deals--embedded {
+  margin: 1.5rem 0 0;
+}
+
+.mad-range-deal-groups__list {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.mad-range-deal-groups__group {
+  padding: 1.25rem;
+  border: 1px solid rgba(255, 242, 2, 0.18);
+  border-radius: 1.25rem;
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.mad-range-deal-groups__header h3 {
+  margin: 0 0 1rem;
+  color: #fff4a3;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.mad-range-deals .section__heading p,
+.mad-compulsive-specials .section__heading p,
+.mad-range-deal-groups .section__heading p {
+  max-width: 42rem;
+}
+
+.mad-compulsive-specials {
+  background:
+    linear-gradient(112deg, rgba(0, 0, 0, 0.88) 14%, rgba(0, 0, 0, 0.58) 58%, rgba(0, 0, 0, 0.8) 100%),
+    radial-gradient(circle at 84% 14%, rgba(255, 242, 2, 0.14), transparent 42%);
+}
+
+@media (max-width: 782px) {
+  .mad-range-deal-groups__group {
+    padding: 1rem;
+    border-radius: 1rem;
+  }
+
+  .mad-range-deals .section__heading,
+  .mad-compulsive-specials .section__heading,
+  .mad-range-deal-groups .section__heading {
+    gap: 0.75rem;
+  }
+}

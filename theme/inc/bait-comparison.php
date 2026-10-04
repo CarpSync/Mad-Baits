@@ -21,11 +21,6 @@ function mad_baits_get_bait_comparison_data() {
 			'shop_url'   => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('asbo', $boilie_fallback) : $boilie_fallback,
 			'metrics'    => array('High', 'Medium', 'Low', 'High', 'High', 'High', 'Medium', 'High'),
 		),
-		'bbb' => array(
-			'label'      => 'BBB',
-			'shop_url'   => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('bbb', $boilie_fallback) : $boilie_fallback,
-			'metrics'    => array('High', 'Low', 'Low', 'Medium', 'Medium', 'High', 'Medium', 'High'),
-		),
 		'nutz-plus' => array(
 			'label'      => 'Nutz Plus',
 			'shop_url'   => function_exists('mad_baits_get_range_filter_url') ? mad_baits_get_range_filter_url('nutz-plus', $boilie_fallback) : $boilie_fallback,

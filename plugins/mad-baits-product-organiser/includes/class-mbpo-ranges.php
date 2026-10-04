@@ -39,9 +39,10 @@ class MBPO_Ranges {
 			'nutz-plus'         => 'Nutz Plus',
 			'nutz-banana'       => 'Nutz Banana',
 			'wicked-white'      => 'Wicked White',
-			'bbb'               => 'BBB',
 			'calamino'          => 'Calamino',
 			'compulsive-angler' => 'Compulsive Angler',
+			'stp'               => 'STP',
+			'swan-mussel'       => 'Swan Mussel',
 		);
 	}
 
@@ -58,9 +59,10 @@ class MBPO_Ranges {
 			'nutz-plus'         => array('nutz-plus', 'nutzplus', 'nutz-plus-2'),
 			'nutz-banana'       => array('nutz-banana', 'nutzbanana', 'banana'),
 			'wicked-white'      => array('wicked-white', 'wicked-whites', 'wickedwhite'),
-			'bbb'               => array('bbb'),
 			'calamino'          => array('calamino'),
 			'compulsive-angler' => array('compulsive-angler', 'compulsive'),
+			'stp'               => array('stp'),
+			'swan-mussel'       => array('swan-mussel', 'swan mussel'),
 		);
 
 		$catalog = self::get_range_catalog();

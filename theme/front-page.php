@@ -181,14 +181,14 @@ $category_image_map     = array(
 	'wicked-whites'      => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
 	'nutz-plus'          => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('hero') : $verified_theme_candidates,
 	'nutz-banana'        => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
-	'bbb'                => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('hero') : $verified_theme_candidates,
+	'stp'                => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
 	'p-fish-2'           => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
 	'p-fish'             => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
 	'pandemic'           => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('hero') : $verified_theme_candidates,
 	'bundle-deals'       => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
 	'bundles-deals'      => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
-	'compulsive-angler'  => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('hero') : $verified_theme_candidates,
-	'compulsive-anglers' => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('hero') : $verified_theme_candidates,
+	'compulsive-angler'  => array('compulsive-orange-popups-night.png', 'compulsive-pink-popups-hand.png', 'compulsive-yellow-popups-bank.png', 'compulsive-triple-hookbaits.png'),
+	'compulsive-anglers' => array('compulsive-orange-popups-night.png', 'compulsive-pink-popups-hand.png', 'compulsive-yellow-popups-bank.png', 'compulsive-triple-hookbaits.png'),
 	'calamino'           => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
 	'boilies'            => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('hero') : $verified_theme_candidates,
 	'hookbaits'          => function_exists('mad_baits_get_existing_theme_image_candidates') ? mad_baits_get_existing_theme_image_candidates('campaign') : $verified_theme_candidates,
@@ -716,6 +716,12 @@ if (function_exists('mad_baits_render_home_app_promo')) {
 		<?php endif; ?>
 	</div>
 </section>
+
+<?php
+if (function_exists('mad_baits_render_compulsive_specials_section')) {
+	mad_baits_render_compulsive_specials_section();
+}
+?>
 
 <section class="section section--contrast home-editorial-split"<?php echo $editorial_split_style; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped ?>>
 	<div class="container">
