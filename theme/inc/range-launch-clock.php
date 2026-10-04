@@ -371,3 +371,36 @@ function mad_baits_stp_bulk_is_public($now, $timezone, array $snapshot, $launch_
 
 	return mad_baits_stp_bulk_snapshot_is_purchasable($snapshot);
 }
+
+/**
+ * Post status for a newly created or not-yet-approved STP 1kg product.
+ *
+ * Publishing is an explicit shop action. This never follows the 23 October bulk date.
+ *
+ * @param bool $owner_published Whether an admin has published this product.
+ * @return string publish|draft
+ */
+function mad_baits_stp_shelf_life_post_status($owner_published) {
+	return $owner_published ? 'publish' : 'draft';
+}
+
+/**
+ * Whether the normal STP 1kg product may appear on the storefront.
+ *
+ * There is no launch date. A blank price, missing image, or missing explicit
+ * publish keeps it private. Bulk-deal scheduling is a separate decision.
+ *
+ * @param array<string, mixed> $snapshot         Same shape as a bulk snapshot, plus has_image.
+ * @param bool                 $owner_published  Admin has published the product.
+ * @return bool
+ */
+function mad_baits_stp_shelf_life_is_public(array $snapshot, $owner_published) {
+	if (! $owner_published) {
+		return false;
+	}
+	if (empty($snapshot['has_image'])) {
+		return false;
+	}
+
+	return mad_baits_stp_bulk_snapshot_is_purchasable($snapshot);
+}

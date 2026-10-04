@@ -10,7 +10,7 @@
 
 defined('ABSPATH') || exit;
 
-const MAD_BAITS_RANGE_PRODUCTS_VERSION = '2026-10-04.2';
+const MAD_BAITS_RANGE_PRODUCTS_VERSION = '2026-10-04.3';
 
 /**
  * Create or refresh STP, Swan Mussel and Compulsive Special catalogue data.
@@ -71,10 +71,11 @@ function mad_baits_provision_range_products() {
 			'range_slug'    => 'stp',
 			'range_label'   => 'STP',
 			'weight'        => '1kg',
-			'status'        => 'publish',
-			'visibility'    => 'visible',
+			'status'        => 'draft',
+			'visibility'    => 'hidden',
 			'public_from'   => '',
 			'deal_range'    => '',
+			'manual_publish'=> true,
 			'category_ids'  => array_filter(array($boilies_id, $stp_cat)),
 			'tag_ids'       => array_filter(array($stp_tag, $shelf_tag)),
 			'short'         => 'STP shelf life boilies in 1kg bags. Choose 15mm or 18mm.',
@@ -211,6 +212,7 @@ function mad_baits_upsert_shelf_life_boilie(array $config) {
 		$product->set_description((string) $config['description']);
 	}
 
+	$stp_shelf = ! empty($config['manual_publish']);
 	if ('swan-mussel' === (string) $config['range_slug']) {
 		$product->set_status(
 			mad_baits_swan_storefront_post_status(
@@ -222,6 +224,10 @@ function mad_baits_upsert_shelf_life_boilie(array $config) {
 		$product->set_catalog_visibility('publish' === $product->get_status() ? 'visible' : 'hidden');
 	} elseif ('stp' === (string) $config['deal_range']) {
 		$product->set_status('draft');
+		$product->set_catalog_visibility('hidden');
+	} elseif ($stp_shelf) {
+		$owner_published = $product_id > 0 && 'yes' === (string) get_post_meta($product_id, MAD_BAITS_OWNER_PUBLISHED_META, true);
+		$product->set_status(mad_baits_stp_shelf_life_post_status($owner_published));
 		$product->set_catalog_visibility('hidden');
 	} else {
 		$product->set_status((string) $config['status']);
@@ -259,7 +265,9 @@ function mad_baits_upsert_shelf_life_boilie(array $config) {
 	$product->set_category_ids($category_ids);
 	$product->set_tag_ids($tag_ids);
 
+	mad_baits_range_automatic_save(true);
 	$product_id = (int) $product->save();
+	mad_baits_range_automatic_save(false);
 	if ($product_id < 1) {
 		return 0;
 	}
@@ -271,7 +279,10 @@ function mad_baits_upsert_shelf_life_boilie(array $config) {
 
 	$public_from = trim((string) $config['public_from']);
 	$follows     = (string) get_post_meta($product_id, '_mad_baits_launch_follows_option', true);
-	if (! empty($config['follow_option']) && 'no' !== $follows) {
+	if ($stp_shelf) {
+		delete_post_meta($product_id, MAD_BAITS_RANGE_PUBLIC_FROM_META);
+		delete_post_meta($product_id, '_mad_baits_launch_follows_option');
+	} elseif (! empty($config['follow_option']) && 'no' !== $follows) {
 		update_post_meta($product_id, MAD_BAITS_RANGE_PUBLIC_FROM_META, $public_from);
 		update_post_meta($product_id, '_mad_baits_launch_follows_option', 'yes');
 	} elseif ($created && '' !== $public_from) {

@@ -21,6 +21,7 @@ const MAD_BAITS_SWAN_MODE_OPTION        = 'mad_baits_swan_mussel_mode';
 const MAD_BAITS_STP_LAUNCH_OPTION       = 'mad_baits_stp_bulk_public_from';
 const MAD_BAITS_SPECIALS_HIDE_OOS       = 'mad_baits_compulsive_specials_hide_oos';
 const MAD_BAITS_COMPULSIVE_SPECIAL_TAG  = 'compulsive-special';
+const MAD_BAITS_OWNER_PUBLISHED_META    = '_mad_baits_owner_published';
 
 /**
  * Site timezone used to read launch datetimes.
@@ -205,6 +206,10 @@ function mad_baits_product_is_storefront_hidden($product_id) {
 		return true;
 	}
 
+	if ('stp' === $range_slug && 'stp' !== $deal_range) {
+		return ! mad_baits_stp_shelf_life_product_is_public($product_id);
+	}
+
 	$hidden = mad_baits_storefront_item_is_hidden(
 		array(
 			'retired'        => mad_baits_product_uses_retired_range($product_id),
@@ -283,11 +288,22 @@ function mad_baits_stp_bulk_snapshot_from_product($product) {
 			'virtual'      => (bool) $child->get_virtual(),
 			'downloadable' => (bool) $child->get_downloadable(),
 			'tax_status'   => (string) $child->get_tax_status(),
+			'image_id'     => (int) $child->get_image_id(),
 		);
 	}
 
 	$virtual      = (bool) $parent->get_virtual();
 	$downloadable = (bool) $parent->get_downloadable();
+
+	$has_image = (int) $parent->get_image_id() > 0 || ! empty($parent->get_gallery_image_ids());
+	if (! $has_image) {
+		foreach ($variations as $variation) {
+			if (! empty($variation['image_id'])) {
+				$has_image = true;
+				break;
+			}
+		}
+	}
 
 	return array(
 		'virtual'         => $virtual,
@@ -295,6 +311,7 @@ function mad_baits_stp_bulk_snapshot_from_product($product) {
 		'needs_shipping'  => ! $virtual && ! $downloadable,
 		'tax_status'      => (string) $parent->get_tax_status(),
 		'tax_class'       => (string) $parent->get_tax_class(),
+		'has_image'       => $has_image,
 		'variations'      => $variations,
 	);
 }
@@ -317,6 +334,41 @@ function mad_baits_stp_bulk_product_is_ready($product_id) {
 	}
 
 	return mad_baits_stp_bulk_snapshot_is_purchasable(mad_baits_stp_bulk_snapshot_from_product($product));
+}
+
+/**
+ * STP 1kg is public only after an admin publishes it and price, tax, shipping and an image are present.
+ *
+ * The 23 October bulk date is not consulted.
+ *
+ * @param int $product_id Product ID.
+ * @return bool
+ */
+function mad_baits_stp_shelf_life_product_is_public($product_id) {
+	$product_id = absint($product_id);
+	if ($product_id < 1 || ! function_exists('wc_get_product')) {
+		return false;
+	}
+
+	$product = wc_get_product($product_id);
+	if (! $product instanceof WC_Product) {
+		return false;
+	}
+	if ($product->is_type('variation')) {
+		$parent = wc_get_product($product->get_parent_id());
+		if ($parent instanceof WC_Product) {
+			$product = $parent;
+			$product_id = $parent->get_id();
+		}
+	}
+
+	$owner_published = 'publish' === $product->get_status()
+		&& 'yes' === (string) get_post_meta($product_id, MAD_BAITS_OWNER_PUBLISHED_META, true);
+
+	return mad_baits_stp_shelf_life_is_public(
+		mad_baits_stp_bulk_snapshot_from_product($product),
+		$owner_published
+	);
 }
 
 /**
@@ -626,7 +678,25 @@ function mad_baits_apply_product_visibility($product_id, $hidden) {
 
 	$range_slug = sanitize_title((string) get_post_meta($product_id, MAD_BAITS_RANGE_SLUG_META, true));
 	$deal_range = sanitize_title((string) get_post_meta($product_id, MAD_BAITS_DEAL_RANGE_META, true));
-	$controls_status = ('swan-mussel' === $range_slug) || ('stp' === $deal_range);
+	$stp_shelf  = ('stp' === $range_slug && 'stp' !== $deal_range);
+	$controls_status = ('swan-mussel' === $range_slug) || ('stp' === $deal_range) || $stp_shelf;
+
+	if ($stp_shelf) {
+		$owner_published = 'yes' === (string) get_post_meta($product_id, MAD_BAITS_OWNER_PUBLISHED_META, true);
+		$status          = mad_baits_stp_shelf_life_post_status($owner_published);
+		$product->set_status($status);
+		$public = mad_baits_stp_shelf_life_is_public(
+			mad_baits_stp_bulk_snapshot_from_product($product),
+			$owner_published && 'publish' === $status
+		);
+		$product->set_catalog_visibility($public ? 'visible' : 'hidden');
+		update_post_meta($product_id, MAD_BAITS_RANGE_HIDDEN_META, $public ? '0' : '1');
+		mad_baits_range_automatic_save(true);
+		$product->save();
+		mad_baits_range_automatic_save(false);
+		mad_baits_set_variation_post_statuses($product_id, $status);
+		return;
+	}
 
 	if ($controls_status) {
 		$status = $hidden ? 'draft' : 'publish';
@@ -1244,7 +1314,8 @@ function mad_baits_render_range_launch_admin_page() {
 					<th scope="row"><label for="stp_bulk_public_from"><?php esc_html_e('STP 10kg and 20kg deals', 'mad-baits'); ?></label></th>
 					<td>
 						<input type="datetime-local" id="stp_bulk_public_from" name="stp_bulk_public_from" value="<?php echo esc_attr($stp_local); ?>" />
-						<p class="description"><?php esc_html_e('Uses the site timezone. The deals stay off the shop, search, related products, menus and sitemaps until this moment. Default is 23 October 2026 at 00:00. Reaching the date is not enough: each deal stays drafted until both 15mm and 18mm have a price above zero, a sellable stock status, taxable VAT, and normal physical shipping. No price is filled in automatically. This does not apply to Swan Mussel.', 'mad-baits'); ?></p>
+						<p class="description"><?php esc_html_e('Uses the site timezone. The 10kg and 20kg deals stay off the shop, search, related products, menus and sitemaps until this moment. Default is 23 October 2026 at 00:00. Reaching the date is not enough: each deal stays drafted until both 15mm and 18mm have a price above zero, a sellable stock status, taxable VAT, and normal physical shipping. No price is filled in automatically. This date does not apply to the STP 1kg product or to Swan Mussel.', 'mad-baits'); ?></p>
+						<p class="description"><?php esc_html_e('STP Shelf Life Boilies (1kg) stay draft until you publish them in WooCommerce. Publishing does not use 23 October. The product stays hidden until both sizes have a price above zero, the normal taxable physical setup, and a product image. Placeholder copy and empty prices are left unchanged.', 'mad-baits'); ?></p>
 						<?php if (function_exists('mad_baits_stp_bulk_readiness_admin_note')) : ?>
 							<p class="description"><?php echo esc_html(mad_baits_stp_bulk_readiness_admin_note()); ?></p>
 						<?php endif; ?>
@@ -1376,6 +1447,62 @@ function mad_baits_save_product_launch_meta_box($post_id) {
 add_action('save_post_product', 'mad_baits_save_product_launch_meta_box');
 
 /**
+ * Whether a catalogue save was made by provisioning or the launch sync.
+ *
+ * @param bool|null $active Pass true/false to set, or null to read.
+ * @return bool
+ */
+function mad_baits_range_automatic_save($active = null) {
+	static $flag = false;
+	if (null === $active) {
+		return $flag;
+	}
+	$flag = (bool) $active;
+
+	return $flag;
+}
+
+/**
+ * Remember an explicit publish of the STP 1kg product. Provisioning never sets this.
+ *
+ * @param int $post_id Product ID.
+ * @return void
+ */
+function mad_baits_note_stp_shelf_life_owner_publish($post_id) {
+	$post_id = absint($post_id);
+	if ($post_id < 1 || mad_baits_range_automatic_save()) {
+		return;
+	}
+	if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
+		return;
+	}
+	if (wp_is_post_revision($post_id)) {
+		return;
+	}
+	if (! current_user_can('edit_post', $post_id)) {
+		return;
+	}
+
+	$range_slug = sanitize_title((string) get_post_meta($post_id, MAD_BAITS_RANGE_SLUG_META, true));
+	$deal_range = sanitize_title((string) get_post_meta($post_id, MAD_BAITS_DEAL_RANGE_META, true));
+	if ('stp' !== $range_slug || 'stp' === $deal_range) {
+		return;
+	}
+
+	$status = get_post_status($post_id);
+	if ('publish' === $status) {
+		update_post_meta($post_id, MAD_BAITS_OWNER_PUBLISHED_META, 'yes');
+	} elseif (in_array($status, array('draft', 'pending', 'private'), true)) {
+		update_post_meta($post_id, MAD_BAITS_OWNER_PUBLISHED_META, 'no');
+	}
+
+	delete_post_meta($post_id, MAD_BAITS_RANGE_PUBLIC_FROM_META);
+	delete_option('mad_baits_visibility_sig');
+	delete_transient('mad_baits_hidden_storefront_ids');
+}
+add_action('save_post_product', 'mad_baits_note_stp_shelf_life_owner_publish', 20);
+
+/**
  * A price or stock save on an STP deal variation should be rechecked on the next request.
  *
  * @param int $variation_id Variation ID.
@@ -1386,7 +1513,9 @@ function mad_baits_refresh_visibility_after_variation_save($variation_id) {
 	if ($parent_id < 1) {
 		return;
 	}
-	if ('stp' !== sanitize_title((string) get_post_meta($parent_id, MAD_BAITS_DEAL_RANGE_META, true))) {
+	$deal_range = sanitize_title((string) get_post_meta($parent_id, MAD_BAITS_DEAL_RANGE_META, true));
+	$range_slug = sanitize_title((string) get_post_meta($parent_id, MAD_BAITS_RANGE_SLUG_META, true));
+	if ('stp' !== $deal_range && ! ('stp' === $range_slug && '' === $deal_range)) {
 		return;
 	}
 

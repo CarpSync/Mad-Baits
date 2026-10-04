@@ -246,6 +246,56 @@ $expect(
 	true
 );
 
+$new_shelf = $blank_snapshot;
+$new_shelf['has_image'] = false;
+$expect(
+	'A newly provisioned STP 1kg product stays draft',
+	mad_baits_stp_shelf_life_post_status(false),
+	'draft'
+);
+$expect(
+	'A newly provisioned STP 1kg product is not public with blank prices',
+	mad_baits_stp_shelf_life_is_public($new_shelf, false),
+	false
+);
+$blank_with_image = $blank_snapshot;
+$blank_with_image['has_image'] = true;
+$expect(
+	'Blank STP 1kg prices stay private even if someone marks it published and adds an image',
+	mad_baits_stp_shelf_life_is_public($blank_with_image, true),
+	false
+);
+
+$complete_shelf = $ready_snapshot;
+$complete_shelf['has_image'] = true;
+$shelf_before_bulk = mad_baits_stp_shelf_life_is_public($complete_shelf, true);
+$bulk_before = mad_baits_stp_bulk_is_public($now_before_stp, $tz, $ready_snapshot);
+$shelf_on_bulk_day = mad_baits_stp_shelf_life_is_public($complete_shelf, true);
+$bulk_on_day = mad_baits_stp_bulk_is_public($now_at_stp, $tz, $ready_snapshot);
+
+$expect('Completed STP 1kg can be public before 23 October 2026', $shelf_before_bulk, true);
+$expect('STP 1kg does not use the 23 October launch instant', $shelf_before_bulk === $shelf_on_bulk_day, true);
+$expect('Publishing STP 1kg does not open the bulk deals before 23 October 2026', $bulk_before, false);
+$expect('Publishing STP 1kg does not change the bulk result on launch day', $bulk_on_day, true);
+$expect(
+	'A complete STP 1kg product still waits for an explicit publish',
+	mad_baits_stp_shelf_life_is_public($complete_shelf, false),
+	false
+);
+
+$no_image = $complete_shelf;
+$no_image['has_image'] = false;
+$expect(
+	'STP 1kg without a product image stays private after publish',
+	mad_baits_stp_shelf_life_is_public($no_image, true),
+	false
+);
+$expect(
+	'STP bulk deals stay private at 22 October 2026 23:59:59 even when 1kg is complete',
+	mad_baits_stp_bulk_is_public($now_before_stp, $tz, $ready_snapshot),
+	false
+);
+
 if (! empty($failures)) {
 	fwrite(STDERR, implode(PHP_EOL, $failures) . PHP_EOL);
 	exit(1);
