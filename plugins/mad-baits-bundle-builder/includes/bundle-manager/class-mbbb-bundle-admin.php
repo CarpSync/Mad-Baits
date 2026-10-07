@@ -467,7 +467,7 @@ final class MBBB_Bundle_Admin {
 		if ($legacy) {
 			echo '<div class="mb-manager__warning" role="status">' . esc_html__('This bundle uses the original MadBaits bundle structure.', 'mad-baits-bundle-builder') . '</div>';
 		}
-		$advanced_open = ! $legacy && self::advanced_is_in_use($config);
+		$advanced_open = ! $is_new && ! $legacy && self::advanced_is_in_use($config, $catalog);
 		?>
 		<form method="post" class="mb-manager__editor" id="mb-bundle-editor" data-legacy="<?php echo $legacy ? '1' : '0'; ?>" data-new="<?php echo $is_new ? '1' : '0'; ?>">
 			<?php wp_nonce_field('mb_bundle_save'); ?>
@@ -638,28 +638,14 @@ final class MBBB_Bundle_Admin {
 	 * @return void
 	 */
 	private function render_simple_eligibility(array $config, array $catalog) {
-		$size_ranges = array();
-		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
-			if (! is_array($row)) {
-				continue;
-			}
-			$size  = sanitize_title((string) ($row['size_slug'] ?? ''));
-			$range = sanitize_title((string) ($row['range_slug'] ?? ''));
-			if ('' === $size || '' === $range) {
-				continue;
-			}
-			$size_ranges[ $size ][ $range ] = $range;
-		}
-		$size_attr = array();
-		foreach ($size_ranges as $size => $ranges) {
-			$size_attr[ $size ] = implode(',', $ranges);
-		}
+		$split = self::split_sizes($catalog);
 		?>
 		<section class="mb-manager__section" data-show-for="mix_and_match">
 			<?php $this->render_checks(__('Available bait ranges', 'mad-baits-bundle-builder'), 'mb_bundle[ranges][]', (array) $catalog['ranges'], (array) $config['ranges'], 'ranges', true); ?>
 		</section>
 		<section class="mb-manager__section" data-show-for="mix_and_match">
-			<?php $this->render_checks(__('Available sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', (array) $catalog['sizes'], (array) $config['sizes'], 'sizes', true, $size_attr); ?>
+			<?php $this->render_checks(__('Available sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['sizes'], (array) $config['sizes'], 'sizes', true, $split['range_attrs']); ?>
+			<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('Choose bait ranges to see the sizes customers can pick.', 'mad-baits-bundle-builder'); ?></p>
 		</section>
 		<section class="mb-manager__section" data-show-for="fixed">
 			<h2><?php esc_html_e('Included products', 'mad-baits-bundle-builder'); ?></h2>
@@ -712,6 +698,8 @@ final class MBBB_Bundle_Admin {
 			<div data-show-for="mix_and_match" data-structure="1">
 				<p class="mb-manager__hint"><?php esc_html_e('Leave a group empty if it should not limit the bundle. A product has to match every group you use, including the ranges and sizes above.', 'mad-baits-bundle-builder'); ?></p>
 				<?php
+				$split = self::split_sizes($catalog);
+				$this->render_checks(__('Other sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['other'], (array) $config['sizes'], 'other-sizes', false);
 				$this->render_checks(__('Product categories', 'mad-baits-bundle-builder'), 'mb_bundle[categories][]', (array) $catalog['categories'], (array) $config['categories'], 'categories', false);
 				$this->render_checks(__('Specific products', 'mad-baits-bundle-builder'), 'mb_bundle[product_ids][]', (array) $catalog['products'], (array) $config['product_ids'], 'products', false);
 				$variation_options = array();
@@ -739,10 +727,86 @@ final class MBBB_Bundle_Admin {
 	}
 
 	/**
-	 * @param array<string, mixed> $config Config.
+	 * Boilie diameters used by ranged products, and every other catalogue size.
+	 *
+	 * @param array<string, mixed> $catalog Catalogue.
+	 * @return array{sizes: array<string, string>, other: array<string, string>, range_attrs: array<string, string>}
+	 */
+	public static function split_sizes(array $catalog) {
+		$all    = isset($catalog['sizes']) && is_array($catalog['sizes']) ? $catalog['sizes'] : array();
+		$simple = array();
+		$ranges = array();
+
+		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
+			if (! is_array($row)) {
+				continue;
+			}
+			$size  = sanitize_title((string) ($row['size_slug'] ?? ''));
+			$range = sanitize_title((string) ($row['range_slug'] ?? ''));
+			$label = trim((string) ($row['size_label'] ?? ''));
+			if ('' === $label && isset($all[ $size ])) {
+				$label = (string) $all[ $size ];
+			}
+			if ('' === $size || '' === $range || ! self::is_boilie_diameter($size, $label)) {
+				continue;
+			}
+			$simple[ $size ]           = '' !== $label ? $label : $size;
+			$ranges[ $size ][ $range ] = $range;
+		}
+
+		$other = array();
+		foreach ($all as $slug => $label) {
+			$slug = (string) $slug;
+			if (isset($simple[ $slug ])) {
+				continue;
+			}
+			$other[ $slug ] = (string) $label;
+		}
+
+		asort($simple);
+		asort($other);
+		$attrs = array();
+		foreach ($ranges as $size => $size_ranges) {
+			$attrs[ $size ] = implode(',', $size_ranges);
+		}
+
+		return array(
+			'sizes'       => $simple,
+			'other'       => $other,
+			'range_attrs' => $attrs,
+		);
+	}
+
+	/**
+	 * A plain boilie diameter such as 15mm. Weights, volumes, and clothing sizes are not included.
+	 *
+	 * @param string $slug  Size slug.
+	 * @param string $label Size label.
 	 * @return bool
 	 */
-	private static function advanced_is_in_use(array $config) {
+	public static function is_boilie_diameter($slug, $label) {
+		$text = strtolower(str_replace(array('_', '-'), ' ', trim($slug . ' ' . $label)));
+		if (preg_match('/\d+(?:\.\d+)?\s*(kg|g|ml|cl|ltr|litre|liter|l)\b/', $text)) {
+			return false;
+		}
+		$candidates = array(
+			strtolower(str_replace(array('_', '-'), ' ', trim((string) $slug))),
+			strtolower(str_replace(array('_', '-'), ' ', trim((string) $label))),
+		);
+		foreach ($candidates as $candidate) {
+			if (preg_match('/^\d+(?:\.\d+)?\s*mm$/', $candidate)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param array<string, mixed> $config  Config.
+	 * @param array<string, mixed> $catalog Catalogue.
+	 * @return bool
+	 */
+	private static function advanced_is_in_use(array $config, array $catalog = array()) {
 		$pricing = isset($config['pricing']) && is_array($config['pricing']) ? $config['pricing'] : array();
 		if ('fixed' !== (string) ($pricing['mode'] ?? 'fixed')) {
 			return true;
@@ -762,6 +826,13 @@ final class MBBB_Bundle_Admin {
 		$attributes = isset($config['attributes']) && is_array($config['attributes']) ? $config['attributes'] : array();
 		foreach ($attributes as $terms) {
 			if (! empty($terms)) {
+				return true;
+			}
+		}
+		$split = self::split_sizes($catalog);
+		foreach ((array) ($config['sizes'] ?? array()) as $size) {
+			$size = sanitize_title((string) $size);
+			if ('' !== $size && ! isset($split['sizes'][ $size ])) {
 				return true;
 			}
 		}

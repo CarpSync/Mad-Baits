@@ -605,6 +605,42 @@ $assert(false !== strpos($runtime_source, 'config_for'), 'runtime hooks read own
 $assert(false !== strpos($cart_source, 'direct_purchase_error'), 'direct add to cart checks owner availability');
 $assert(false === strpos($runtime_source, 'wc_get_orders'), 'bundle runtime does not query orders');
 
+$assert(true === MBBB_Bundle_Admin::is_boilie_diameter('15mm', '15mm'), '15mm is a boilie size');
+$assert(true === MBBB_Bundle_Admin::is_boilie_diameter('18mm', '18mm'), '18mm is a boilie size');
+$assert(false === MBBB_Bundle_Admin::is_boilie_diameter('1kg', '1kg'), 'kilogram weights are not simple boilie sizes');
+$assert(false === MBBB_Bundle_Admin::is_boilie_diameter('500ml', '500ml'), 'millilitre volumes are not simple boilie sizes');
+$assert(false === MBBB_Bundle_Admin::is_boilie_diameter('xl', 'XL'), 'clothing sizes are not simple boilie sizes');
+$assert(false === MBBB_Bundle_Admin::is_boilie_diameter('15mm-skinz', '15mm Skinz'), 'hookbait size labels stay out of the simple size list');
+$size_split = MBBB_Bundle_Admin::split_sizes(array(
+	'sizes' => array(
+		'15mm' => '15mm',
+		'18mm' => '18mm',
+		'12mm' => '12mm',
+		'1kg' => '1kg',
+		'500ml' => '500ml',
+		'xl' => 'XL',
+		'15mm-skinz' => '15mm Skinz',
+	),
+	'variations' => array(
+		array('size_slug' => '15mm', 'size_label' => '15mm', 'range_slug' => 'absorb'),
+		array('size_slug' => '18mm', 'size_label' => '18mm', 'range_slug' => 'absorb'),
+		array('size_slug' => '18mm', 'size_label' => '18mm', 'range_slug' => 'calamari'),
+		array('size_slug' => '12mm', 'size_label' => '12mm', 'range_slug' => 'bsb'),
+		array('size_slug' => '1kg', 'size_label' => '1kg', 'range_slug' => 'absorb'),
+		array('size_slug' => '15mm-skinz', 'size_label' => '15mm Skinz', 'range_slug' => 'absorb'),
+		array('size_slug' => 'xl', 'size_label' => 'XL', 'range_slug' => 'shirts'),
+	),
+));
+$assert(array('12mm', '15mm', '18mm') === array_keys($size_split['sizes']), 'simple sizes are only boilie diameters found on a range');
+$assert(false !== strpos($size_split['range_attrs']['15mm'], 'absorb'), '15mm stays tied to the boilie range that sells it');
+$assert(false !== strpos($size_split['range_attrs']['18mm'], 'calamari'), '18mm stays tied to every selected boilie range');
+$assert(isset($size_split['other']['1kg'], $size_split['other']['500ml'], $size_split['other']['xl'], $size_split['other']['15mm-skinz']), 'weights, volumes, clothing, and hookbait sizes stay in Advanced Options');
+$assert(false === isset($size_split['sizes']['1kg']), 'a kilogram weight is not offered as a simple boilie size');
+$editor_source = file_get_contents(dirname(__DIR__) . '/includes/bundle-manager/class-mbbb-bundle-admin.php');
+$script_source = file_get_contents(dirname(__DIR__) . '/assets/js/mb-bundle-manager.js');
+$assert(false !== strpos($editor_source, '! $is_new && ! $legacy && self::advanced_is_in_use'), 'a new bundle does not auto-open Advanced Options');
+$assert(false !== strpos($script_source, 'closeAdvanced()'), 'presets close Advanced Options');
+
 if ($failures > 0) {
 	fwrite(STDERR, "{$failures} failed.\n");
 	exit(1);

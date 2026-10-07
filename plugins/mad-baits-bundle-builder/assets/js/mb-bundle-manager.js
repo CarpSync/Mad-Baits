@@ -143,16 +143,14 @@
 	}
 
 	function sizeMatchesRanges(item, selected) {
-		var raw = item.getAttribute('data-size-ranges') || '';
-		var known = raw ? raw.split(',') : [];
-		var input = item.querySelector('input');
 		if (!selected.length) {
-			var label = item.textContent.toLowerCase();
-			return known.length === 0 || label.indexOf('mm') !== -1 || (input && input.checked);
-		}
-		if (!known.length) {
 			return false;
 		}
+		var raw = item.getAttribute('data-size-ranges') || '';
+		if (!raw) {
+			return false;
+		}
+		var known = raw.split(',');
 		return selected.some(function (slug) {
 			return known.indexOf(slug) !== -1;
 		});
@@ -182,6 +180,33 @@
 				input.checked = false;
 			}
 		});
+		if (listId === 'sizes') {
+			updateSizeHint();
+		}
+	}
+
+	function updateSizeHint() {
+		var hint = document.getElementById('mb-size-hint');
+		if (!hint) {
+			return;
+		}
+		var visible = 0;
+		form.querySelectorAll('[data-check-list="sizes"] [data-filter-item]').forEach(function (item) {
+			if (!item.hidden) {
+				visible += 1;
+			}
+		});
+		hint.hidden = visible > 0;
+		hint.textContent = selectedRangeValues().length
+			? 'None of the selected ranges have a boilie size yet.'
+			: 'Choose bait ranges to see the sizes customers can pick.';
+	}
+
+	function closeAdvanced() {
+		var advanced = document.getElementById('mb-advanced');
+		if (advanced) {
+			advanced.open = false;
+		}
 	}
 
 	function markLegacyChoices(event) {
@@ -249,6 +274,7 @@
 		});
 		toggleShows();
 		applyListFilter('sizes', false);
+		closeAdvanced();
 		updatePreview();
 		refreshCount();
 	}
@@ -385,6 +411,9 @@
 
 	toggleShows();
 	applyListFilter('sizes', false);
+	if (form.getAttribute('data-new') === '1') {
+		closeAdvanced();
+	}
 	updatePreview();
 	refreshCount();
 }(jQuery));
