@@ -479,6 +479,16 @@ final class MBBB_Cart {
 	 */
 	public function validate_add_to_cart($passed, $product_id, $qty) {
 		unset($qty);
+		if ($this->is_bundle_add_request($product_id) && class_exists('MBBB_Bundle_Runtime')) {
+			$blocked = MBBB_Bundle_Runtime::direct_purchase_error($product_id);
+			if (is_wp_error($blocked)) {
+				if (! wp_doing_ajax()) {
+					wc_add_notice($blocked->get_error_message(), 'error');
+				}
+				return false;
+			}
+		}
+
 		$plugin = MBBB_Plugin::instance();
 		if (! $plugin->is_enabled($product_id)) {
 			return $passed;
@@ -510,7 +520,33 @@ final class MBBB_Cart {
 			return false;
 		}
 
+		if (class_exists('MBBB_Bundle_Runtime')) {
+			$extra = MBBB_Bundle_Runtime::validate_posted_choices($product_id, $posted);
+			if (is_wp_error($extra)) {
+				wc_add_notice($extra->get_error_message(), 'error');
+				return false;
+			}
+		}
+
 		return $passed;
+	}
+
+	/**
+	 * True when this request is trying to add this product to the cart.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return bool
+	 */
+	private function is_bundle_add_request($product_id) {
+		$product_id = absint($product_id);
+		if ($product_id < 1) {
+			return false;
+		}
+		if (! empty($GLOBALS['mbbb_adding_to_cart']) && absint($GLOBALS['mbbb_adding_to_cart']) === $product_id) {
+			return true;
+		}
+		$requested = isset($_REQUEST['add-to-cart']) ? absint(wp_unslash((string) $_REQUEST['add-to-cart'])) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		return $requested === $product_id;
 	}
 
 	/**
@@ -587,6 +623,13 @@ final class MBBB_Cart {
 		$posted = self::get_posted_choices_from_request();
 		if (empty($posted)) {
 			wp_send_json_error(array('message' => __('Please complete all bundle choices.', 'mad-baits-bundle-builder')), 400);
+		}
+
+		if (class_exists('MBBB_Bundle_Runtime')) {
+			$extra = MBBB_Bundle_Runtime::validate_posted_choices($product_id, $posted);
+			if (is_wp_error($extra)) {
+				wp_send_json_error(array('message' => $extra->get_error_message()), 400);
+			}
 		}
 
 		$valid = $plugin->validate_choices($product_id, $posted);

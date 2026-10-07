@@ -220,6 +220,7 @@ final class MBBB_Frontend {
 				'autoAdvanceDelayMs' => (int) $global_settings['auto_advance_delay_ms'],
 				'manualNextSlotThreshold' => (int) $global_settings['manual_next_slot_threshold'],
 				'slots'           => $slots,
+				'quantityRules'   => $this->owner_quantity_rules($product_id),
 				'searchThreshold' => 12,
 				'filterThreshold' => 8,
 				'filterChips'     => $this->get_filter_chip_definitions(),
@@ -257,7 +258,7 @@ final class MBBB_Frontend {
 					'bundleComplete'  => __('Bundle complete — ready to add to basket', 'mad-baits-bundle-builder'),
 					'remaining'       => __('%d choice(s) remaining', 'mad-baits-bundle-builder'),
 					'remainingNone'   => __('Ready to add', 'mad-baits-bundle-builder'),
-					'addBundle'       => __('Add Bundle To Basket', 'mad-baits-bundle-builder'),
+					'addBundle'       => '' !== $this->owner_button_text($product_id) ? $this->owner_button_text($product_id) : __('Add Bundle To Basket', 'mad-baits-bundle-builder'),
 					'completeChoices' => __('Complete Your Choices', 'mad-baits-bundle-builder'),
 					'adding'          => __('Adding…', 'mad-baits-bundle-builder'),
 					'choicesLeft'     => __('%d choices left', 'mad-baits-bundle-builder'),
@@ -418,6 +419,12 @@ final class MBBB_Frontend {
 			return;
 		}
 
+		$owner = class_exists('MBBB_Bundle_Runtime') ? MBBB_Bundle_Runtime::config_for($product_id) : null;
+		if (is_array($owner) && ! MBBB_Bundle_Config::is_purchasable($owner)) {
+			echo '<p class="mbbb-notice">' . esc_html__('This bundle is not available right now.', 'mad-baits-bundle-builder') . '</p>';
+			return;
+		}
+
 		$settings      = $plugin->get_settings($product_id);
 		$slots         = $plugin->get_resolved_slots($product_id);
 		$display_style = sanitize_html_class((string) $settings['display_style']);
@@ -431,6 +438,7 @@ final class MBBB_Frontend {
 		$total       = count($slots);
 		$kicker      = $this->get_builder_kicker($product);
 		?>
+		<?php $this->render_owner_intro($product_id); ?>
 		<div class="mbbb-shell mbbb-product mbbb-product--premium bundle-builder-shell" id="mbbb-shell">
 			<div class="mbbb-builder <?php echo esc_attr($style_class); ?>" id="mbbb-builder" data-product-id="<?php echo esc_attr((string) $product_id); ?>" data-slot-count="<?php echo esc_attr((string) $total); ?>" data-display-style="<?php echo esc_attr($display_style); ?>">
 				<div class="mbbb-progress-dock mbbb-mobile-header" id="mbbb-progress-dock">
@@ -490,6 +498,10 @@ final class MBBB_Frontend {
 	 */
 	public function add_to_cart_button_text($text, $product) {
 		if ($product instanceof WC_Product && MBBB_Plugin::instance()->is_enabled($product->get_id())) {
+			$button = $this->owner_button_text($product->get_id());
+			if ('' !== $button) {
+				return $button;
+			}
 			return __('Add Bundle To Basket', 'mad-baits-bundle-builder');
 		}
 		return $text;
@@ -621,6 +633,7 @@ final class MBBB_Frontend {
 		?>
 		<section
 			class="mbbb-slot<?php echo $req ? ' mbbb-slot--required' : ''; ?><?php echo $show_slot_tools ? ' mbbb-slot--searchable' : ''; ?><?php echo $show_filters ? ' mbbb-slot--filterable' : ''; ?><?php echo $is_open ? ' is-active' : ' is-collapsed'; ?>"
+			<?php echo ! empty($slot['auto_select']) ? 'data-auto-select="1"' : ''; ?>
 			id="mbbb-slot-<?php echo esc_attr($key); ?>"
 			data-slot-key="<?php echo esc_attr($key); ?>"
 			data-required="<?php echo $req ? '1' : '0'; ?>"
@@ -744,10 +757,76 @@ final class MBBB_Frontend {
 	}
 
 	/**
-	 * @param WC_Product $product Product.
+	 * @param int $product_id Product ID.
 	 * @return string
 	 */
+	private function owner_button_text($product_id) {
+		if (! class_exists('MBBB_Bundle_Runtime')) {
+			return '';
+		}
+		$config = MBBB_Bundle_Runtime::config_for($product_id);
+		if (! is_array($config)) {
+			return '';
+		}
+		return trim((string) ($config['display']['button_text'] ?? ''));
+	}
+
+	/**
+	 * @param int $product_id Product ID.
+	 * @return array<string, mixed>|null
+	 */
+	private function owner_quantity_rules($product_id) {
+		if (! class_exists('MBBB_Bundle_Runtime')) {
+			return null;
+		}
+		$config = MBBB_Bundle_Runtime::config_for($product_id);
+		if (! is_array($config) || ! empty($config['preserve_slots'])) {
+			return null;
+		}
+		return array(
+			'mode'     => (string) ($config['quantity_mode'] ?? 'exact'),
+			'exact'    => (int) ($config['quantity'] ?? 0),
+			'min'      => (int) ($config['min_quantity'] ?? 0),
+			'max'      => (int) ($config['max_quantity'] ?? 0),
+			'multiple' => (int) ($config['multiple_of'] ?? 0),
+			'fixed'    => 'fixed' === ($config['bundle_type'] ?? ''),
+		);
+	}
+
+	/**
+	 * Badge and helper text for bundles edited in the owner manager.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return void
+	 */
+	private function render_owner_intro($product_id) {
+		if (! class_exists('MBBB_Bundle_Runtime')) {
+			return;
+		}
+		$config = MBBB_Bundle_Runtime::config_for($product_id);
+		if (! is_array($config) || ! empty($config['preserve_slots'])) {
+			return;
+		}
+		$badge  = trim((string) ($config['display']['badge'] ?? ''));
+		$helper = trim((string) ($config['display']['helper_text'] ?? ''));
+		if ('' === $badge && '' === $helper) {
+			return;
+		}
+		echo '<div class="mbbb-bundle-intro">';
+		if ('' !== $badge) {
+			echo '<p class="mbbb-bundle-intro__badge">' . esc_html($badge) . '</p>';
+		}
+		if ('' !== $helper) {
+			echo '<p class="mbbb-bundle-intro__helper">' . esc_html($helper) . '</p>';
+		}
+		echo '</div>';
+	}
+
 	private function get_builder_kicker($product) {
+		$button = $this->owner_button_text($product->get_id());
+		if ('' !== $button) {
+			return $button;
+		}
 		$name = trim((string) $product->get_name());
 		if ('' === $name) {
 			return __('Build Your Deal', 'mad-baits-bundle-builder');

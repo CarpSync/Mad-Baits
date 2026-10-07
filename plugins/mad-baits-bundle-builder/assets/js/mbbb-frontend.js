@@ -2061,6 +2061,15 @@
 			showValidationMessage();
 			return;
 		}
+		var quantityMessage = quantityRuleMessage();
+		if (quantityMessage) {
+			var validation = document.getElementById('mbbb-validation');
+			if (validation) {
+				validation.hidden = false;
+				validation.textContent = quantityMessage;
+			}
+			return;
+		}
 		clearValidationMessage();
 		clearWooErrorNotices();
 		resetLegacyVariationFields();
@@ -2395,6 +2404,43 @@
 	});
 
 	initSearchClearButtons();
+	document.querySelectorAll('[data-auto-select="1"]').forEach(function (section) {
+		var key = section.getAttribute('data-slot-key');
+		var buttons = section.querySelectorAll('.mbbb-option');
+		if (!key || buttons.length !== 1 || (choices[key] && choices[key].value)) {
+			return;
+		}
+		setChoice(key, buttons[0].getAttribute('data-value'), buttons[0].getAttribute('data-label'), false);
+	});
+
+	function quantityRuleMessage() {
+		var rules = cfg.quantityRules;
+		if (!rules) {
+			return '';
+		}
+		var count = 0;
+		Object.keys(choices).forEach(function (key) {
+			if (choices[key] && choices[key].value) {
+				count += 1;
+			}
+		});
+		if ((rules.fixed || rules.mode === 'exact') && count !== rules.exact && !rules.fixed) {
+			return 'Choose exactly ' + rules.exact + '.';
+		}
+		if (rules.fixed) {
+			return '';
+		}
+		if (rules.mode === 'minimum' && rules.min && count < rules.min) {
+			return 'Choose at least ' + rules.min + '.';
+		}
+		if (rules.max && count > rules.max && rules.mode === 'minimum') {
+			return 'Choose no more than ' + rules.max + '.';
+		}
+		if (rules.multiple > 1 && count % rules.multiple !== 0) {
+			return 'Choose a quantity in multiples of ' + rules.multiple + '.';
+		}
+		return '';
+	}
 
 	bindMobileChrome();
 	if ('loading' === document.readyState) {

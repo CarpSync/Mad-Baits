@@ -2755,3 +2755,22 @@ body.mbbb-product.single-product .mbbb-builder {
 		gap: 0.45rem;
 	}
 }
+
+.mbbb-bundle-intro {
+	margin: 0 0 1rem;
+}
+
+.mbbb-bundle-intro__badge {
+	display: inline-flex;
+	margin: 0 0 0.4rem;
+	background: #fff202;
+	color: #111;
+	border-radius: 999px;
+	padding: 0.15rem 0.55rem;
+	font-weight: 800;
+	font-size: 12px;
+}
+
+.mbbb-bundle-intro__helper {
+	margin: 0;
+}

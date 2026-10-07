@@ -344,6 +344,16 @@ final class MBBB_Deal_Builder {
 	 */
 	public static function save_deal(array $posted) {
 		$product_id = absint($posted['product_id'] ?? 0);
+		if ($product_id > 0 && class_exists('MBBB_Bundle_Config')) {
+			$owner = get_post_meta($product_id, MBBB_Bundle_Config::META_KEY, true);
+			if (is_array($owner) && MBBB_Bundle_Config::MANAGED_BY === ($owner['managed_by'] ?? '') && empty($owner['preserve_slots'])) {
+				return array(
+					'success'    => false,
+					'product_id' => $product_id,
+					'errors'     => array(__('This bundle is managed in MadBaits → Bundles. Edit it there so the customer choices stay in sync.', 'mad-baits-bundle-builder')),
+				);
+			}
+		}
 		$is_new     = $product_id < 1;
 		$errors     = self::validate_form_input($posted);
 
