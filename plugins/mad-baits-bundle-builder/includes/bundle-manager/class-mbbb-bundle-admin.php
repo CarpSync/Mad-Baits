@@ -357,8 +357,8 @@ final class MBBB_Bundle_Admin {
 			$this->filter_link(__('Draft', 'mad-baits-bundle-builder'), 'draft', $status, 'status');
 			$this->filter_link(__('Disabled', 'mad-baits-bundle-builder'), 'disabled', $status, 'status');
 			$this->filter_link(__('Scheduled', 'mad-baits-bundle-builder'), 'scheduled', $status, 'status');
-			$this->filter_link(__('Mix & match', 'mad-baits-bundle-builder'), 'mix_and_match', $type, 'bundle_type');
-			$this->filter_link(__('Fixed bundle', 'mad-baits-bundle-builder'), 'fixed', $type, 'bundle_type');
+			$this->filter_link(__('Mix & Match', 'mad-baits-bundle-builder'), 'mix_and_match', $type, 'bundle_type');
+			$this->filter_link(__('Fixed Bundle', 'mad-baits-bundle-builder'), 'fixed', $type, 'bundle_type');
 			?>
 		</nav>
 		<?php if (empty($rows)) : ?>
@@ -463,26 +463,35 @@ final class MBBB_Bundle_Admin {
 		if (! empty($state['warning'])) {
 			echo '<div class="mb-manager__warning" role="status">' . esc_html((string) $state['warning']) . '</div>';
 		}
-		if (! empty($state['legacy_locked'])) {
-			echo '<div class="mb-manager__warning" role="status">' . esc_html__('This bundle is already on the website. Changing the name, price, or dates is safe. Tick “Update what customers can choose” only when you want to replace the current choices.', 'mad-baits-bundle-builder') . '</div>';
+		$legacy = ! empty($state['legacy_locked']);
+		if ($legacy) {
+			echo '<div class="mb-manager__warning" role="status">' . esc_html__('This bundle uses the original MadBaits bundle structure.', 'mad-baits-bundle-builder') . '</div>';
 		}
+		$advanced_open = ! $legacy && self::advanced_is_in_use($config);
 		?>
-		<form method="post" class="mb-manager__editor" id="mb-bundle-editor">
+		<form method="post" class="mb-manager__editor" id="mb-bundle-editor" data-legacy="<?php echo $legacy ? '1' : '0'; ?>" data-new="<?php echo $is_new ? '1' : '0'; ?>">
 			<?php wp_nonce_field('mb_bundle_save'); ?>
 			<input type="hidden" name="page" value="madbaits-bundles" />
 			<input type="hidden" name="mb_bundle_save" value="1" />
 			<input type="hidden" name="product_id" value="<?php echo esc_attr((string) $bundle_id); ?>" />
 			<input type="hidden" name="intent" id="mb-bundle-intent" value="save" />
+			<?php if ($is_new) : ?>
+				<?php $this->render_presets(); ?>
+			<?php endif; ?>
 			<div class="mb-manager__layout">
 				<div class="mb-manager__main">
 					<?php $this->render_basic_section($config, (string) $state['image_url']); ?>
-					<?php $this->render_type_section($config); ?>
-					<?php $this->render_eligibility_section($config, $catalog, (int) $state['eligible_live']); ?>
+					<div id="mb-bundle-choices" data-structure="1" <?php echo $legacy ? 'hidden' : ''; ?>>
+						<?php $this->render_type_section($config); ?>
+						<?php $this->render_simple_eligibility($config, $catalog); ?>
+					</div>
+					<?php if ($legacy) : ?>
+						<button type="button" class="mb-manager__button mb-manager__button--ghost" id="mb-edit-choices"><?php esc_html_e('Edit customer choices', 'mad-baits-bundle-builder'); ?></button>
+					<?php endif; ?>
 					<?php $this->render_pricing_section($config); ?>
-					<?php $this->render_rules_section($config); ?>
-					<?php $this->render_stock_section($config); ?>
 					<?php $this->render_display_section($config); ?>
-					<?php if (! empty($state['legacy_locked'])) : ?>
+					<?php $this->render_advanced_section($config, $catalog, $advanced_open); ?>
+					<?php if ($legacy) : ?>
 						<label class="mb-manager__confirm">
 							<input type="checkbox" name="update_choices" value="1" />
 							<?php esc_html_e('Update what customers can choose', 'mad-baits-bundle-builder'); ?>
@@ -492,20 +501,7 @@ final class MBBB_Bundle_Admin {
 						<p><a href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=madbaits-bundles&action=restore&bundle_id=' . $bundle_id), 'mb_bundle_restore_' . $bundle_id)); ?>"><?php esc_html_e('Restore the original customer choices', 'mad-baits-bundle-builder'); ?></a></p>
 					<?php endif; ?>
 				</div>
-				<?php $this->render_preview($config, (string) $state['image_url'], (array) $state['preview_names']); ?>
-			</div>
-			<div class="mb-manager__savebar">
-				<?php if ($is_new || 'draft' === ($config['status'] ?? '')) : ?>
-					<button type="submit" class="mb-manager__button mb-manager__button--ghost" data-intent="draft"><?php esc_html_e('Save Draft', 'mad-baits-bundle-builder'); ?></button>
-					<button type="submit" class="mb-manager__button" data-intent="activate"><?php esc_html_e('Save & Activate', 'mad-baits-bundle-builder'); ?></button>
-				<?php else : ?>
-					<button type="submit" class="mb-manager__button" data-intent="save"><?php esc_html_e('Save Changes', 'mad-baits-bundle-builder'); ?></button>
-					<button type="submit" class="mb-manager__button mb-manager__button--ghost" data-intent="disable"><?php esc_html_e('Disable Bundle', 'mad-baits-bundle-builder'); ?></button>
-				<?php endif; ?>
-				<?php if (! $is_new) : ?>
-					<a class="mb-manager__button mb-manager__button--ghost" href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=madbaits-bundles&action=duplicate&bundle_id=' . $bundle_id), 'mb_bundle_duplicate_' . $bundle_id)); ?>"><?php esc_html_e('Duplicate Bundle', 'mad-baits-bundle-builder'); ?></a>
-				<?php endif; ?>
-				<a class="mb-manager__textlink" href="<?php echo esc_url(admin_url('admin.php?page=madbaits-bundles')); ?>"><?php esc_html_e('Back to bundles', 'mad-baits-bundle-builder'); ?></a>
+				<?php $this->render_preview($config, (string) $state['image_url'], (int) $state['eligible_live'], $is_new, $bundle_id); ?>
 			</div>
 		</form>
 		<?php
@@ -544,6 +540,21 @@ final class MBBB_Bundle_Admin {
 	}
 
 	/**
+	 * @return void
+	 */
+	private function render_presets() {
+		?>
+		<div class="mb-manager__presets" role="group" aria-label="<?php esc_attr_e('Start from preset', 'mad-baits-bundle-builder'); ?>">
+			<span class="mb-manager__preset-label"><?php esc_html_e('Start from preset', 'mad-baits-bundle-builder'); ?></span>
+			<button type="button" class="mb-manager__pill" data-preset="10kg"><?php esc_html_e('10kg Boilie', 'mad-baits-bundle-builder'); ?></button>
+			<button type="button" class="mb-manager__pill" data-preset="20kg"><?php esc_html_e('20kg Boilie', 'mad-baits-bundle-builder'); ?></button>
+			<button type="button" class="mb-manager__pill" data-preset="5kg"><?php esc_html_e('5kg Boilie', 'mad-baits-bundle-builder'); ?></button>
+			<button type="button" class="mb-manager__pill" data-preset="blank"><?php esc_html_e('Blank', 'mad-baits-bundle-builder'); ?></button>
+		</div>
+		<?php
+	}
+
+	/**
 	 * @param array<string, mixed> $config    Config.
 	 * @param string               $image_url Image URL.
 	 * @return void
@@ -552,12 +563,10 @@ final class MBBB_Bundle_Admin {
 		?>
 		<section class="mb-manager__section">
 			<h2><?php esc_html_e('Basic details', 'mad-baits-bundle-builder'); ?></h2>
-			<label for="mb-bundle-name"><?php esc_html_e('Bundle name', 'mad-baits-bundle-builder'); ?></label>
+			<label class="mb-manager__field" for="mb-bundle-name"><?php esc_html_e('Bundle name', 'mad-baits-bundle-builder'); ?></label>
 			<input id="mb-bundle-name" name="mb_bundle[name]" type="text" required value="<?php echo esc_attr((string) $config['name']); ?>" placeholder="<?php esc_attr_e('10kg Mix & Match Boilie Bundle', 'mad-baits-bundle-builder'); ?>" />
-			<label for="mb-bundle-short"><?php esc_html_e('Short description', 'mad-baits-bundle-builder'); ?></label>
-			<textarea id="mb-bundle-short" name="mb_bundle[short_description]" rows="3"><?php echo esc_textarea((string) $config['short_description']); ?></textarea>
 			<div class="mb-manager__image">
-				<label><?php esc_html_e('Bundle image', 'mad-baits-bundle-builder'); ?></label>
+				<label class="mb-manager__field"><?php esc_html_e('Bundle image', 'mad-baits-bundle-builder'); ?></label>
 				<input type="hidden" id="mb-bundle-image-id" name="mb_bundle[image_id]" value="<?php echo esc_attr((string) $config['image_id']); ?>" />
 				<div class="mb-manager__image-preview" id="mb-bundle-image-preview">
 					<?php if ('' !== $image_url) : ?>
@@ -566,24 +575,20 @@ final class MBBB_Bundle_Admin {
 				</div>
 				<button type="button" class="mb-manager__button mb-manager__button--small" id="mb-bundle-image-pick"><?php esc_html_e('Choose image', 'mad-baits-bundle-builder'); ?></button>
 			</div>
-			<fieldset>
+			<fieldset class="mb-manager__group">
 				<legend><?php esc_html_e('Status', 'mad-baits-bundle-builder'); ?></legend>
-				<?php
-				foreach (array(
-					'draft'    => __('Draft', 'mad-baits-bundle-builder'),
-					'active'   => __('Active', 'mad-baits-bundle-builder'),
-					'disabled' => __('Disabled', 'mad-baits-bundle-builder'),
-				) as $value => $label) {
-					echo '<label class="mb-manager__inline"><input type="radio" name="mb_bundle[status]" value="' . esc_attr($value) . '" ' . checked($config['status'], $value, false) . ' /> ' . esc_html($label) . '</label>';
-				}
-				?>
+				<div class="mb-manager__choice-row">
+					<?php
+					foreach (array(
+						'draft'    => __('Draft', 'mad-baits-bundle-builder'),
+						'active'   => __('Active', 'mad-baits-bundle-builder'),
+						'disabled' => __('Disabled', 'mad-baits-bundle-builder'),
+					) as $value => $label) {
+						echo '<label class="mb-manager__pill"><input type="radio" name="mb_bundle[status]" value="' . esc_attr($value) . '" ' . checked($config['status'], $value, false) . ' /> <span>' . esc_html($label) . '</span></label>';
+					}
+					?>
+				</div>
 			</fieldset>
-			<div class="mb-manager__dates">
-				<label for="mb-bundle-start"><?php esc_html_e('Start date', 'mad-baits-bundle-builder'); ?> <span><?php esc_html_e('Optional', 'mad-baits-bundle-builder'); ?></span></label>
-				<input id="mb-bundle-start" type="date" name="mb_bundle[start_date]" value="<?php echo esc_attr((string) $config['start_date']); ?>" />
-				<label for="mb-bundle-end"><?php esc_html_e('End date', 'mad-baits-bundle-builder'); ?> <span><?php esc_html_e('Optional', 'mad-baits-bundle-builder'); ?></span></label>
-				<input id="mb-bundle-end" type="date" name="mb_bundle[end_date]" value="<?php echo esc_attr((string) $config['end_date']); ?>" />
-			</div>
 		</section>
 		<?php
 	}
@@ -595,9 +600,11 @@ final class MBBB_Bundle_Admin {
 	private function render_type_section(array $config) {
 		?>
 		<section class="mb-manager__section">
-			<h2><?php esc_html_e('Bundle type', 'mad-baits-bundle-builder'); ?></h2>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[bundle_type]" value="mix_and_match" <?php checked($config['bundle_type'], 'mix_and_match'); ?> /> <span><strong><?php esc_html_e('Mix & match', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('Customer chooses the products.', 'mad-baits-bundle-builder'); ?></small></span></label>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[bundle_type]" value="fixed" <?php checked($config['bundle_type'], 'fixed'); ?> /> <span><strong><?php esc_html_e('Fixed product bundle', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('Customer receives a set mix.', 'mad-baits-bundle-builder'); ?></small></span></label>
+			<h2><?php esc_html_e('Bundle setup', 'mad-baits-bundle-builder'); ?></h2>
+			<div class="mb-manager__choice-row" role="radiogroup" aria-label="<?php esc_attr_e('Bundle type', 'mad-baits-bundle-builder'); ?>">
+				<label class="mb-manager__pill"><input type="radio" name="mb_bundle[bundle_type]" value="mix_and_match" <?php checked($config['bundle_type'], 'mix_and_match'); ?> /> <span><?php esc_html_e('Mix & Match', 'mad-baits-bundle-builder'); ?></span></label>
+				<label class="mb-manager__pill"><input type="radio" name="mb_bundle[bundle_type]" value="fixed" <?php checked($config['bundle_type'], 'fixed'); ?> /> <span><?php esc_html_e('Fixed Bundle', 'mad-baits-bundle-builder'); ?></span></label>
+			</div>
 			<div class="mb-manager__quantity" data-show-for="mix_and_match">
 				<label for="mb-bundle-quantity"><?php esc_html_e('Customer chooses', 'mad-baits-bundle-builder'); ?></label>
 				<input id="mb-bundle-quantity" type="number" min="1" max="<?php echo esc_attr((string) MBBB_Bundle_Config::MAX_CHOICES); ?>" name="mb_bundle[quantity]" value="<?php echo esc_attr((string) $config['quantity']); ?>" />
@@ -624,40 +631,96 @@ final class MBBB_Bundle_Admin {
 	}
 
 	/**
+	 * Ranges, sizes, and fixed items for the short editor.
+	 *
 	 * @param array<string, mixed> $config  Config.
 	 * @param array<string, mixed> $catalog Catalogue.
-	 * @param int                  $live    Live count.
 	 * @return void
 	 */
-	private function render_eligibility_section(array $config, array $catalog, $live) {
+	private function render_simple_eligibility(array $config, array $catalog) {
+		$size_ranges = array();
+		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
+			if (! is_array($row)) {
+				continue;
+			}
+			$size  = sanitize_title((string) ($row['size_slug'] ?? ''));
+			$range = sanitize_title((string) ($row['range_slug'] ?? ''));
+			if ('' === $size || '' === $range) {
+				continue;
+			}
+			$size_ranges[ $size ][ $range ] = $range;
+		}
+		$size_attr = array();
+		foreach ($size_ranges as $size => $ranges) {
+			$size_attr[ $size ] = implode(',', $ranges);
+		}
 		?>
-		<section class="mb-manager__section">
-			<h2><?php esc_html_e('Eligible products', 'mad-baits-bundle-builder'); ?></h2>
-			<p><?php esc_html_e('Tick what the customer is allowed to choose. Leave a group empty if it should not limit the bundle. A product has to match every group you use.', 'mad-baits-bundle-builder'); ?></p>
-			<p class="mb-manager__count" id="mb-eligible-count" aria-live="polite">
+		<section class="mb-manager__section" data-show-for="mix_and_match">
+			<?php $this->render_checks(__('Available bait ranges', 'mad-baits-bundle-builder'), 'mb_bundle[ranges][]', (array) $catalog['ranges'], (array) $config['ranges'], 'ranges', true); ?>
+		</section>
+		<section class="mb-manager__section" data-show-for="mix_and_match">
+			<?php $this->render_checks(__('Available sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', (array) $catalog['sizes'], (array) $config['sizes'], 'sizes', true, $size_attr); ?>
+		</section>
+		<section class="mb-manager__section" data-show-for="fixed">
+			<h2><?php esc_html_e('Included products', 'mad-baits-bundle-builder'); ?></h2>
+			<p class="mb-manager__hint"><?php esc_html_e('Tick the products included in this set. Add a quantity when the bundle contains more than one of the same product.', 'mad-baits-bundle-builder'); ?></p>
+			<?php $this->render_fixed_items($catalog, (array) $config['fixed_items']); ?>
+		</section>
+		<?php
+	}
+
+	/**
+	 * @param array<string, mixed> $config Config.
+	 * @param array<string, mixed> $catalog Catalogue.
+	 * @param bool                 $open   Open the disclosure.
+	 * @return void
+	 */
+	private function render_advanced_section(array $config, array $catalog, $open) {
+		?>
+		<details class="mb-manager__advanced" id="mb-advanced" <?php echo $open ? 'open' : ''; ?>>
+			<summary><?php esc_html_e('Advanced Options', 'mad-baits-bundle-builder'); ?></summary>
+			<label class="mb-manager__field" for="mb-bundle-short"><?php esc_html_e('Short description', 'mad-baits-bundle-builder'); ?></label>
+			<textarea id="mb-bundle-short" name="mb_bundle[short_description]" rows="3"><?php echo esc_textarea((string) $config['short_description']); ?></textarea>
+			<div class="mb-manager__dates">
+				<div>
+					<label class="mb-manager__field" for="mb-bundle-start"><?php esc_html_e('Start date', 'mad-baits-bundle-builder'); ?></label>
+					<input id="mb-bundle-start" type="date" name="mb_bundle[start_date]" value="<?php echo esc_attr((string) $config['start_date']); ?>" />
+				</div>
+				<div>
+					<label class="mb-manager__field" for="mb-bundle-end"><?php esc_html_e('End date', 'mad-baits-bundle-builder'); ?></label>
+					<input id="mb-bundle-end" type="date" name="mb_bundle[end_date]" value="<?php echo esc_attr((string) $config['end_date']); ?>" />
+				</div>
+			</div>
+			<label class="mb-manager__field" for="mb-bundle-button"><?php esc_html_e('Button text', 'mad-baits-bundle-builder'); ?></label>
+			<input id="mb-bundle-button" type="text" name="mb_bundle[button_text]" value="<?php echo esc_attr((string) $config['display']['button_text']); ?>" placeholder="<?php esc_attr_e('Build Your Bundle', 'mad-baits-bundle-builder'); ?>" />
+			<fieldset class="mb-manager__group">
+				<legend><?php esc_html_e('Pricing type', 'mad-baits-bundle-builder'); ?></legend>
+				<div class="mb-manager__choice-row">
+					<label class="mb-manager__pill"><input type="radio" name="mb_bundle[pricing_mode]" value="fixed" <?php checked($config['pricing']['mode'], 'fixed'); ?> /> <span><?php esc_html_e('Fixed bundle price', 'mad-baits-bundle-builder'); ?></span></label>
+					<label class="mb-manager__pill"><input type="radio" name="mb_bundle[pricing_mode]" value="percent" <?php checked($config['pricing']['mode'], 'percent'); ?> /> <span><?php esc_html_e('Percentage discount', 'mad-baits-bundle-builder'); ?></span></label>
+					<label class="mb-manager__pill"><input type="radio" name="mb_bundle[pricing_mode]" value="amount" <?php checked($config['pricing']['mode'], 'amount'); ?> /> <span><?php esc_html_e('Fixed discount', 'mad-baits-bundle-builder'); ?></span></label>
+				</div>
+			</fieldset>
+			<label class="mb-manager__field" for="mb-bundle-percent" data-price-for="percent"><?php esc_html_e('Percent off', 'mad-baits-bundle-builder'); ?></label>
+			<input data-price-for="percent" id="mb-bundle-percent" type="number" min="1" max="100" name="mb_bundle[percent]" value="<?php echo esc_attr((string) $config['pricing']['percent']); ?>" />
+			<label class="mb-manager__field" for="mb-bundle-amount" data-price-for="amount"><?php esc_html_e('Amount off', 'mad-baits-bundle-builder'); ?></label>
+			<input data-price-for="amount" id="mb-bundle-amount" type="number" min="0" step="0.01" name="mb_bundle[amount]" value="<?php echo esc_attr((string) $config['pricing']['amount']); ?>" />
+			<div data-structure="1">
+				<?php $this->render_rules_section($config); ?>
+			</div>
+			<?php $this->render_stock_section($config); ?>
+			<div data-show-for="mix_and_match" data-structure="1">
+				<p class="mb-manager__hint"><?php esc_html_e('Leave a group empty if it should not limit the bundle. A product has to match every group you use, including the ranges and sizes above.', 'mad-baits-bundle-builder'); ?></p>
 				<?php
-				echo esc_html(
-					sprintf(
-						/* translators: %d: variation count */
-						_n('%d eligible product variation', '%d eligible product variations', $live, 'mad-baits-bundle-builder'),
-						$live
-					)
-				);
-				?>
-			</p>
-			<div data-show-for="mix_and_match">
-				<?php
-				$this->render_checks(__('Available bait ranges', 'mad-baits-bundle-builder'), 'mb_bundle[ranges][]', (array) $catalog['ranges'], (array) $config['ranges'], 'ranges');
-				$this->render_checks(__('Allowed sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', (array) $catalog['sizes'], (array) $config['sizes'], 'sizes');
-				$this->render_checks(__('Product categories', 'mad-baits-bundle-builder'), 'mb_bundle[categories][]', (array) $catalog['categories'], (array) $config['categories'], 'categories');
-				$this->render_checks(__('Specific products', 'mad-baits-bundle-builder'), 'mb_bundle[product_ids][]', (array) $catalog['products'], (array) $config['product_ids'], 'products');
+				$this->render_checks(__('Product categories', 'mad-baits-bundle-builder'), 'mb_bundle[categories][]', (array) $catalog['categories'], (array) $config['categories'], 'categories', false);
+				$this->render_checks(__('Specific products', 'mad-baits-bundle-builder'), 'mb_bundle[product_ids][]', (array) $catalog['products'], (array) $config['product_ids'], 'products', false);
 				$variation_options = array();
 				foreach ((array) $catalog['variations'] as $row) {
 					if (is_array($row) && ! empty($row['id'])) {
 						$variation_options[ (int) $row['id'] ] = (string) ($row['name'] ?? '');
 					}
 				}
-				$this->render_checks(__('Individual bait choices', 'mad-baits-bundle-builder'), 'mb_bundle[variation_ids][]', $variation_options, (array) $config['variation_ids'], 'variations');
+				$this->render_checks(__('Individual bait choices', 'mad-baits-bundle-builder'), 'mb_bundle[variation_ids][]', $variation_options, (array) $config['variation_ids'], 'variations', false);
 				foreach ((array) $catalog['attributes'] as $taxonomy => $attribute) {
 					if (! is_array($attribute)) {
 						continue;
@@ -667,16 +730,42 @@ final class MBBB_Bundle_Admin {
 					if ('' === $label) {
 						$label = ucwords(trim(str_replace(array('pa_', '-', '_'), ' ', (string) $taxonomy)));
 					}
-					$this->render_checks($label, 'mb_bundle[attributes][' . $taxonomy . '][]', (array) ($attribute['terms'] ?? array()), $selected, 'attr-' . sanitize_key((string) $taxonomy));
+					$this->render_checks($label, 'mb_bundle[attributes][' . $taxonomy . '][]', (array) ($attribute['terms'] ?? array()), $selected, 'attr-' . sanitize_key((string) $taxonomy), false);
 				}
 				?>
 			</div>
-			<div data-show-for="fixed">
-				<p><?php esc_html_e('Tick the products included in this set. Add a quantity when the bundle contains more than one of the same product.', 'mad-baits-bundle-builder'); ?></p>
-				<?php $this->render_fixed_items($catalog, (array) $config['fixed_items']); ?>
-			</div>
-		</section>
+		</details>
 		<?php
+	}
+
+	/**
+	 * @param array<string, mixed> $config Config.
+	 * @return bool
+	 */
+	private static function advanced_is_in_use(array $config) {
+		$pricing = isset($config['pricing']) && is_array($config['pricing']) ? $config['pricing'] : array();
+		if ('fixed' !== (string) ($pricing['mode'] ?? 'fixed')) {
+			return true;
+		}
+		if ('' !== (string) ($config['start_date'] ?? '') || '' !== (string) ($config['end_date'] ?? '')) {
+			return true;
+		}
+		if ('exact' !== (string) ($config['quantity_mode'] ?? 'exact') || (int) ($config['multiple_of'] ?? 0) > 0) {
+			return true;
+		}
+		if ('' !== trim((string) ($config['short_description'] ?? ''))) {
+			return true;
+		}
+		if (! empty($config['categories']) || ! empty($config['product_ids']) || ! empty($config['variation_ids'])) {
+			return true;
+		}
+		$attributes = isset($config['attributes']) && is_array($config['attributes']) ? $config['attributes'] : array();
+		foreach ($attributes as $terms) {
+			if (! empty($terms)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**
@@ -688,16 +777,11 @@ final class MBBB_Bundle_Admin {
 		?>
 		<section class="mb-manager__section">
 			<h2><?php esc_html_e('Pricing', 'mad-baits-bundle-builder'); ?></h2>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[pricing_mode]" value="fixed" <?php checked($pricing['mode'], 'fixed'); ?> /> <span><strong><?php esc_html_e('Fixed bundle price', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('Example: the customer pays £74.99.', 'mad-baits-bundle-builder'); ?></small></span></label>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[pricing_mode]" value="percent" <?php checked($pricing['mode'], 'percent'); ?> /> <span><strong><?php esc_html_e('Percentage discount', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('Example: 10% off the products they choose.', 'mad-baits-bundle-builder'); ?></small></span></label>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[pricing_mode]" value="amount" <?php checked($pricing['mode'], 'amount'); ?> /> <span><strong><?php esc_html_e('Fixed discount', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('Example: £10 off the calculated total.', 'mad-baits-bundle-builder'); ?></small></span></label>
-			<p class="mb-manager__hint"><?php esc_html_e('Team and trade discounts still apply at checkout when they are set up. This screen sets the bundle price itself.', 'mad-baits-bundle-builder'); ?></p>
-			<label for="mb-bundle-fixed-price" data-price-for="fixed"><?php esc_html_e('Bundle price', 'mad-baits-bundle-builder'); ?></label>
-			<input data-price-for="fixed" id="mb-bundle-fixed-price" type="number" min="0" step="0.01" name="mb_bundle[fixed_price]" value="<?php echo esc_attr((string) $pricing['fixed_price']); ?>" />
-			<label for="mb-bundle-percent" data-price-for="percent"><?php esc_html_e('Percent off', 'mad-baits-bundle-builder'); ?></label>
-			<input data-price-for="percent" id="mb-bundle-percent" type="number" min="1" max="100" name="mb_bundle[percent]" value="<?php echo esc_attr((string) $pricing['percent']); ?>" />
-			<label for="mb-bundle-amount" data-price-for="amount"><?php esc_html_e('Amount off', 'mad-baits-bundle-builder'); ?></label>
-			<input data-price-for="amount" id="mb-bundle-amount" type="number" min="0" step="0.01" name="mb_bundle[amount]" value="<?php echo esc_attr((string) $pricing['amount']); ?>" />
+			<p class="mb-manager__hint" data-price-for="fixed"><?php esc_html_e('Fixed bundle price', 'mad-baits-bundle-builder'); ?></p>
+			<p class="mb-manager__hint" data-price-for="percent"><?php esc_html_e('This bundle uses a percentage discount. Change it under Advanced Options.', 'mad-baits-bundle-builder'); ?></p>
+			<p class="mb-manager__hint" data-price-for="amount"><?php esc_html_e('This bundle uses a fixed discount. Change it under Advanced Options.', 'mad-baits-bundle-builder'); ?></p>
+			<label class="mb-manager__field" for="mb-bundle-fixed-price" data-price-for="fixed"><?php esc_html_e('Bundle price', 'mad-baits-bundle-builder'); ?></label>
+			<input data-price-for="fixed" id="mb-bundle-fixed-price" type="number" min="0" step="0.01" name="mb_bundle[fixed_price]" value="<?php echo esc_attr((string) $pricing['fixed_price']); ?>" placeholder="74.99" />
 			<p class="mb-manager__summary" id="mb-price-summary"><?php echo esc_html(MBBB_Bundle_Pricing::summary($config)); ?></p>
 		</section>
 		<?php
@@ -711,8 +795,10 @@ final class MBBB_Bundle_Admin {
 		?>
 		<section class="mb-manager__section" data-show-for="mix_and_match">
 			<h2><?php esc_html_e('Rules', 'mad-baits-bundle-builder'); ?></h2>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[quantity_mode]" value="exact" <?php checked($config['quantity_mode'], 'exact'); ?> /> <span><strong><?php esc_html_e('Exact quantity', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('A 10kg bundle uses 10. A 20kg bundle uses 20.', 'mad-baits-bundle-builder'); ?></small></span></label>
-			<label class="mb-manager__choice"><input type="radio" name="mb_bundle[quantity_mode]" value="minimum" <?php checked($config['quantity_mode'], 'minimum'); ?> /> <span><strong><?php esc_html_e('Minimum and maximum', 'mad-baits-bundle-builder'); ?></strong><small><?php esc_html_e('Example: at least 10 and no more than 20.', 'mad-baits-bundle-builder'); ?></small></span></label>
+			<div class="mb-manager__choice-row">
+				<label class="mb-manager__pill"><input type="radio" name="mb_bundle[quantity_mode]" value="exact" <?php checked($config['quantity_mode'], 'exact'); ?> /> <span><?php esc_html_e('Exact quantity', 'mad-baits-bundle-builder'); ?></span></label>
+				<label class="mb-manager__pill"><input type="radio" name="mb_bundle[quantity_mode]" value="minimum" <?php checked($config['quantity_mode'], 'minimum'); ?> /> <span><?php esc_html_e('Minimum and maximum', 'mad-baits-bundle-builder'); ?></span></label>
+			</div>
 			<div class="mb-manager__dates" data-show-for-mode="minimum">
 				<label for="mb-bundle-min"><?php esc_html_e('Minimum', 'mad-baits-bundle-builder'); ?></label>
 				<input id="mb-bundle-min" type="number" min="0" name="mb_bundle[min_quantity]" value="<?php echo esc_attr((string) $config['min_quantity']); ?>" />
@@ -735,7 +821,7 @@ final class MBBB_Bundle_Admin {
 		?>
 		<section class="mb-manager__section">
 			<h2><?php esc_html_e('Stock and availability', 'mad-baits-bundle-builder'); ?></h2>
-			<p><?php esc_html_e('Availability follows the normal WooCommerce stock on each product. This bundle does not keep its own stock number.', 'mad-baits-bundle-builder'); ?></p>
+			<p><?php esc_html_e('Availability follows the stock already set on each product. This bundle does not keep a separate stock number.', 'mad-baits-bundle-builder'); ?></p>
 			<label class="mb-manager__inline"><input type="hidden" name="mb_bundle[hide_unavailable]" value="0" /><input type="checkbox" name="mb_bundle[hide_unavailable]" value="1" <?php checked(! empty($stock['hide_unavailable'])); ?> /> <?php esc_html_e('Hide unavailable products', 'mad-baits-bundle-builder'); ?></label>
 			<label class="mb-manager__inline"><input type="hidden" name="mb_bundle[prevent_oos]" value="0" /><input type="checkbox" name="mb_bundle[prevent_oos]" value="1" <?php checked(! empty($stock['prevent_oos'])); ?> /> <?php esc_html_e('Prevent selection of out-of-stock variations', 'mad-baits-bundle-builder'); ?></label>
 		</section>
@@ -751,24 +837,26 @@ final class MBBB_Bundle_Admin {
 		?>
 		<section class="mb-manager__section">
 			<h2><?php esc_html_e('Customer display', 'mad-baits-bundle-builder'); ?></h2>
-			<label for="mb-bundle-button"><?php esc_html_e('Button text', 'mad-baits-bundle-builder'); ?></label>
-			<input id="mb-bundle-button" type="text" name="mb_bundle[button_text]" value="<?php echo esc_attr((string) $display['button_text']); ?>" placeholder="<?php esc_attr_e('Build Your Bundle', 'mad-baits-bundle-builder'); ?>" />
-			<label for="mb-bundle-helper"><?php esc_html_e('Helper text', 'mad-baits-bundle-builder'); ?></label>
+			<label class="mb-manager__field" for="mb-bundle-helper"><?php esc_html_e('Helper text', 'mad-baits-bundle-builder'); ?></label>
 			<input id="mb-bundle-helper" type="text" name="mb_bundle[helper_text]" value="<?php echo esc_attr((string) $display['helper_text']); ?>" placeholder="<?php esc_attr_e('Choose any 10 bags from the ranges below.', 'mad-baits-bundle-builder'); ?>" />
-			<label for="mb-bundle-badge"><?php esc_html_e('Optional badge', 'mad-baits-bundle-builder'); ?></label>
+			<label class="mb-manager__field" for="mb-bundle-badge"><?php esc_html_e('Optional badge', 'mad-baits-bundle-builder'); ?></label>
 			<input id="mb-bundle-badge" type="text" name="mb_bundle[badge]" value="<?php echo esc_attr((string) $display['badge']); ?>" placeholder="<?php esc_attr_e('Save £15', 'mad-baits-bundle-builder'); ?>" />
 		</section>
 		<?php
 	}
 
 	/**
-	 * @param array<string, mixed> $config     Config.
-	 * @param string               $image_url  Image.
-	 * @param string[]             $names      Sample product names.
+	 * @param array<string, mixed> $config    Config.
+	 * @param string               $image_url Image.
+	 * @param int                  $live      Purchasable count.
+	 * @param bool                 $is_new    New bundle.
+	 * @param int                  $bundle_id Bundle ID.
 	 * @return void
 	 */
-	private function render_preview(array $config, $image_url, array $names) {
+	private function render_preview(array $config, $image_url, $live, $is_new, $bundle_id) {
 		$display = (array) $config['display'];
+		$ranges  = array();
+		$sizes   = array();
 		?>
 		<aside class="mb-manager__preview" aria-label="<?php esc_attr_e('Customer preview', 'mad-baits-bundle-builder'); ?>">
 			<p class="mb-manager__preview-kicker"><?php esc_html_e('Customer preview', 'mad-baits-bundle-builder'); ?></p>
@@ -780,15 +868,37 @@ final class MBBB_Bundle_Admin {
 				</div>
 				<p class="mb-preview__badge" id="mb-preview-badge" <?php echo '' === (string) $display['badge'] ? 'hidden' : ''; ?>><?php echo esc_html((string) $display['badge']); ?></p>
 				<h3 id="mb-preview-name"><?php echo esc_html('' !== (string) $config['name'] ? (string) $config['name'] : __('Bundle name', 'mad-baits-bundle-builder')); ?></h3>
+				<p class="mb-preview__meta" id="mb-preview-status"><?php echo esc_html(MBBB_Bundle_Config::status_label((string) $config['status'], $config)); ?></p>
 				<p id="mb-preview-helper"><?php echo esc_html((string) ($display['helper_text'] ?: MBBB_Bundle_Config::choice_sentence($config))); ?></p>
 				<p id="mb-preview-qty"><?php echo esc_html(MBBB_Bundle_Config::choice_sentence($config)); ?></p>
-				<ul id="mb-preview-ranges">
-					<?php foreach ($names as $name) : ?>
-						<li><?php echo esc_html((string) $name); ?></li>
-					<?php endforeach; ?>
-				</ul>
+				<p class="mb-preview__meta" id="mb-preview-ranges"><?php echo esc_html($ranges ? implode(', ', $ranges) : __('No ranges selected', 'mad-baits-bundle-builder')); ?></p>
+				<p class="mb-preview__meta" id="mb-preview-sizes"><?php echo esc_html($sizes ? implode(', ', $sizes) : __('No sizes selected', 'mad-baits-bundle-builder')); ?></p>
 				<p id="mb-preview-price"><?php echo esc_html(MBBB_Bundle_Pricing::summary($config)); ?></p>
 				<span class="mb-preview__button" id="mb-preview-button"><?php echo esc_html('' !== (string) $display['button_text'] ? (string) $display['button_text'] : __('Build Your Bundle', 'mad-baits-bundle-builder')); ?></span>
+			</div>
+			<p class="mb-manager__count" id="mb-eligible-count" aria-live="polite">
+				<?php
+				echo esc_html(
+					sprintf(
+						/* translators: %d: eligible product count */
+						_n('%d eligible product', '%d eligible products', $live, 'mad-baits-bundle-builder'),
+						$live
+					)
+				);
+				?>
+			</p>
+			<div class="mb-manager__side-actions">
+				<?php if ($is_new || 'draft' === ($config['status'] ?? '')) : ?>
+					<button type="submit" class="mb-manager__button mb-manager__button--ghost" data-intent="draft"><?php esc_html_e('Save Draft', 'mad-baits-bundle-builder'); ?></button>
+					<button type="submit" class="mb-manager__button" data-intent="activate"><?php esc_html_e('Save & Activate', 'mad-baits-bundle-builder'); ?></button>
+				<?php else : ?>
+					<button type="submit" class="mb-manager__button" data-intent="save"><?php esc_html_e('Save Changes', 'mad-baits-bundle-builder'); ?></button>
+					<button type="submit" class="mb-manager__button mb-manager__button--ghost" data-intent="disable"><?php esc_html_e('Disable Bundle', 'mad-baits-bundle-builder'); ?></button>
+				<?php endif; ?>
+				<?php if (! $is_new) : ?>
+					<a class="mb-manager__button mb-manager__button--ghost" href="<?php echo esc_url(wp_nonce_url(admin_url('admin.php?page=madbaits-bundles&action=duplicate&bundle_id=' . $bundle_id), 'mb_bundle_duplicate_' . $bundle_id)); ?>"><?php esc_html_e('Duplicate Bundle', 'mad-baits-bundle-builder'); ?></a>
+				<?php endif; ?>
+				<a class="mb-manager__textlink" href="<?php echo esc_url(admin_url('admin.php?page=madbaits-bundles')); ?>"><?php esc_html_e('Back to bundles', 'mad-baits-bundle-builder'); ?></a>
 			</div>
 		</aside>
 		<?php
@@ -802,24 +912,33 @@ final class MBBB_Bundle_Admin {
 	 * @param string               $list_id  List key.
 	 * @return void
 	 */
-	private function render_checks($legend, $name, array $options, array $selected, $list_id) {
+	private function render_checks($legend, $name, array $options, array $selected, $list_id, $pills = false, array $item_data = array()) {
 		$selected = array_map('strval', $selected);
 		echo '<fieldset class="mb-manager__group">';
-		echo '<legend>' . esc_html($legend) . '</legend>';
+		if ('' !== $legend) {
+			echo '<legend>' . esc_html($legend) . '</legend>';
+		}
 		if (empty($options)) {
 			echo '<p class="mb-manager__hint">' . esc_html__('Nothing is available here yet. Add products in WooCommerce and they will show up in this list.', 'mad-baits-bundle-builder') . '</p>';
 			echo '</fieldset>';
 			return;
 		}
+		$show_search = count($options) >= 12;
 		echo '<div class="mb-manager__group-tools">';
-		echo '<label class="screen-reader-text" for="mb-filter-' . esc_attr($list_id) . '">' . esc_html__('Search', 'mad-baits-bundle-builder') . '</label>';
-		echo '<input id="mb-filter-' . esc_attr($list_id) . '" type="search" data-filter-list="' . esc_attr($list_id) . '" placeholder="' . esc_attr__('Search', 'mad-baits-bundle-builder') . '" />';
+		if ($show_search) {
+			echo '<label class="screen-reader-text" for="mb-filter-' . esc_attr($list_id) . '">' . esc_html__('Search', 'mad-baits-bundle-builder') . '</label>';
+			echo '<input id="mb-filter-' . esc_attr($list_id) . '" type="search" data-filter-list="' . esc_attr($list_id) . '" placeholder="' . esc_attr__('Search', 'mad-baits-bundle-builder') . '" />';
+		}
 		echo '<button type="button" class="mb-manager__button mb-manager__button--small mb-manager__button--ghost" data-select-all="' . esc_attr($list_id) . '">' . esc_html__('Select all', 'mad-baits-bundle-builder') . '</button>';
 		echo '<button type="button" class="mb-manager__button mb-manager__button--small mb-manager__button--ghost" data-clear="' . esc_attr($list_id) . '">' . esc_html__('Clear', 'mad-baits-bundle-builder') . '</button>';
-		echo '</div><div class="mb-manager__checks" data-check-list="' . esc_attr($list_id) . '">';
+		echo '</div><div class="mb-manager__checks' . ($pills ? '' : ' mb-manager__checks--scroll') . '" data-check-list="' . esc_attr($list_id) . '">';
 		foreach ($options as $value => $label) {
 			$value = (string) $value;
-			echo '<label data-filter-item="' . esc_attr($list_id) . '"><input type="checkbox" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" ' . checked(in_array($value, $selected, true) || in_array((string) absint($value), $selected, true), true, false) . ' /> <span>' . esc_html((string) $label) . '</span></label>';
+			$extra = '';
+			if (isset($item_data[ $value ]) && '' !== (string) $item_data[ $value ]) {
+				$extra = ' data-size-ranges="' . esc_attr((string) $item_data[ $value ]) . '"';
+			}
+			echo '<label class="mb-manager__pill" data-filter-item="' . esc_attr($list_id) . '"' . $extra . '><input type="checkbox" name="' . esc_attr($name) . '" value="' . esc_attr($value) . '" ' . checked(in_array($value, $selected, true) || in_array((string) absint($value), $selected, true), true, false) . ' /> <span>' . esc_html((string) $label) . '</span></label>';
 		}
 		echo '</div></fieldset>';
 	}
@@ -840,14 +959,14 @@ final class MBBB_Bundle_Admin {
 				$selected[ $id ] = max(1, (int) ($item['quantity'] ?? 1));
 			}
 		}
-		echo '<div class="mb-manager__checks mb-manager__checks--fixed" data-check-list="fixed">';
+		echo '<div class="mb-manager__checks mb-manager__checks--scroll" data-check-list="fixed">';
 		foreach ((array) $catalog['variations'] as $row) {
 			if (! is_array($row) || empty($row['id'])) {
 				continue;
 			}
 			$id  = (int) $row['id'];
 			$qty = $selected[ $id ] ?? 1;
-			echo '<label data-filter-item="fixed"><input type="checkbox" name="mb_bundle[fixed_selected][]" value="' . esc_attr((string) $id) . '" ' . checked(isset($selected[ $id ]), true, false) . ' /> <span>' . esc_html((string) ($row['name'] ?? '')) . '</span>';
+			echo '<label class="mb-manager__pill" data-filter-item="fixed"><input type="checkbox" name="mb_bundle[fixed_selected][]" value="' . esc_attr((string) $id) . '" ' . checked(isset($selected[ $id ]), true, false) . ' /> <span>' . esc_html((string) ($row['name'] ?? '')) . '</span>';
 			echo ' <input class="mb-manager__qty" type="number" min="1" max="' . esc_attr((string) MBBB_Bundle_Config::MAX_CHOICES) . '" name="mb_bundle[fixed_qty][' . esc_attr((string) $id) . ']" value="' . esc_attr((string) $qty) . '" aria-label="' . esc_attr__('Quantity', 'mad-baits-bundle-builder') . '" /></label>';
 		}
 		if (empty($catalog['variations'])) {

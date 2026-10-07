@@ -109,6 +109,15 @@ $live    = MBBB_Bundle_Eligibility::purchasable($catalogue, $owner);
 $assert(5 === count($matched), 'ranges and sizes match five variations, including the out-of-stock tub');
 $assert(4 === count($live), 'out-of-stock variation is excluded');
 $assert(false === MBBB_Bundle_Eligibility::matches($catalogue[5], $owner), 'unticked Squid range is not eligible');
+$simple = MBBB_Bundle_Config::sanitize($owner);
+$simple['categories'] = array();
+$simple['product_ids'] = array();
+$simple['variation_ids'] = array();
+$simple['attributes'] = array();
+$assert(count($live) === count(MBBB_Bundle_Eligibility::purchasable($catalogue, $simple)), 'simple range and size selection keeps the same eligibility result');
+$narrowed = MBBB_Bundle_Config::sanitize($owner);
+$narrowed['categories'] = array('hookbaits');
+$assert(0 === count(MBBB_Bundle_Eligibility::purchasable($catalogue, $narrowed)), 'advanced category filter still narrows a simple range and size selection');
 
 $options = MBBB_Bundle_Eligibility::to_slot_options($live);
 $slots   = MBBB_Bundle_Compiler::compile($owner, $options);
