@@ -545,6 +545,72 @@
 	display: none;
 }
 
+.mb-content-card {
+	border: 1px solid var(--mb-border-soft);
+	border-radius: 12px;
+	background: var(--mb-surface);
+	padding: 0.85rem 1rem;
+	margin: 0 0 0.75rem;
+}
+
+.mb-content-card__summary {
+	display: flex;
+	justify-content: space-between;
+	gap: 0.75rem;
+	align-items: flex-start;
+}
+
+.mb-content-card__title,
+.mb-content-card__qty {
+	margin: 0;
+	font-weight: 800;
+}
+
+.mb-content-card__detail {
+	margin: 0.15rem 0 0;
+	color: var(--mb-muted);
+}
+
+.mb-content-card__detail:empty {
+	display: none;
+}
+
+.mb-content-card__actions {
+	display: flex;
+	gap: 0.4rem;
+	flex-shrink: 0;
+}
+
+.mb-content-card__editor {
+	margin-top: 0.85rem;
+	padding-top: 0.85rem;
+	border-top: 1px solid var(--mb-border-soft);
+}
+
+.mb-content-card__choose {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.5rem;
+	align-items: center;
+	margin: 0.35rem 0 0.75rem;
+}
+
+.mb-content-card__choose input[type="number"] {
+	width: 5.5rem;
+}
+
+.mb-content-card__products {
+	max-height: 220px;
+	overflow: auto;
+}
+
+.mb-content-card__product {
+	display: flex;
+	gap: 0.45rem;
+	align-items: flex-start;
+	margin: 0.3rem 0;
+}
+
 @media (max-width: 1280px) {
 	.mb-manager__layout {
 		grid-template-columns: minmax(0, 1fr) 280px;

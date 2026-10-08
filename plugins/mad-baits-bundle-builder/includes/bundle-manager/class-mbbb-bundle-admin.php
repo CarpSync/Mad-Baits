@@ -241,11 +241,12 @@ final class MBBB_Bundle_Admin {
 		if (! current_user_can(self::capability())) {
 			wp_send_json_error(array('message' => __('You do not have permission to manage bundles.', 'mad-baits-bundle-builder')), 403);
 		}
-		$posted  = isset($_POST['mb_bundle']) && is_array($_POST['mb_bundle']) ? wp_unslash($_POST['mb_bundle']) : array();
-		$config  = MBBB_Bundle_Config::sanitize($posted);
-		$catalog = MBBB_Bundle_Repository::catalogue();
-		$matched = MBBB_Bundle_Eligibility::matching($catalog['variations'], $config);
-		$live    = MBBB_Bundle_Eligibility::purchasable($catalog['variations'], $config);
+		$posted    = isset($_POST['mb_bundle']) && is_array($_POST['mb_bundle']) ? wp_unslash($_POST['mb_bundle']) : array();
+		$config    = MBBB_Bundle_Config::sanitize($posted);
+		$catalog   = MBBB_Bundle_Repository::catalogue();
+		$selection = MBBB_Bundle_Eligibility::selection($catalog['variations'], $config);
+		$matched   = $selection['matched'];
+		$live      = $selection['live'];
 		$names   = array();
 		foreach (array_slice($live, 0, 8) as $row) {
 			$names[] = (string) ($row['name'] ?? '');
@@ -563,9 +564,9 @@ final class MBBB_Bundle_Admin {
 		?>
 		<div class="mb-manager__presets" role="group" aria-label="<?php esc_attr_e('Start from preset', 'mad-baits-bundle-builder'); ?>">
 			<span class="mb-manager__preset-label"><?php esc_html_e('Start from preset', 'mad-baits-bundle-builder'); ?></span>
-			<button type="button" class="mb-manager__pill" data-preset="10kg"><?php esc_html_e('10kg Boilie', 'mad-baits-bundle-builder'); ?></button>
-			<button type="button" class="mb-manager__pill" data-preset="20kg"><?php esc_html_e('20kg Boilie', 'mad-baits-bundle-builder'); ?></button>
-			<button type="button" class="mb-manager__pill" data-preset="5kg"><?php esc_html_e('5kg Boilie', 'mad-baits-bundle-builder'); ?></button>
+			<button type="button" class="mb-manager__pill" data-preset="10kg"><?php esc_html_e('10kg Boilie Deal', 'mad-baits-bundle-builder'); ?></button>
+			<button type="button" class="mb-manager__pill" data-preset="20kg"><?php esc_html_e('20kg Boilie Deal', 'mad-baits-bundle-builder'); ?></button>
+			<button type="button" class="mb-manager__pill" data-preset="5kg"><?php esc_html_e('5kg Boilie Deal', 'mad-baits-bundle-builder'); ?></button>
 			<button type="button" class="mb-manager__pill" data-preset="blank"><?php esc_html_e('Blank', 'mad-baits-bundle-builder'); ?></button>
 		</div>
 		<?php
@@ -622,27 +623,9 @@ final class MBBB_Bundle_Admin {
 				<label class="mb-manager__pill"><input type="radio" name="mb_bundle[bundle_type]" value="mix_and_match" <?php checked($config['bundle_type'], 'mix_and_match'); ?> /> <span><?php esc_html_e('Mix & Match', 'mad-baits-bundle-builder'); ?></span></label>
 				<label class="mb-manager__pill"><input type="radio" name="mb_bundle[bundle_type]" value="fixed" <?php checked($config['bundle_type'], 'fixed'); ?> /> <span><?php esc_html_e('Fixed Bundle', 'mad-baits-bundle-builder'); ?></span></label>
 			</div>
-			<div class="mb-manager__quantity" data-show-for="mix_and_match">
-				<label for="mb-bundle-quantity"><?php esc_html_e('Customer chooses', 'mad-baits-bundle-builder'); ?></label>
-				<input id="mb-bundle-quantity" type="number" min="1" max="<?php echo esc_attr((string) MBBB_Bundle_Config::MAX_CHOICES); ?>" name="mb_bundle[quantity]" value="<?php echo esc_attr((string) $config['quantity']); ?>" />
-				<label for="mb-bundle-unit"><?php esc_html_e('Unit', 'mad-baits-bundle-builder'); ?></label>
-				<select id="mb-bundle-unit" name="mb_bundle[unit]">
-					<?php
-					foreach (array(
-						'bags'    => __('Bags', 'mad-baits-bundle-builder'),
-						'tubs'    => __('Tubs', 'mad-baits-bundle-builder'),
-						'bottles' => __('Bottles', 'mad-baits-bundle-builder'),
-						'items'   => __('Items', 'mad-baits-bundle-builder'),
-						'custom'  => __('Custom', 'mad-baits-bundle-builder'),
-					) as $value => $label) {
-						echo '<option value="' . esc_attr($value) . '" ' . selected($config['unit'], $value, false) . '>' . esc_html($label) . '</option>';
-					}
-					?>
-				</select>
-				<label for="mb-bundle-unit-custom" data-show-for-unit="custom"><?php esc_html_e('Custom unit label', 'mad-baits-bundle-builder'); ?></label>
-				<input id="mb-bundle-unit-custom" data-show-for-unit="custom" type="text" name="mb_bundle[unit_custom]" value="<?php echo esc_attr((string) $config['unit_custom']); ?>" placeholder="<?php esc_attr_e('bags', 'mad-baits-bundle-builder'); ?>" />
-				<p class="mb-manager__hint" id="mb-bundle-choice-preview"><?php echo esc_html(MBBB_Bundle_Config::choice_sentence($config)); ?></p>
-			</div>
+			<input type="hidden" id="mb-bundle-quantity" name="mb_bundle[quantity]" value="<?php echo esc_attr((string) $config['quantity']); ?>" />
+			<input type="hidden" id="mb-bundle-unit" name="mb_bundle[unit]" value="<?php echo esc_attr((string) $config['unit']); ?>" />
+			<input type="hidden" id="mb-bundle-unit-custom" name="mb_bundle[unit_custom]" value="<?php echo esc_attr((string) $config['unit_custom']); ?>" />
 		</section>
 		<?php
 	}
@@ -655,24 +638,19 @@ final class MBBB_Bundle_Admin {
 	 * @return void
 	 */
 	private function render_simple_eligibility(array $config, array $catalog) {
-		$split = self::split_sizes($catalog);
+		$model   = self::contents_model($catalog);
+		$groups  = MBBB_Bundle_Config::editor_groups($config);
+		$presets = MBBB_Bundle_Config::content_presets();
 		?>
-		<section class="mb-manager__section" data-show-for="mix_and_match">
-			<?php $this->render_checks(__('Available bait ranges', 'mad-baits-bundle-builder'), 'mb_bundle[ranges][]', (array) $catalog['ranges'], (array) $config['ranges'], 'ranges', true); ?>
-		</section>
-		<section class="mb-manager__section" data-show-for="mix_and_match">
-			<?php if (empty($split['sizes'])) : ?>
-				<fieldset class="mb-manager__group">
-					<legend><?php esc_html_e('Available sizes', 'mad-baits-bundle-builder'); ?></legend>
-					<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('No boilie sizes were found for the selected ranges.', 'mad-baits-bundle-builder'); ?></p>
-				</fieldset>
-			<?php else : ?>
-				<?php $this->render_checks(__('Available sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['sizes'], (array) $config['sizes'], 'sizes', true, $split['range_attrs']); ?>
-				<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('Choose bait ranges to see the sizes customers can pick.', 'mad-baits-bundle-builder'); ?></p>
-			<?php endif; ?>
-		</section>
-		<section class="mb-manager__section" data-show-for="mix_and_match">
-			<?php $this->render_bait_format($config, $catalog); ?>
+		<section class="mb-manager__section" data-show-for="mix_and_match" id="mb-bundle-contents">
+			<h2><?php esc_html_e('Bundle contents', 'mad-baits-bundle-builder'); ?></h2>
+			<p class="mb-manager__hint"><?php esc_html_e('Add each part of the bundle. For example, 10 bags of boilies and 1 tub of pop-ups.', 'mad-baits-bundle-builder'); ?></p>
+			<div id="mb-content-cards"></div>
+			<button type="button" class="mb-manager__button mb-manager__button--ghost" id="mb-add-group"><?php esc_html_e('+ Add item group', 'mad-baits-bundle-builder'); ?></button>
+			<?php $this->render_content_template(); ?>
+			<script type="application/json" id="mb-content-model"><?php echo wp_json_encode($model, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
+			<script type="application/json" id="mb-content-initial"><?php echo wp_json_encode($groups, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
+			<script type="application/json" id="mb-content-presets"><?php echo wp_json_encode($presets, JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT); ?></script>
 		</section>
 		<section class="mb-manager__section" data-show-for="fixed">
 			<h2><?php esc_html_e('Included products', 'mad-baits-bundle-builder'); ?></h2>
@@ -723,7 +701,7 @@ final class MBBB_Bundle_Admin {
 			</div>
 			<?php $this->render_stock_section($config); ?>
 			<div data-show-for="mix_and_match" data-structure="1">
-				<p class="mb-manager__hint"><?php esc_html_e('Leave a group empty if it should not limit the bundle. A product has to match every group you use, including the ranges and sizes above.', 'mad-baits-bundle-builder'); ?></p>
+				<p class="mb-manager__hint"><?php esc_html_e('Leave a limit empty if it should not narrow the bundle. These limits apply as well as the ranges and sizes on each item group.', 'mad-baits-bundle-builder'); ?></p>
 				<?php
 				$split = self::split_sizes($catalog);
 				$this->render_checks(__('Other sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['other'], (array) $config['sizes'], 'other-sizes', false);
@@ -892,28 +870,169 @@ final class MBBB_Bundle_Admin {
 	 *
 	 * @param array<string, mixed> $signals       meta_range, tags, categories, attributes, parent_attributes.
 	 * @param array<string, string> $known_ranges Editor range slug => label.
-	 * @return array{range_slug: string, range_slugs: string[], size_slug: string, size_slugs: string[], size_label: string, formats: string[], boilie: bool}
+	 * @return array{range_slug: string, range_slugs: string[], size_slug: string, size_slugs: string[], size_label: string, formats: string[], boilie: bool, product_type: string}
 	 */
 	public static function describe_catalogue_choice(array $signals, array $known_ranges) {
-		$range   = self::resolve_catalogue_range($signals, $known_ranges);
-		$sizes   = self::extract_catalogue_sizes($signals);
-		$formats = self::extract_catalogue_formats($signals);
-		$boilie  = self::row_is_boilie($signals);
-		if (! $boilie) {
-			$sizes   = array();
+		$range  = self::resolve_catalogue_range($signals, $known_ranges);
+		$type   = self::resolve_product_type($signals);
+		$boilie = 'boilies' === $type;
+		if ($boilie) {
+			$sizes   = self::extract_catalogue_sizes($signals);
+			$formats = self::extract_catalogue_formats($signals);
+		} else {
+			$sizes   = self::extract_catalogue_pack_sizes($signals);
 			$formats = array();
 		}
 		$sizes = array_values($sizes);
 
 		return array(
-			'range_slug'  => $range,
-			'range_slugs' => '' !== $range ? array($range) : array(),
-			'size_slug'   => (string) ($sizes[0] ?? ''),
-			'size_slugs'  => $sizes,
-			'size_label'  => (string) ($sizes[0] ?? ''),
-			'formats'     => $formats,
-			'boilie'      => $boilie,
+			'range_slug'   => $range,
+			'range_slugs'  => '' !== $range ? array($range) : array(),
+			'size_slug'    => (string) ($sizes[0] ?? ''),
+			'size_slugs'   => $sizes,
+			'size_label'   => (string) ($sizes[0] ?? ''),
+			'formats'      => $formats,
+			'boilie'       => $boilie,
+			'product_type' => $type,
 		);
+	}
+
+	/**
+	 * Catalogue product type, from the way MadBaits actually files bait.
+	 *
+	 * Pop-ups and wafters live in Hookbaits. Pellets can too. Titles and tags
+	 * decide those before the broader Hookbaits category. Tackle such as a
+	 * hook bait screw is not a hookbait.
+	 *
+	 * @param array<string, mixed> $signals name, tags, categories, attributes.
+	 * @return string boilies|popups|wafters|hookbaits|pellets|liquids|other
+	 */
+	public static function resolve_product_type(array $signals) {
+		$tags       = array_map('sanitize_title', (array) ($signals['tags'] ?? array()));
+		$categories = array_map('sanitize_title', (array) ($signals['categories'] ?? array()));
+		$names      = strtolower(trim((string) ($signals['name'] ?? '') . ' ' . (string) ($signals['parent_name'] ?? '')));
+		$names      = str_replace(array('_', '-'), ' ', $names);
+		$names      = trim((string) preg_replace('/\s+/', ' ', $names));
+
+		if (self::has_slug($tags, array('pop-ups', 'popups', 'pop-up')) || 1 === preg_match('/\bpop\s*ups?\b/', $names)) {
+			return 'popups';
+		}
+		if (self::has_slug($tags, array('wafters', 'wafter')) || 1 === preg_match('/\bwafters?\b/', $names)) {
+			return 'wafters';
+		}
+		if (self::has_slug($tags, array('pellets', 'pellet')) || self::has_slug($categories, array('pellets'))) {
+			return 'pellets';
+		}
+		if (self::has_slug($tags, array('liquids', 'liquid', 'dips', 'dip')) || self::has_slug($categories, array('liquids'))) {
+			return 'liquids';
+		}
+		$hook_cat  = self::has_slug($categories, array('hookbaits'));
+		$hook_tag  = self::has_slug($tags, array('hookbaits', 'hardened-hookbaits'));
+		$title_hook = 1 === preg_match('/\bskinz\b/', $names) || 1 === preg_match('/\bhookbait\b/', $names);
+		if ($hook_cat || $hook_tag || $title_hook) {
+			return 'hookbaits';
+		}
+		if (self::has_slug($categories, array('boilies', 'boilie')) || self::row_is_boilie($signals)) {
+			return 'boilies';
+		}
+
+		return 'other';
+	}
+
+	/**
+	 * First pack or diameter token, such as 500ml or 12-16mm.
+	 *
+	 * @param mixed $value Raw attribute or title.
+	 * @return string
+	 */
+	public static function normalize_pack_size($value) {
+		$sizes = self::extract_pack_size_list($value);
+		return (string) ($sizes[0] ?? '');
+	}
+
+	/**
+	 * Pack sizes and hookbait diameters found in one catalogue value.
+	 *
+	 * Flavour names and shelf-life words are ignored. A trailing bottle
+	 * number such as 500 is treated as millilitres.
+	 *
+	 * @param mixed $value Raw attribute or title.
+	 * @return string[]
+	 */
+	public static function extract_pack_size_list($value) {
+		$text = strtolower(trim(html_entity_decode((string) $value, ENT_QUOTES)));
+		$text = str_replace('_', ' ', $text);
+		$text = trim((string) preg_replace('/\s+/', ' ', $text));
+		if ('' === $text) {
+			return array();
+		}
+		if (1 === preg_match('/\bskinz\b/', $text)) {
+			return array('skinz');
+		}
+		$found = array();
+		if (1 === preg_match('/(?:^|\s)mixed(?:\s|$)/', $text)) {
+			$found['mixed'] = 'mixed';
+		}
+
+		$consumed = $text;
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*mm\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*mm/', $text, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . 'x' . self::pack_number($match[2]) . 'mm';
+				$found[ $slug ] = $slug;
+			}
+			$consumed = (string) preg_replace('/(\d+(?:\.\d+)?)\s*mm\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*mm/', ' ', $consumed);
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*mm\s*(?:&|and|to)\s*(\d+(?:\.\d+)?)\s*mm/', $text, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . '-' . self::pack_number($match[2]) . 'mm';
+				$found[ $slug ] = $slug;
+			}
+			$consumed = (string) preg_replace('/(\d+(?:\.\d+)?)\s*mm\s*(?:&|and|to)\s*(\d+(?:\.\d+)?)\s*mm/', ' ', $consumed);
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*mm/', $consumed, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . '-' . self::pack_number($match[2]) . 'mm';
+				$found[ $slug ] = $slug;
+			}
+			$consumed = (string) preg_replace('/(\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*mm/', ' ', $consumed);
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*mm/', $consumed, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . 'x' . self::pack_number($match[2]) . 'mm';
+				$found[ $slug ] = $slug;
+			}
+			$consumed = (string) preg_replace('/(\d+(?:\.\d+)?)\s*(?:x|×)\s*(\d+(?:\.\d+)?)\s*mm/', ' ', $consumed);
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*mm/', $consumed, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::millimetre_slug($match[1]);
+				$found[ $slug ] = $slug;
+			}
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*ml\b/', $text, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . 'ml';
+				$found[ $slug ] = $slug;
+			}
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*(?:ltr|litre|liter|l)\b/', $text, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . 'ltr';
+				$found[ $slug ] = $slug;
+			}
+		}
+		if (preg_match_all('/(\d+(?:\.\d+)?)\s*kg\b/', $text, $matches, PREG_SET_ORDER)) {
+			foreach ($matches as $match) {
+				$slug = self::pack_number($match[1]) . 'kg';
+				$found[ $slug ] = $slug;
+			}
+		}
+		if (empty($found) && preg_match('/(?:^|\s)(50|100|250|500|1000)\s*$/', $text, $match)) {
+			$slug = $match[1] . 'ml';
+			$found[ $slug ] = $slug;
+		}
+
+		return array_values($found);
 	}
 
 	/**
@@ -1192,6 +1311,84 @@ final class MBBB_Bundle_Admin {
 	}
 
 	/**
+	 * @param string[] $pool    Slugs.
+	 * @param string[] $needles Candidate slugs.
+	 * @return bool
+	 */
+	private static function has_slug(array $pool, array $needles) {
+		foreach ($needles as $needle) {
+			if (in_array(sanitize_title((string) $needle), $pool, true)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	/**
+	 * @param string $number Numeric token.
+	 * @return string
+	 */
+	private static function pack_number($number) {
+		$number = rtrim(rtrim((string) $number, '0'), '.');
+		return '' === $number ? '0' : $number;
+	}
+
+	/**
+	 * @param string $name Attribute name.
+	 * @return bool
+	 */
+	private static function is_pack_attribute_name($name) {
+		$key = str_replace('_', '-', sanitize_title((string) $name));
+		return in_array($key, array('pa-size', 'size', 'type', 'pa-type'), true);
+	}
+
+	/**
+	 * @param array<string, mixed> $signals Catalogue signals.
+	 * @return string[]
+	 */
+	private static function extract_catalogue_pack_sizes(array $signals) {
+		$variation = self::pack_sizes_in_attributes((array) ($signals['attributes'] ?? array()));
+		if ($variation['present']) {
+			return $variation['sizes'];
+		}
+		$parent = self::pack_sizes_in_attributes((array) ($signals['parent_attributes'] ?? array()));
+		if ($parent['present']) {
+			return $parent['sizes'];
+		}
+		$found = array();
+		foreach (array('name', 'parent_name') as $key) {
+			foreach (self::extract_pack_size_list($signals[ $key ] ?? '') as $size) {
+				$found[ $size ] = $size;
+			}
+		}
+		return array_values($found);
+	}
+
+	/**
+	 * @param array<string, mixed> $attributes Attribute values.
+	 * @return array{present: bool, sizes: string[]}
+	 */
+	private static function pack_sizes_in_attributes(array $attributes) {
+		$present = false;
+		$found   = array();
+		foreach ($attributes as $name => $value) {
+			if (! self::is_pack_attribute_name($name)) {
+				continue;
+			}
+			$present = true;
+			foreach (is_array($value) ? $value : array($value) as $one) {
+				foreach (self::extract_pack_size_list($one) as $size) {
+					$found[ $size ] = $size;
+				}
+			}
+		}
+		return array(
+			'present' => $present,
+			'sizes'   => array_values($found),
+		);
+	}
+
+	/**
 	 * @param array<string, mixed> $signals Catalogue signals.
 	 * @return bool
 	 */
@@ -1296,6 +1493,170 @@ final class MBBB_Bundle_Admin {
 			$ranges[ $range ] = $range;
 		}
 		return $ranges;
+	}
+
+	/**
+	 * Ranges, sizes, and products the simple contents editor can offer.
+	 *
+	 * @param array<string, mixed> $catalog Catalogue.
+	 * @return array<string, mixed>
+	 */
+	public static function contents_model(array $catalog) {
+		$types = array();
+		foreach (MBBB_Bundle_Config::product_types() as $type) {
+			$types[ $type ] = array(
+				'ranges'  => array(),
+				'sizes'   => array(),
+				'formats' => array(
+					'shelf_life' => array(),
+					'freezer'    => array(),
+				),
+			);
+		}
+		$ranges   = isset($catalog['ranges']) && is_array($catalog['ranges']) ? $catalog['ranges'] : array();
+		$products = array();
+		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
+			if (! is_array($row)) {
+				continue;
+			}
+			$type = (string) ($row['product_type'] ?? '');
+			if (! isset($types[ $type ])) {
+				$type = self::resolve_product_type(
+					array(
+						'name'       => (string) ($row['parent_name'] ?? $row['name'] ?? ''),
+						'categories' => (array) ($row['category_slugs'] ?? array()),
+						'tags'       => (array) ($row['tags'] ?? array()),
+					)
+				);
+			}
+			if (! isset($types[ $type ])) {
+				$type = 'other';
+			}
+			$range = sanitize_title((string) ($row['range_slug'] ?? ''));
+			if ('' !== $range) {
+				$label = (string) ($ranges[ $range ] ?? ($row['range_label'] ?? $range));
+				$types[ $type ]['ranges'][ $range ] = '' !== $label ? $label : $range;
+			}
+			foreach ((array) ($row['size_slugs'] ?? array()) as $size) {
+				$size = sanitize_title((string) $size);
+				if ('' === $size) {
+					continue;
+				}
+				if (! isset($types[ $type ]['sizes'][ $size ])) {
+					$types[ $type ]['sizes'][ $size ] = array(
+						'label'  => (string) $size,
+						'ranges' => array(),
+					);
+				}
+				if ('' !== $range) {
+					$types[ $type ]['sizes'][ $size ]['ranges'][ $range ] = $range;
+				}
+			}
+			if ('boilies' === $type && '' !== $range) {
+				foreach ((array) ($row['formats'] ?? array()) as $format) {
+					$format = sanitize_key((string) $format);
+					if (isset($types['boilies']['formats'][ $format ])) {
+						$types['boilies']['formats'][ $format ][ $range ] = $range;
+					}
+				}
+			}
+			$parent = absint($row['parent_id'] ?? 0);
+			$id     = $parent > 0 ? $parent : absint($row['id'] ?? 0);
+			$name   = trim((string) ($row['parent_name'] ?? $row['name'] ?? ''));
+			if ($id > 0 && '' !== $name) {
+				$products[ $id ] = array(
+					'id'   => $id,
+					'name' => $name,
+				);
+			}
+		}
+		foreach ($types as $type => $info) {
+			foreach ($info['sizes'] as $size => $size_info) {
+				$types[ $type ]['sizes'][ $size ]['ranges'] = array_values($size_info['ranges']);
+			}
+			$types[ $type ]['formats']['shelf_life'] = array_values($info['formats']['shelf_life']);
+			$types[ $type ]['formats']['freezer']    = array_values($info['formats']['freezer']);
+		}
+
+		return array(
+			'types'    => $types,
+			'products' => array_values($products),
+		);
+	}
+
+	/**
+	 * @return void
+	 */
+	private function render_content_template() {
+		?>
+		<template id="mb-content-template">
+			<article class="mb-content-card" data-group data-open="0">
+				<div class="mb-content-card__summary">
+					<div>
+						<p class="mb-content-card__title" data-summary-title></p>
+						<p class="mb-content-card__qty" data-summary-qty></p>
+						<p class="mb-content-card__detail" data-summary-detail></p>
+						<p class="mb-content-card__detail" data-summary-sizes></p>
+						<p class="mb-content-card__detail" data-summary-format></p>
+					</div>
+					<div class="mb-content-card__actions">
+						<button type="button" class="mb-manager__button mb-manager__button--small" data-group-edit><?php esc_html_e('Edit', 'mad-baits-bundle-builder'); ?></button>
+						<button type="button" class="mb-manager__button mb-manager__button--small mb-manager__button--ghost" data-group-remove><?php esc_html_e('Remove', 'mad-baits-bundle-builder'); ?></button>
+					</div>
+				</div>
+				<div class="mb-content-card__editor" data-group-editor hidden>
+					<fieldset class="mb-manager__group">
+						<legend><?php esc_html_e('Product type', 'mad-baits-bundle-builder'); ?></legend>
+						<div class="mb-manager__choice-row" data-type-choices>
+							<?php foreach (MBBB_Bundle_Config::product_types() as $type) : ?>
+								<label class="mb-manager__pill"><input type="radio" data-field="type" value="<?php echo esc_attr($type); ?>" /> <span><?php echo esc_html(MBBB_Bundle_Config::content_type_label($type, 2)); ?></span></label>
+							<?php endforeach; ?>
+						</div>
+					</fieldset>
+					<div class="mb-content-card__choose">
+						<label><?php esc_html_e('Customer chooses', 'mad-baits-bundle-builder'); ?></label>
+						<input data-field="quantity" type="number" min="1" max="<?php echo esc_attr((string) MBBB_Bundle_Config::MAX_CHOICES); ?>" value="1" />
+						<select data-field="unit">
+							<?php
+							foreach (array(
+								'bags'    => __('Bags', 'mad-baits-bundle-builder'),
+								'tubs'    => __('Tubs', 'mad-baits-bundle-builder'),
+								'bottles' => __('Bottles', 'mad-baits-bundle-builder'),
+								'items'   => __('Items', 'mad-baits-bundle-builder'),
+							) as $value => $label) {
+								echo '<option value="' . esc_attr($value) . '">' . esc_html($label) . '</option>';
+							}
+							?>
+						</select>
+					</div>
+					<fieldset class="mb-manager__group" data-panel="ranges">
+						<legend><?php esc_html_e('Bait ranges', 'mad-baits-bundle-builder'); ?></legend>
+						<div class="mb-manager__checks" data-range-list></div>
+						<p class="mb-manager__hint" data-range-hint hidden></p>
+					</fieldset>
+					<fieldset class="mb-manager__group" data-panel="sizes">
+						<legend><?php esc_html_e('Sizes', 'mad-baits-bundle-builder'); ?></legend>
+						<div class="mb-manager__checks" data-size-list></div>
+						<p class="mb-manager__hint" data-size-hint hidden><?php esc_html_e('No boilie sizes were found for the selected ranges.', 'mad-baits-bundle-builder'); ?></p>
+					</fieldset>
+					<fieldset class="mb-manager__group" data-panel="format">
+						<legend><?php esc_html_e('Bait format', 'mad-baits-bundle-builder'); ?></legend>
+						<div class="mb-manager__checks" data-format-list>
+							<label class="mb-manager__pill"><input type="radio" data-field="bait_format" value="shelf_life" data-format-ranges="" /> <span><?php esc_html_e('Shelf Life', 'mad-baits-bundle-builder'); ?></span></label>
+							<label class="mb-manager__pill"><input type="radio" data-field="bait_format" value="freezer" data-format-ranges="" /> <span><?php esc_html_e('Freezer', 'mad-baits-bundle-builder'); ?></span></label>
+							<label class="mb-manager__pill"><input type="radio" data-field="bait_format" value="both" data-format-ranges="" /> <span><?php esc_html_e('Both', 'mad-baits-bundle-builder'); ?></span></label>
+						</div>
+						<p class="mb-manager__hint" data-format-hint hidden><?php esc_html_e('Choose bait ranges to see freezer and shelf life options.', 'mad-baits-bundle-builder'); ?></p>
+					</fieldset>
+					<fieldset class="mb-manager__group" data-panel="products">
+						<legend><?php esc_html_e('Products', 'mad-baits-bundle-builder'); ?></legend>
+						<input type="search" data-product-search placeholder="<?php esc_attr_e('Search products', 'mad-baits-bundle-builder'); ?>" />
+						<div class="mb-manager__checks mb-content-card__products" data-product-list></div>
+					</fieldset>
+				</div>
+			</article>
+		</template>
+		<?php
 	}
 
 	/**

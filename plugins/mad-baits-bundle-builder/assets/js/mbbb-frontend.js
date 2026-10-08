@@ -1611,6 +1611,20 @@
 
 		updateSummary();
 		applyMobileVisibility();
+		document.querySelectorAll('.mbbb-group[data-group-key]').forEach(function (group) {
+			var needed = parseInt(group.getAttribute('data-group-total'), 10) || 0;
+			var done = 0;
+			group.querySelectorAll('.mbbb-slot').forEach(function (section) {
+				var key = section.getAttribute('data-slot-key');
+				if (key && choices[key]) {
+					done += 1;
+				}
+			});
+			var progress = group.querySelector('[data-group-progress]');
+			if (progress) {
+				progress.textContent = done + ' of ' + needed + ' chosen';
+			}
+		});
 	}
 
 	function updateSummary() {

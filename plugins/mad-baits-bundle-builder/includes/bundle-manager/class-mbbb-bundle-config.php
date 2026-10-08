@@ -42,6 +42,7 @@ final class MBBB_Bundle_Config {
 			'ranges'            => array(),
 			'sizes'             => array(),
 			'bait_format'       => '',
+			'groups'            => array(),
 			'categories'        => array(),
 			'product_ids'       => array(),
 			'variation_ids'     => array(),
@@ -151,6 +152,10 @@ final class MBBB_Bundle_Config {
 		$config['legacy']         = self::is_checked($input['legacy'] ?? false);
 		$managed                  = sanitize_key((string) ($input['managed_by'] ?? ''));
 		$config['managed_by']     = self::MANAGED_BY === $managed ? self::MANAGED_BY : '';
+		$config['groups']         = 'fixed' === $config['bundle_type'] ? array() : self::sanitize_groups($input['groups'] ?? array());
+		if (! empty($config['groups'])) {
+			$config = self::mirror_groups($config);
+		}
 
 		return $config;
 	}
@@ -301,6 +306,11 @@ final class MBBB_Bundle_Config {
 			);
 		}
 
+		$group_sentence = self::groups_sentence((array) ($config['groups'] ?? array()));
+		if ('' !== $group_sentence) {
+			return $group_sentence;
+		}
+
 		if ('minimum' === ($config['quantity_mode'] ?? 'exact')) {
 			$min  = (int) ($config['min_quantity'] ?? 0);
 			$max  = (int) ($config['max_quantity'] ?? 0);
@@ -343,6 +353,332 @@ final class MBBB_Bundle_Config {
 	}
 
 	/**
+	 * Owner-facing product types, in the order they are offered.
+	 *
+	 * @return string[]
+	 */
+	public static function product_types() {
+		return array('boilies', 'popups', 'wafters', 'hookbaits', 'pellets', 'liquids', 'other');
+	}
+
+	/**
+	 * @param string $type  Product type key.
+	 * @param int    $count 1 for singular.
+	 * @return string
+	 */
+	public static function content_type_label($type, $count = 2) {
+		$map  = array(
+			'boilies'   => array(__('Boilie', 'mad-baits-bundle-builder'), __('Boilies', 'mad-baits-bundle-builder')),
+			'popups'    => array(__('Pop-up', 'mad-baits-bundle-builder'), __('Pop-ups', 'mad-baits-bundle-builder')),
+			'wafters'   => array(__('Wafter', 'mad-baits-bundle-builder'), __('Wafters', 'mad-baits-bundle-builder')),
+			'hookbaits' => array(__('Hookbait', 'mad-baits-bundle-builder'), __('Hookbaits', 'mad-baits-bundle-builder')),
+			'pellets'   => array(__('Pellet', 'mad-baits-bundle-builder'), __('Pellets', 'mad-baits-bundle-builder')),
+			'liquids'   => array(__('Liquid', 'mad-baits-bundle-builder'), __('Liquids', 'mad-baits-bundle-builder')),
+			'other'     => array(__('Item', 'mad-baits-bundle-builder'), __('Items', 'mad-baits-bundle-builder')),
+		);
+		$pair = $map[ $type ] ?? $map['other'];
+
+		return 1 === (int) $count ? $pair[0] : $pair[1];
+	}
+
+	/**
+	 * Lower-case plural used in customer steps and validation.
+	 *
+	 * @param string $type Product type key.
+	 * @return string
+	 */
+	public static function content_type_plural($type) {
+		$map = array(
+			'boilies'   => __('boilies', 'mad-baits-bundle-builder'),
+			'popups'    => __('pop-ups', 'mad-baits-bundle-builder'),
+			'wafters'   => __('wafters', 'mad-baits-bundle-builder'),
+			'hookbaits' => __('hookbaits', 'mad-baits-bundle-builder'),
+			'pellets'   => __('pellets', 'mad-baits-bundle-builder'),
+			'liquids'   => __('liquids', 'mad-baits-bundle-builder'),
+			'other'     => __('products', 'mad-baits-bundle-builder'),
+		);
+
+		return $map[ $type ] ?? $map['other'];
+	}
+
+	/**
+	 * @param string $type Product type key.
+	 * @return string
+	 */
+	public static function content_type_singular($type) {
+		$map = array(
+			'boilies'   => __('boilie', 'mad-baits-bundle-builder'),
+			'popups'    => __('pop-up', 'mad-baits-bundle-builder'),
+			'wafters'   => __('wafter', 'mad-baits-bundle-builder'),
+			'hookbaits' => __('hookbait', 'mad-baits-bundle-builder'),
+			'pellets'   => __('pellet', 'mad-baits-bundle-builder'),
+			'liquids'   => __('liquid', 'mad-baits-bundle-builder'),
+			'other'     => __('item', 'mad-baits-bundle-builder'),
+		);
+
+		return $map[ $type ] ?? $map['other'];
+	}
+
+	/**
+	 * @param string $type Product type key.
+	 * @return string
+	 */
+	public static function default_unit_for_type($type) {
+		$map = array(
+			'boilies'   => 'bags',
+			'popups'    => 'tubs',
+			'wafters'   => 'tubs',
+			'hookbaits' => 'tubs',
+			'pellets'   => 'bags',
+			'liquids'   => 'bottles',
+			'other'     => 'items',
+		);
+
+		return $map[ $type ] ?? 'items';
+	}
+
+	/**
+	 * @param string $type Product type key.
+	 * @return string
+	 */
+	public static function content_type_key($type) {
+		$map = array(
+			'boilies'   => 'boilie',
+			'popups'    => 'popup',
+			'wafters'   => 'wafter',
+			'hookbaits' => 'hookbait',
+			'pellets'   => 'pellet',
+			'liquids'   => 'liquid',
+			'other'     => 'item',
+		);
+
+		return $map[ $type ] ?? 'item';
+	}
+
+	/**
+	 * Customer step heading for one item group.
+	 *
+	 * @param array<string, mixed> $group Item group.
+	 * @return string
+	 */
+	public static function group_choice_sentence(array $group) {
+		$qty  = max(0, (int) ($group['quantity'] ?? 0));
+		$type = (string) ($group['type'] ?? 'other');
+		if (1 === $qty) {
+			return sprintf(
+				/* translators: %s: product type singular, such as pop-up */
+				__('Choose your %s', 'mad-baits-bundle-builder'),
+				self::content_type_singular($type)
+			);
+		}
+
+		return sprintf(
+			/* translators: 1: quantity 2: product type plural */
+			__('Choose your %1$d %2$s', 'mad-baits-bundle-builder'),
+			$qty,
+			self::content_type_plural($type)
+		);
+	}
+
+	/**
+	 * Groups shown in the simple editor.
+	 *
+	 * Legacy slot bundles are not converted. Existing manager bundles without
+	 * groups become one boilie group so a name-only save keeps their filters.
+	 *
+	 * @param array<string, mixed> $config Sanitised config.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function editor_groups(array $config) {
+		$groups = isset($config['groups']) && is_array($config['groups']) ? $config['groups'] : array();
+		if (! empty($groups)) {
+			return array_values($groups);
+		}
+		if (! empty($config['legacy']) || ! empty($config['preserve_slots']) || 'fixed' === ($config['bundle_type'] ?? '')) {
+			return array();
+		}
+
+		$unit = (string) ($config['unit'] ?? 'bags');
+		if (! in_array($unit, array('bags', 'tubs', 'bottles', 'items', 'custom'), true)) {
+			$unit = 'bags';
+		}
+
+		return array(
+			array(
+				'type'        => 'boilies',
+				'quantity'    => max(1, (int) ($config['quantity'] ?? 10)),
+				'unit'        => $unit,
+				'unit_custom' => (string) ($config['unit_custom'] ?? ''),
+				'ranges'      => array_values((array) ($config['ranges'] ?? array())),
+				'sizes'       => array_values((array) ($config['sizes'] ?? array())),
+				'bait_format' => (string) ($config['bait_format'] ?? ''),
+				'product_ids' => array(),
+			),
+		);
+	}
+
+	/**
+	 * Realistic deals guided by the legacy 5kg, 10kg, and 20kg slot lists.
+	 *
+	 * Legacy deals use shared hookbait pools and 5kg splits. These presets use
+	 * 1kg bag quantities and separate pop-up and wafter groups instead.
+	 *
+	 * @return array<string, array<string, mixed>>
+	 */
+	public static function content_presets() {
+		return array(
+			'10kg'  => array(
+				'groups' => array(
+					self::preset_group('boilies', 10, 'bags', array('15mm', '18mm')),
+					self::preset_group('popups', 1, 'tubs'),
+					self::preset_group('wafters', 1, 'tubs'),
+				),
+			),
+			'20kg'  => array(
+				'groups' => array(
+					self::preset_group('boilies', 20, 'bags', array('15mm', '18mm')),
+					self::preset_group('popups', 1, 'tubs'),
+					self::preset_group('wafters', 1, 'tubs'),
+					self::preset_group('liquids', 1, 'bottles'),
+				),
+			),
+			'5kg'   => array(
+				'groups' => array(
+					self::preset_group('boilies', 5, 'bags', array('15mm', '18mm')),
+					self::preset_group('popups', 1, 'tubs'),
+					self::preset_group('wafters', 1, 'tubs'),
+					self::preset_group('liquids', 1, 'bottles'),
+				),
+			),
+			'blank' => array(
+				'clear'  => true,
+				'groups' => array(
+					self::preset_group('boilies', 10, 'bags'),
+				),
+			),
+		);
+	}
+
+	/**
+	 * @param array<int, array<string, mixed>> $groups Item groups.
+	 * @return string
+	 */
+	private static function groups_sentence(array $groups) {
+		$parts = array();
+		foreach ($groups as $group) {
+			if (! is_array($group)) {
+				continue;
+			}
+			$count = (int) ($group['quantity'] ?? 0);
+			if ($count < 1) {
+				continue;
+			}
+			$parts[] = sprintf(
+				/* translators: 1: quantity 2: unit 3: product type plural */
+				__('%1$d %2$s of %3$s', 'mad-baits-bundle-builder'),
+				$count,
+				self::unit_word($group, $count),
+				self::content_type_plural((string) ($group['type'] ?? 'other'))
+			);
+		}
+
+		return implode(', ', $parts);
+	}
+
+	/**
+	 * Copy the first boilie group onto the original single-pool fields.
+	 *
+	 * @param array<string, mixed> $config Config with groups.
+	 * @return array<string, mixed>
+	 */
+	private static function mirror_groups(array $config) {
+		$source = null;
+		$sum    = 0;
+		foreach ($config['groups'] as $group) {
+			if (! is_array($group)) {
+				continue;
+			}
+			$sum += (int) ($group['quantity'] ?? 0);
+			if (null === $source && 'boilies' === ($group['type'] ?? '')) {
+				$source = $group;
+			}
+		}
+		if (null === $source) {
+			$source = $config['groups'][0];
+		}
+		$config['quantity']     = $sum;
+		$config['min_quantity'] = $sum;
+		$config['max_quantity'] = $sum;
+		$config['ranges']       = (array) ($source['ranges'] ?? array());
+		$config['sizes']        = (array) ($source['sizes'] ?? array());
+		$config['bait_format']  = 'boilies' === ($source['type'] ?? '') ? (string) ($source['bait_format'] ?? '') : '';
+		$config['unit']         = (string) ($source['unit'] ?? 'items');
+		$config['unit_custom']  = (string) ($source['unit_custom'] ?? '');
+
+		return $config;
+	}
+
+	/**
+	 * @param string   $type  Product type.
+	 * @param int      $qty   Customer quantity.
+	 * @param string   $unit  Unit key.
+	 * @param string[] $sizes Optional size slugs.
+	 * @return array<string, mixed>
+	 */
+	private static function preset_group($type, $qty, $unit, array $sizes = array()) {
+		return array(
+			'type'        => $type,
+			'quantity'    => $qty,
+			'unit'        => $unit,
+			'unit_custom' => '',
+			'ranges'      => array(),
+			'sizes'       => $sizes,
+			'bait_format' => '',
+			'product_ids' => array(),
+		);
+	}
+
+	/**
+	 * @param mixed $groups Posted groups.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function sanitize_groups($groups) {
+		if (! is_array($groups)) {
+			return array();
+		}
+		$out = array();
+		foreach ($groups as $group) {
+			if (! is_array($group)) {
+				continue;
+			}
+			$type = sanitize_key((string) ($group['type'] ?? ''));
+			if (! in_array($type, self::product_types(), true)) {
+				continue;
+			}
+			$unit = sanitize_key((string) ($group['unit'] ?? ''));
+			if (! in_array($unit, array('bags', 'tubs', 'bottles', 'items', 'custom'), true)) {
+				$unit = self::default_unit_for_type($type);
+			}
+			$format = sanitize_key((string) ($group['bait_format'] ?? ''));
+			if ('boilies' !== $type || ! in_array($format, array('shelf_life', 'freezer', 'both'), true)) {
+				$format = '';
+			}
+			$out[] = array(
+				'type'        => $type,
+				'quantity'    => min(self::MAX_CHOICES, absint($group['quantity'] ?? 0)),
+				'unit'        => $unit,
+				'unit_custom' => sanitize_text_field((string) ($group['unit_custom'] ?? '')),
+				'ranges'      => self::string_list($group['ranges'] ?? array()),
+				'sizes'       => self::string_list($group['sizes'] ?? array()),
+				'bait_format' => $format,
+				'product_ids' => self::int_list($group['product_ids'] ?? array()),
+			);
+		}
+
+		return $out;
+	}
+
+	/**
 	 * Stable signature for the customer-choice fields.
 	 *
 	 * @param array<string, mixed> $config Config.
@@ -361,6 +697,7 @@ final class MBBB_Bundle_Config {
 			'ranges'        => self::string_list($config['ranges'] ?? array()),
 			'sizes'         => self::string_list($config['sizes'] ?? array()),
 			'bait_format'   => sanitize_key((string) ($config['bait_format'] ?? '')),
+			'groups'        => self::sanitize_groups($config['groups'] ?? array()),
 			'categories'    => self::string_list($config['categories'] ?? array()),
 			'product_ids'   => self::int_list($config['product_ids'] ?? array()),
 			'variation_ids' => self::int_list($config['variation_ids'] ?? array()),

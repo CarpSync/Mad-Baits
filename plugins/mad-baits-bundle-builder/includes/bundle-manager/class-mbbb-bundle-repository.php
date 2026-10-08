@@ -108,9 +108,10 @@ final class MBBB_Bundle_Repository {
 			$config['display']['helper_text'] = __('Choose any 10 bags from the ranges below.', 'mad-baits-bundle-builder');
 		}
 
-		$catalog = self::catalogue();
-		$matched = MBBB_Bundle_Eligibility::matching($catalog['variations'], $config);
-		$live    = MBBB_Bundle_Eligibility::purchasable($catalog['variations'], $config);
+		$catalog   = self::catalogue();
+		$selection = MBBB_Bundle_Eligibility::selection($catalog['variations'], $config);
+		$matched   = $selection['matched'];
+		$live      = $selection['live'];
 		$needed  = MBBB_Bundle_Compiler::required_count($config);
 		$warning = '';
 		if (! $legacy && empty($config['preserve_slots']) && $needed > 0 && count($live) > 0 && count($live) < $needed) {
@@ -229,8 +230,13 @@ final class MBBB_Bundle_Repository {
 			$enabled = 'active' === (string) $config['status'] ? 'yes' : 'no';
 			$slots   = null;
 			if ($compile) {
-				$options = MBBB_Bundle_Eligibility::to_slot_options($live_rows);
-				$slots   = MBBB_Bundle_Compiler::compile($config, $options);
+				if (! empty($config['groups']) && 'fixed' !== ($config['bundle_type'] ?? '')) {
+					$catalogue = self::catalogue();
+					$slots     = MBBB_Bundle_Compiler::compile($config, array(), (array) ($catalogue['variations'] ?? array()));
+				} else {
+					$options = MBBB_Bundle_Eligibility::to_slot_options($live_rows);
+					$slots   = MBBB_Bundle_Compiler::compile($config, $options);
+				}
 			}
 			if (method_exists($product, 'update_meta_data')) {
 				$product->update_meta_data(MBBB_Bundle_Config::META_KEY, $config);
@@ -786,6 +792,7 @@ final class MBBB_Bundle_Repository {
 				'size_label' => '',
 				'formats' => array(),
 				'boilie' => false,
+				'product_type' => '',
 			);
 
 		$attributes = array();
@@ -826,6 +833,7 @@ final class MBBB_Bundle_Repository {
 			'size_label'      => $size_label,
 			'formats'         => array_values((array) ($choice['formats'] ?? array())),
 			'boilie'          => ! empty($choice['boilie']),
+			'product_type'    => (string) ($choice['product_type'] ?? ''),
 			'category_slugs'  => $category_slugs,
 			'attributes'      => $attributes,
 			'in_stock'        => $in_stock,

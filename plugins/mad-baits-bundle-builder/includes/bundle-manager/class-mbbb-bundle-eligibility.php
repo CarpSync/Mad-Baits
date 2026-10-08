@@ -105,6 +105,136 @@ final class MBBB_Bundle_Eligibility {
 	}
 
 	/**
+	 * Products for one item group, before stock rules.
+	 *
+	 * A type with no extra filters includes every product of that type.
+	 * Other uses the chosen products only.
+	 *
+	 * @param array<int, array<string, mixed>> $variations Catalogue rows.
+	 * @param array<string, mixed>             $group      Item group.
+	 * @param array<string, mixed>             $config     Owner config, for advanced limits.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function matching_group(array $variations, array $group, array $config = array()) {
+		$matched = array();
+		foreach ($variations as $variation) {
+			if (! is_array($variation)) {
+				continue;
+			}
+			if (self::matches_group($variation, $group, $config)) {
+				$matched[] = $variation;
+			}
+		}
+		return $matched;
+	}
+
+	/**
+	 * Stock rules only. Does not re-apply range or type filters.
+	 *
+	 * @param array<int, array<string, mixed>> $rows   Already matched rows.
+	 * @param array<string, mixed>             $config Owner config.
+	 * @return array<int, array<string, mixed>>
+	 */
+	public static function purchasable_only(array $rows, array $config) {
+		$stock = isset($config['stock']) && is_array($config['stock']) ? $config['stock'] : array();
+		$hide  = ! empty($stock['hide_unavailable']) || ! empty($stock['prevent_oos']);
+		if (! $hide) {
+			return array_values($rows);
+		}
+		$out = array();
+		foreach ($rows as $row) {
+			if (! is_array($row) || ! self::row_is_purchasable($row)) {
+				continue;
+			}
+			$out[] = $row;
+		}
+		return $out;
+	}
+
+	/**
+	 * Matched rows, purchasable rows, and any item-group gaps.
+	 *
+	 * @param array<int, array<string, mixed>> $variations Catalogue rows.
+	 * @param array<string, mixed>             $config     Owner config.
+	 * @return array{matched: array<int, array<string, mixed>>, live: array<int, array<string, mixed>>, group_errors: string[]}
+	 */
+	public static function selection(array $variations, array $config) {
+		$groups = isset($config['groups']) && is_array($config['groups']) ? $config['groups'] : array();
+		if (empty($groups) || 'fixed' === ($config['bundle_type'] ?? '')) {
+			return array(
+				'matched'       => self::matching($variations, $config),
+				'live'          => self::purchasable($variations, $config),
+				'group_errors'  => array(),
+			);
+		}
+
+		$matched = array();
+		$live    = array();
+		$errors  = array();
+		$seen_m  = array();
+		$seen_l  = array();
+		foreach ($groups as $group) {
+			if (! is_array($group)) {
+				continue;
+			}
+			$rows    = self::matching_group($variations, $group, $config);
+			$buyable = self::purchasable_only($rows, $config);
+			if ((int) ($group['quantity'] ?? 0) < 1) {
+				$errors[] = sprintf(
+					/* translators: %s: product type plural */
+					__('Enter how many %s the customer chooses. Use a whole number greater than zero.', 'mad-baits-bundle-builder'),
+					MBBB_Bundle_Config::content_type_plural((string) ($group['type'] ?? 'other'))
+				);
+			} elseif (count($buyable) < 1) {
+				$errors[] = self::group_gap_message($group);
+			}
+			foreach ($rows as $row) {
+				$id = absint($row['id'] ?? 0);
+				if ($id > 0 && isset($seen_m[ $id ])) {
+					continue;
+				}
+				$seen_m[ $id ] = true;
+				$matched[]     = $row;
+			}
+			foreach ($buyable as $row) {
+				$id = absint($row['id'] ?? 0);
+				if ($id > 0 && isset($seen_l[ $id ])) {
+					continue;
+				}
+				$seen_l[ $id ] = true;
+				$live[]        = $row;
+			}
+		}
+
+		return array(
+			'matched'      => $matched,
+			'live'         => $live,
+			'group_errors' => array_values(array_unique($errors)),
+		);
+	}
+
+	/**
+	 * @param array<string, mixed> $group Item group.
+	 * @return string
+	 */
+	public static function group_gap_message(array $group) {
+		$plural = MBBB_Bundle_Config::content_type_plural((string) ($group['type'] ?? 'other'));
+		if (! empty($group['ranges']) || ! empty($group['sizes']) || ! empty($group['product_ids'])) {
+			return sprintf(
+				/* translators: %s: product type plural, such as pop-ups */
+				__('No %s are available for the selected ranges.', 'mad-baits-bundle-builder'),
+				$plural
+			);
+		}
+
+		return sprintf(
+			/* translators: %s: product type plural */
+			__('No %s are available for this item group.', 'mad-baits-bundle-builder'),
+			$plural
+		);
+	}
+
+	/**
 	 * @param array<int, array<string, mixed>> $variations Purchasable rows.
 	 * @return array<int, array<string, mixed>>
 	 */
@@ -145,6 +275,74 @@ final class MBBB_Bundle_Eligibility {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @param array<string, mixed> $group     Item group.
+	 * @param array<string, mixed> $config    Owner config.
+	 * @return bool
+	 */
+	private static function matches_group(array $variation, array $group, array $config) {
+		$type = sanitize_key((string) ($group['type'] ?? ''));
+		if ('other' === $type) {
+			$ids = array_map('absint', (array) ($group['product_ids'] ?? array()));
+			if (empty($ids) || ! self::row_has_id($variation, $ids)) {
+				return false;
+			}
+		} else {
+			if ((string) ($variation['product_type'] ?? '') !== $type) {
+				return false;
+			}
+			$ranges = array_map('sanitize_title', (array) ($group['ranges'] ?? array()));
+			$sizes  = array_map('sanitize_title', (array) ($group['sizes'] ?? array()));
+			$ids    = array_map('absint', (array) ($group['product_ids'] ?? array()));
+			if (! empty($ranges) && ! self::matches_any_label($variation, $ranges, array('range_slug', 'pa_range', 'pa_flavour', 'pa_bait-range'))) {
+				return false;
+			}
+			if (! empty($sizes) && ! self::matches_sizes($variation, $sizes)) {
+				return false;
+			}
+			if ('boilies' === $type) {
+				$format = sanitize_key((string) ($group['bait_format'] ?? ''));
+				if (in_array($format, array('shelf_life', 'freezer', 'both'), true) && ! self::matches_format($variation, $format)) {
+					return false;
+				}
+			}
+			if (! empty($ids) && ! self::row_has_id($variation, $ids)) {
+				return false;
+			}
+		}
+
+		$categories = array_map('sanitize_title', (array) ($config['categories'] ?? array()));
+		if (! empty($categories) && ! self::matches_categories($variation, $categories)) {
+			return false;
+		}
+		$variation_ids = array_map('absint', (array) ($config['variation_ids'] ?? array()));
+		if (! empty($variation_ids) && ! in_array(absint($variation['id'] ?? 0), $variation_ids, true)) {
+			return false;
+		}
+		$attributes = isset($config['attributes']) && is_array($config['attributes']) ? $config['attributes'] : array();
+		if (! empty($attributes) && ! self::matches_attributes($variation, $attributes)) {
+			return false;
+		}
+		$products = array_map('absint', (array) ($config['product_ids'] ?? array()));
+		if (! empty($products) && ! self::row_has_id($variation, $products)) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @param int[]                $ids       Product or variation IDs.
+	 * @return bool
+	 */
+	private static function row_has_id(array $variation, array $ids) {
+		$parent = absint($variation['parent_id'] ?? 0);
+		$id     = absint($variation['id'] ?? 0);
+		return in_array($parent, $ids, true) || in_array($id, $ids, true);
 	}
 
 	/**
@@ -190,7 +388,10 @@ final class MBBB_Bundle_Eligibility {
 		foreach ($row_sizes as $size) {
 			$slug = class_exists('MBBB_Bundle_Admin')
 				? MBBB_Bundle_Admin::normalize_boilie_size($size)
-				: sanitize_title($size);
+				: '';
+			if ('' === $slug) {
+				$slug = sanitize_title($size);
+			}
 			if ('' !== $slug) {
 				$normalised[ $slug ] = $slug;
 			}

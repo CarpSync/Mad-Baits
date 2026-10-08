@@ -453,9 +453,7 @@ final class MBBB_Frontend {
 				</div>
 
 				<div class="mbbb-builder__slots" id="mbbb-slots">
-					<?php foreach ($slots as $index => $slot) : ?>
-						<?php $this->render_slot($slot, $index, $total, $product_id, $plugin); ?>
-					<?php endforeach; ?>
+					<?php $this->render_builder_slots($slots, $product_id, $plugin); ?>
 				</div>
 
 				<?php if ('yes' === $settings['show_summary']) : ?>
@@ -601,6 +599,49 @@ final class MBBB_Frontend {
 	}
 
 	/**
+	 * Wrap consecutive item-group slots without turning the wrapper into a step.
+	 *
+	 * @param array<int, array<string, mixed>> $slots      Slots.
+	 * @param int                              $product_id Product ID.
+	 * @param MBBB_Plugin                      $plugin     Plugin.
+	 * @return void
+	 */
+	private function render_builder_slots(array $slots, $product_id, $plugin) {
+		$total = count($slots);
+		$open  = '';
+		foreach ($slots as $index => $slot) {
+			$group = isset($slot['group_key']) ? (string) $slot['group_key'] : '';
+			if ($group !== $open) {
+				if ('' !== $open) {
+					echo '</div>';
+				}
+				if ('' !== $group) {
+					$step     = (int) ($slot['group_step'] ?? 1);
+					$sentence = (string) ($slot['group_sentence'] ?? '');
+					$needed   = (int) ($slot['group_total'] ?? 0);
+					echo '<div class="mbbb-group" data-group-key="' . esc_attr($group) . '" data-group-total="' . esc_attr((string) $needed) . '">';
+					echo '<h3 class="mbbb-group__title">' . esc_html(sprintf(
+						/* translators: 1: step number 2: instruction such as Choose your 10 boilies */
+						__('Step %1$d — %2$s', 'mad-baits-bundle-builder'),
+						$step,
+						$sentence
+					)) . '</h3>';
+					echo '<p class="mbbb-group__progress" data-group-progress>' . esc_html(sprintf(
+						/* translators: %d: number of choices in this group */
+						__('0 of %d chosen', 'mad-baits-bundle-builder'),
+						$needed
+					)) . '</p>';
+				}
+				$open = $group;
+			}
+			$this->render_slot($slot, (int) $index, $total, $product_id, $plugin);
+		}
+		if ('' !== $open) {
+			echo '</div>';
+		}
+	}
+
+	/**
 	 * @param array<string, mixed> $slot Slot config.
 	 * @param int                  $index Zero-based index.
 	 * @param int                  $total Total slots.
@@ -615,7 +656,9 @@ final class MBBB_Frontend {
 		$display    = $this->resolve_display_mode(isset($slot['display']) ? (string) $slot['display'] : 'cards');
 		$options    = $plugin->resolve_slot_options($slot, $product_id);
 		$req        = ! empty($slot['required']);
-		$heading    = $this->get_slot_heading($label, (int) $index + 1, (int) $total);
+		$grouped    = '' !== (string) ($slot['group_key'] ?? '');
+		$heading    = $grouped ? $label : $this->get_slot_heading($label, (int) $index + 1, (int) $total);
+		$badge_step = $grouped ? (string) ($slot['group_index'] ?? ($index + 1)) : (string) ($index + 1);
 		$option_count           = count($options);
 		$available_filter_chips = $this->get_available_filter_chips($options, $product_id);
 		$has_filter_chips       = ! empty($available_filter_chips);
@@ -649,7 +692,7 @@ final class MBBB_Frontend {
 				aria-controls="<?php echo esc_attr($body_id); ?>"
 			>
 				<span class="mbbb-slot__trigger-main">
-					<span class="mbbb-slot__step-badge" aria-hidden="true"><?php echo esc_html((string) ( $index + 1 )); ?></span>
+					<span class="mbbb-slot__step-badge" aria-hidden="true"><?php echo esc_html($badge_step); ?></span>
 					<span class="mbbb-slot__trigger-copy">
 						<span class="mbbb-slot__trigger-title" id="mbbb-slot-title-<?php echo esc_attr($key); ?>"><?php echo esc_html($heading); ?></span>
 						<span class="mbbb-slot__trigger-selection" data-slot-status="<?php echo esc_attr($key); ?>"><?php esc_html_e('Tap to choose', 'mad-baits-bundle-builder'); ?></span>
