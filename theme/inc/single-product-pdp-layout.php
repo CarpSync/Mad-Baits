@@ -91,24 +91,7 @@ function mad_baits_is_standard_product_pdp($product = null) {
 		return false;
 	}
 
-	if (mad_baits_is_bundle_builder_product($product)) {
-		return false;
-	}
-
-	$product_id = mad_baits_pdp_resolve_product_id($product);
-	if ($product_id < 1) {
-		return false;
-	}
-
-	if (mad_baits_pdp_has_bundle_builder_slots($product_id)) {
-		return false;
-	}
-
-	if (has_term(array('bundles-deals', 'bundle-deals'), 'product_cat', $product_id)) {
-		return false;
-	}
-
-	return true;
+	return ! mad_baits_is_bundle_builder_product($product);
 }
 
 /**

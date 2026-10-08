@@ -483,7 +483,7 @@ final class MBBB_Frontend {
 	 */
 	public function render_variation_reset_field() {
 		global $product;
-		if (! $product instanceof WC_Product || ! MBBB_Plugin::instance()->is_enabled($product->get_id())) {
+		if (! $product instanceof WC_Product || ! MBBB_Plugin::instance()->uses_bundle_builder_ui($product->get_id())) {
 			return;
 		}
 		echo '<input type="hidden" name="variation_id" class="mbbb-variation-reset" value="0" />';
@@ -495,7 +495,7 @@ final class MBBB_Frontend {
 	 * @return string
 	 */
 	public function add_to_cart_button_text($text, $product) {
-		if ($product instanceof WC_Product && MBBB_Plugin::instance()->is_enabled($product->get_id())) {
+		if ($product instanceof WC_Product && MBBB_Plugin::instance()->uses_bundle_builder_ui($product->get_id())) {
 			$button = $this->owner_button_text($product->get_id());
 			if ('' !== $button) {
 				return $button;
@@ -595,7 +595,7 @@ final class MBBB_Frontend {
 	 */
 	private function is_bundle_product_context() {
 		global $product;
-		return $product instanceof WC_Product && MBBB_Plugin::instance()->is_enabled($product->get_id());
+		return $product instanceof WC_Product && MBBB_Plugin::instance()->uses_bundle_builder_ui($product->get_id());
 	}
 
 	/**
@@ -1214,7 +1214,7 @@ final class MBBB_Frontend {
 			return;
 		}
 		global $product;
-		if (! $product instanceof WC_Product || ! MBBB_Plugin::instance()->is_enabled($product->get_id())) {
+		if (! $product instanceof WC_Product || ! MBBB_Plugin::instance()->uses_bundle_builder_ui($product->get_id())) {
 			return;
 		}
 		?>

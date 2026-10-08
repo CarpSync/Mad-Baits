@@ -88,13 +88,13 @@ final class MBBB_Cart {
 		}
 
 		$product_id = isset($_REQUEST['add-to-cart']) ? absint(wp_unslash((string) $_REQUEST['add-to-cart'])) : 0;
-		if ($product_id > 0 && MBBB_Plugin::instance()->is_enabled($product_id)) {
+		if ($product_id > 0 && MBBB_Plugin::instance()->uses_bundle_builder_ui($product_id)) {
 			return true;
 		}
 
 		if (function_exists('is_product') && is_product()) {
 			$product_id = absint(get_queried_object_id());
-			if ($product_id > 0 && MBBB_Plugin::instance()->is_enabled($product_id)) {
+			if ($product_id > 0 && MBBB_Plugin::instance()->uses_bundle_builder_ui($product_id)) {
 				return true;
 			}
 		}
@@ -119,7 +119,7 @@ final class MBBB_Cart {
 	 * @return string
 	 */
 	public function cart_handler($handler, $product) {
-		if ($product instanceof WC_Product && MBBB_Plugin::instance()->is_enabled($product->get_id())) {
+		if ($product instanceof WC_Product && MBBB_Plugin::instance()->uses_bundle_builder_ui($product->get_id())) {
 			return 'simple';
 		}
 		return $handler;
@@ -135,7 +135,7 @@ final class MBBB_Cart {
 	 */
 	public function normalize_bundle_post_data($passed, $product_id, $qty) {
 		unset($qty);
-		if (! MBBB_Plugin::instance()->is_enabled($product_id)) {
+		if (! MBBB_Plugin::instance()->uses_bundle_builder_ui($product_id)) {
 			return $passed;
 		}
 
@@ -178,7 +178,7 @@ final class MBBB_Cart {
 			return $type;
 		}
 
-		if ((int) $GLOBALS['mbbb_adding_to_cart'] === (int) $product->get_id() && MBBB_Plugin::instance()->is_enabled($product->get_id())) {
+		if ((int) $GLOBALS['mbbb_adding_to_cart'] === (int) $product->get_id() && MBBB_Plugin::instance()->uses_bundle_builder_ui($product->get_id())) {
 			return 'simple';
 		}
 
@@ -479,7 +479,7 @@ final class MBBB_Cart {
 	 */
 	public function validate_add_to_cart($passed, $product_id, $qty) {
 		unset($qty);
-		if ($this->is_bundle_add_request($product_id) && class_exists('MBBB_Bundle_Runtime')) {
+		if ($this->is_bundle_add_request($product_id) && class_exists('MBBB_Bundle_Runtime') && MBBB_Plugin::instance()->uses_bundle_builder_ui($product_id)) {
 			$blocked = MBBB_Bundle_Runtime::direct_purchase_error($product_id);
 			if (is_wp_error($blocked)) {
 				if (! wp_doing_ajax()) {
@@ -490,7 +490,7 @@ final class MBBB_Cart {
 		}
 
 		$plugin = MBBB_Plugin::instance();
-		if (! $plugin->is_enabled($product_id)) {
+		if (! $plugin->uses_bundle_builder_ui($product_id)) {
 			return $passed;
 		}
 
@@ -573,7 +573,7 @@ final class MBBB_Cart {
 			return $passed;
 		}
 
-		if (! MBBB_Plugin::instance()->is_enabled($product_id)) {
+		if (! MBBB_Plugin::instance()->uses_bundle_builder_ui($product_id)) {
 			return $passed;
 		}
 
@@ -589,7 +589,7 @@ final class MBBB_Cart {
 	public function add_cart_item_data($cart_item_data, $product_id, $variation_id) {
 		unset($variation_id);
 		$plugin = MBBB_Plugin::instance();
-		if (! $plugin->is_enabled($product_id)) {
+		if (! $plugin->uses_bundle_builder_ui($product_id)) {
 			return $cart_item_data;
 		}
 
@@ -616,7 +616,7 @@ final class MBBB_Cart {
 		$quantity   = isset($_POST['quantity']) ? max(1, absint($_POST['quantity'])) : 1;
 		$plugin     = MBBB_Plugin::instance();
 
-		if ($product_id < 1 || ! $plugin->is_enabled($product_id)) {
+		if ($product_id < 1 || ! $plugin->uses_bundle_builder_ui($product_id)) {
 			wp_send_json_error(array('message' => __('Invalid bundle product.', 'mad-baits-bundle-builder')), 400);
 		}
 

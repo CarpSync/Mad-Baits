@@ -26,6 +26,10 @@ final class MBBB_Bundle_Runtime {
 	 * @return void
 	 */
 	public static function init() {
+		if (class_exists('MBBB_Plugin') && ! MBBB_Plugin::instance()->uses_bundle_builder_ui(0)) {
+			return;
+		}
+
 		add_filter('woocommerce_is_purchasable', array(__CLASS__, 'filter_purchasable'), 20, 2);
 		add_filter('woocommerce_product_is_visible', array(__CLASS__, 'filter_visible'), 20, 2);
 		add_filter('mbbb_slot_options', array(__CLASS__, 'filter_slot_options'), 20, 3);
