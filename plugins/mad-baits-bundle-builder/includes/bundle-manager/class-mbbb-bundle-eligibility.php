@@ -80,6 +80,10 @@ final class MBBB_Bundle_Eligibility {
 		if (! empty($sizes) && ! self::matches_sizes($variation, $sizes)) {
 			return false;
 		}
+		$format = sanitize_key((string) ($config['bait_format'] ?? ''));
+		if (in_array($format, array('shelf_life', 'freezer', 'both'), true) && ! self::matches_format($variation, $format)) {
+			return false;
+		}
 		if (! empty($categories) && ! self::matches_categories($variation, $categories)) {
 			return false;
 		}
@@ -196,6 +200,29 @@ final class MBBB_Bundle_Eligibility {
 		}
 
 		return self::matches_any_label($variation, $sizes, array('size_slug', 'pa_size'));
+	}
+
+	/**
+	 * Shelf life and freezer come from the catalogue row, not from a guessed name match.
+	 *
+	 * An empty format means the bundle does not filter by format.
+	 *
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @param string               $format    shelf_life|freezer|both.
+	 * @return bool
+	 */
+	private static function matches_format(array $variation, $format) {
+		$have = array();
+		foreach ((array) ($variation['formats'] ?? array()) as $one) {
+			$one = sanitize_key((string) $one);
+			if (in_array($one, array('shelf_life', 'freezer'), true)) {
+				$have[ $one ] = $one;
+			}
+		}
+		if ('both' === $format) {
+			return ! empty($have);
+		}
+		return isset($have[ $format ]);
 	}
 
 	/**

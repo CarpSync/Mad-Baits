@@ -93,6 +93,25 @@
 		return labels.length ? labels.join(', ') : empty;
 	}
 
+	function prefixed(listId, label, empty) {
+		var labels = selectedLabels(listId);
+		return labels.length ? label + ': ' + labels.join(', ') : empty;
+	}
+
+	function formatPreview() {
+		var current = checkedValue('mb_bundle[bait_format]');
+		if (current === 'both') {
+			return 'Format: Shelf Life + Freezer';
+		}
+		if (current === 'shelf_life') {
+			return 'Format: Shelf Life';
+		}
+		if (current === 'freezer') {
+			return 'Format: Freezer';
+		}
+		return '';
+	}
+
 	function statusLabel() {
 		var field = form.querySelector('[name="mb_bundle[status]"]:checked');
 		if (!field || !field.parentElement) {
@@ -111,8 +130,14 @@
 		text('mb-preview-status', statusLabel());
 		text('mb-preview-helper', helper);
 		text('mb-preview-qty', choiceSentence());
-		text('mb-preview-ranges', joined('ranges', 'No ranges selected'));
-		text('mb-preview-sizes', joined('sizes', 'No sizes selected'));
+		text('mb-preview-ranges', prefixed('ranges', 'Ranges', 'No ranges selected'));
+		text('mb-preview-sizes', prefixed('sizes', 'Sizes', 'No sizes selected'));
+		var formatNode = document.getElementById('mb-preview-format');
+		var formatText = formatPreview();
+		if (formatNode) {
+			formatNode.hidden = formatText === '';
+			formatNode.textContent = formatText;
+		}
 		text('mb-preview-price', priceSummary());
 		text('mb-preview-button', value('mb_bundle[button_text]') || 'Build Your Bundle');
 		text('mb-bundle-choice-preview', choiceSentence());
@@ -182,6 +207,92 @@
 		});
 		if (listId === 'sizes') {
 			updateSizeHint();
+		}
+	}
+
+	var formatTouched = form.getAttribute('data-new') !== '1' && !!form.querySelector('[name="mb_bundle[bait_format]"]:checked');
+	var allowFormatDefault = form.getAttribute('data-new') === '1';
+
+	function formatInput(format) {
+		return form.querySelector('[name="mb_bundle[bait_format]"][value="' + format + '"]');
+	}
+
+	function formatsForRanges(ranges) {
+		var found = { shelf_life: false, freezer: false };
+		['shelf_life', 'freezer'].forEach(function (format) {
+			var input = formatInput(format);
+			if (!input) {
+				return;
+			}
+			var known = (input.getAttribute('data-format-ranges') || '').split(',');
+			found[format] = ranges.some(function (slug) {
+				return slug !== '' && known.indexOf(slug) !== -1;
+			});
+		});
+		return found;
+	}
+
+	function defaultFormat(found) {
+		if (found.shelf_life && found.freezer) {
+			return 'both';
+		}
+		if (found.shelf_life) {
+			return 'shelf_life';
+		}
+		if (found.freezer) {
+			return 'freezer';
+		}
+		return '';
+	}
+
+	function syncFormats() {
+		var ranges = selectedRangeValues();
+		var found = formatsForRanges(ranges);
+		var bothAvailable = found.shelf_life && found.freezer;
+		['shelf_life', 'freezer', 'both'].forEach(function (format) {
+			var input = formatInput(format);
+			if (!input) {
+				return;
+			}
+			var available = format === 'both' ? bothAvailable : found[format];
+			var label = input.closest('label');
+			input.disabled = !available;
+			if (label) {
+				label.hidden = !available;
+			}
+			if (!available) {
+				input.checked = false;
+			}
+		});
+
+		var current = form.querySelector('[name="mb_bundle[bait_format]"]:checked');
+		var currentValid = current && !current.disabled;
+		var pick = '';
+		if (formatTouched && currentValid) {
+			pick = current.value;
+		} else if (allowFormatDefault) {
+			pick = defaultFormat(found);
+		} else if (currentValid) {
+			pick = current.value;
+		}
+		['shelf_life', 'freezer', 'both'].forEach(function (format) {
+			var input = formatInput(format);
+			if (input) {
+				input.checked = pick !== '' && format === pick && !input.disabled;
+			}
+		});
+
+		var hint = document.getElementById('mb-format-hint');
+		if (hint) {
+			if (!ranges.length) {
+				hint.hidden = false;
+				hint.textContent = 'Choose bait ranges to see freezer and shelf life options.';
+			} else if (!found.shelf_life && !found.freezer) {
+				hint.hidden = false;
+				hint.textContent = 'No shelf life or freezer products were found for the selected ranges.';
+			} else {
+				hint.hidden = true;
+			}
 		}
 	}
 
@@ -280,8 +391,10 @@
 				return blob.indexOf(size.replace(/\s+/g, '')) !== -1;
 			});
 		});
+		formatTouched = false;
 		toggleShows();
 		applyListFilter('sizes', false);
+		syncFormats();
 		closeAdvanced();
 		updatePreview();
 		refreshCount();
@@ -317,8 +430,12 @@
 		if (event.target && event.target.closest && event.target.type === 'checkbox' && event.target.closest('[data-check-list="fixed"]')) {
 			syncFixedQty(event.target);
 		}
+		if (event.target && event.target.name === 'mb_bundle[bait_format]') {
+			formatTouched = true;
+		}
 		if (event.target && event.target.closest('[data-check-list="ranges"]')) {
 			applyListFilter('sizes', true);
+			syncFormats();
 		}
 		updatePreview();
 		toggleShows();
@@ -341,6 +458,7 @@
 			markLegacyChoices({ target: button });
 			if (listId === 'ranges') {
 				applyListFilter('sizes', true);
+				syncFormats();
 			}
 			updatePreview();
 			refreshCount();
@@ -372,6 +490,7 @@
 			editChoices.hidden = true;
 			toggleShows();
 			applyListFilter('sizes', false);
+			syncFormats();
 		});
 	}
 
@@ -426,6 +545,7 @@
 
 	toggleShows();
 	applyListFilter('sizes', false);
+	syncFormats();
 	closeAdvanced();
 	window.addEventListener('pageshow', closeAdvanced);
 	updatePreview();

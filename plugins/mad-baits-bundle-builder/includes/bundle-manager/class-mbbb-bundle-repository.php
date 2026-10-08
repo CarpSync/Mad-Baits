@@ -770,6 +770,7 @@ final class MBBB_Bundle_Repository {
 					'meta_range'          => $meta_range,
 					'pa_range'            => (string) ($raw_attributes['pa_range'] ?? ''),
 					'pa_flavour'          => (string) ($raw_attributes['pa_flavour'] ?? ''),
+					'name'                => $parent->get_name(),
 					'tags'                => $tags,
 					'categories'          => $category_slugs,
 					'attributes'          => $raw_attributes,
@@ -783,6 +784,7 @@ final class MBBB_Bundle_Repository {
 				'size_slug' => '',
 				'size_slugs' => array(),
 				'size_label' => '',
+				'formats' => array(),
 				'boilie' => false,
 			);
 
@@ -822,6 +824,7 @@ final class MBBB_Bundle_Repository {
 			'size_slug'       => $size_slug,
 			'size_slugs'      => (array) ($choice['size_slugs'] ?? array()),
 			'size_label'      => $size_label,
+			'formats'         => array_values((array) ($choice['formats'] ?? array())),
 			'boilie'          => ! empty($choice['boilie']),
 			'category_slugs'  => $category_slugs,
 			'attributes'      => $attributes,

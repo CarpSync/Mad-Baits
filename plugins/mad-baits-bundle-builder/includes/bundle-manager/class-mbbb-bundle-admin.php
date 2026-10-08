@@ -671,6 +671,9 @@ final class MBBB_Bundle_Admin {
 				<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('Choose bait ranges to see the sizes customers can pick.', 'mad-baits-bundle-builder'); ?></p>
 			<?php endif; ?>
 		</section>
+		<section class="mb-manager__section" data-show-for="mix_and_match">
+			<?php $this->render_bait_format($config, $catalog); ?>
+		</section>
 		<section class="mb-manager__section" data-show-for="fixed">
 			<h2><?php esc_html_e('Included products', 'mad-baits-bundle-builder'); ?></h2>
 			<p class="mb-manager__hint"><?php esc_html_e('Tick the products included in this set. Add a quantity when the bundle contains more than one of the same product.', 'mad-baits-bundle-builder'); ?></p>
@@ -889,14 +892,16 @@ final class MBBB_Bundle_Admin {
 	 *
 	 * @param array<string, mixed> $signals       meta_range, tags, categories, attributes, parent_attributes.
 	 * @param array<string, string> $known_ranges Editor range slug => label.
-	 * @return array{range_slug: string, range_slugs: string[], size_slug: string, size_slugs: string[], size_label: string, boilie: bool}
+	 * @return array{range_slug: string, range_slugs: string[], size_slug: string, size_slugs: string[], size_label: string, formats: string[], boilie: bool}
 	 */
 	public static function describe_catalogue_choice(array $signals, array $known_ranges) {
-		$range = self::resolve_catalogue_range($signals, $known_ranges);
-		$sizes = self::extract_catalogue_sizes($signals);
-		$boilie = self::row_is_boilie($signals);
+		$range   = self::resolve_catalogue_range($signals, $known_ranges);
+		$sizes   = self::extract_catalogue_sizes($signals);
+		$formats = self::extract_catalogue_formats($signals);
+		$boilie  = self::row_is_boilie($signals);
 		if (! $boilie) {
-			$sizes = array();
+			$sizes   = array();
+			$formats = array();
 		}
 		$sizes = array_values($sizes);
 
@@ -906,7 +911,143 @@ final class MBBB_Bundle_Admin {
 			'size_slug'   => (string) ($sizes[0] ?? ''),
 			'size_slugs'  => $sizes,
 			'size_label'  => (string) ($sizes[0] ?? ''),
+			'formats'     => $formats,
 			'boilie'      => $boilie,
+		);
+	}
+
+	/**
+	 * Shelf life or freezer, from a tag, title, or attribute value.
+	 *
+	 * A combined label such as "Freezer or Shelf life" is not one format.
+	 * "Shelfish" is not shelf life.
+	 *
+	 * @param mixed $value Raw label, tag, or attribute value.
+	 * @return string shelf_life|freezer|''.
+	 */
+	public static function normalize_bait_format($value) {
+		$text = strtolower(trim((string) $value));
+		$text = str_replace(array('_', '-'), ' ', $text);
+		$text = trim((string) preg_replace('/\s+/', ' ', $text));
+		if ('' === $text) {
+			return '';
+		}
+		$shelf   = 1 === preg_match('/shelf\s*life/', $text);
+		$freezer = 1 === preg_match('/freezer/', $text);
+		if ($shelf === $freezer) {
+			return '';
+		}
+		return $shelf ? 'shelf_life' : 'freezer';
+	}
+
+	/**
+	 * Formats actually sold by the selected ranges.
+	 *
+	 * @param array<int, array<string, mixed>> $rows   Catalogue rows.
+	 * @param string[]                         $ranges Selected range slugs.
+	 * @return string[] shelf_life and freezer, in that order.
+	 */
+	public static function formats_for_ranges(array $rows, array $ranges) {
+		$wanted = array();
+		foreach ($ranges as $range) {
+			$range = sanitize_title((string) $range);
+			if ('' !== $range) {
+				$wanted[ $range ] = $range;
+			}
+		}
+		if (empty($wanted)) {
+			return array();
+		}
+
+		$found = array();
+		foreach ($rows as $row) {
+			if (! is_array($row) || (isset($row['boilie']) && empty($row['boilie']))) {
+				continue;
+			}
+			$row_ranges = self::row_range_slugs($row);
+			if (empty(array_intersect_key($row_ranges, $wanted))) {
+				continue;
+			}
+			foreach ((array) ($row['formats'] ?? array()) as $format) {
+				$format = sanitize_key((string) $format);
+				if (in_array($format, array('shelf_life', 'freezer'), true)) {
+					$found[ $format ] = $format;
+				}
+			}
+		}
+
+		return self::ordered_formats($found);
+	}
+
+	/**
+	 * Both only when the selection really contains both formats.
+	 *
+	 * @param string[] $available shelf_life and/or freezer.
+	 * @return string both|shelf_life|freezer|''.
+	 */
+	public static function default_bait_format(array $available) {
+		$available = array_fill_keys(self::ordered_formats(array_fill_keys($available, true)), true);
+		$shelf     = isset($available['shelf_life']);
+		$freezer   = isset($available['freezer']);
+		if ($shelf && $freezer) {
+			return 'both';
+		}
+		if ($shelf) {
+			return 'shelf_life';
+		}
+		if ($freezer) {
+			return 'freezer';
+		}
+		return '';
+	}
+
+	/**
+	 * @param string $format Stored format.
+	 * @return string
+	 */
+	public static function format_preview_label($format) {
+		$format = sanitize_key((string) $format);
+		if ('both' === $format) {
+			return __('Format: Shelf Life + Freezer', 'mad-baits-bundle-builder');
+		}
+		if ('shelf_life' === $format) {
+			return __('Format: Shelf Life', 'mad-baits-bundle-builder');
+		}
+		if ('freezer' === $format) {
+			return __('Format: Freezer', 'mad-baits-bundle-builder');
+		}
+		return '';
+	}
+
+	/**
+	 * Range slugs that sell each format, for the simple format pills.
+	 *
+	 * @param array<string, mixed> $catalog Catalogue.
+	 * @return array{shelf_life: string, freezer: string}
+	 */
+	public static function format_range_map(array $catalog) {
+		$map = array(
+			'shelf_life' => array(),
+			'freezer'    => array(),
+		);
+		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
+			if (! is_array($row) || (isset($row['boilie']) && empty($row['boilie']))) {
+				continue;
+			}
+			$ranges = self::row_range_slugs($row);
+			if (empty($ranges)) {
+				continue;
+			}
+			foreach (self::ordered_formats(array_fill_keys((array) ($row['formats'] ?? array()), true)) as $format) {
+				foreach ($ranges as $range) {
+					$map[ $format ][ $range ] = $range;
+				}
+			}
+		}
+
+		return array(
+			'shelf_life' => implode(',', $map['shelf_life']),
+			'freezer'    => implode(',', $map['freezer']),
 		);
 	}
 
@@ -1070,6 +1211,121 @@ final class MBBB_Bundle_Admin {
 	}
 
 	/**
+	 * @param array<string, mixed> $signals Catalogue signals.
+	 * @return string[]
+	 */
+	private static function extract_catalogue_formats(array $signals) {
+		$specific = self::formats_in_attributes((array) ($signals['attributes'] ?? array()));
+		if (! empty($specific)) {
+			return $specific;
+		}
+		$parent = self::formats_in_attributes((array) ($signals['parent_attributes'] ?? array()));
+		if (! empty($parent)) {
+			return $parent;
+		}
+
+		$found = array();
+		foreach ((array) ($signals['tags'] ?? array()) as $tag) {
+			$format = self::normalize_bait_format($tag);
+			if ('' !== $format) {
+				$found[ $format ] = $format;
+			}
+		}
+		if (empty($found)) {
+			foreach (array('name', 'parent_name') as $key) {
+				$format = self::normalize_bait_format($signals[ $key ] ?? '');
+				if ('' !== $format) {
+					$found[ $format ] = $format;
+				}
+			}
+		}
+
+		return self::ordered_formats($found);
+	}
+
+	/**
+	 * Format values on a product. Attribute names are ignored so "Freezer or Shelf life" is not both formats by itself.
+	 *
+	 * @param array<string, mixed> $attributes Attribute name => value or values.
+	 * @return string[]
+	 */
+	private static function formats_in_attributes(array $attributes) {
+		$found = array();
+		foreach ($attributes as $name => $value) {
+			if (self::is_size_attribute_name($name)) {
+				continue;
+			}
+			foreach (is_array($value) ? $value : array($value) as $one) {
+				$format = self::normalize_bait_format($one);
+				if ('' !== $format) {
+					$found[ $format ] = $format;
+				}
+			}
+		}
+		return self::ordered_formats($found);
+	}
+
+	/**
+	 * @param array<string, mixed> $found Format keys.
+	 * @return string[]
+	 */
+	private static function ordered_formats(array $found) {
+		$ordered = array();
+		foreach (array('shelf_life', 'freezer') as $format) {
+			if (isset($found[ $format ])) {
+				$ordered[] = $format;
+			}
+		}
+		return $ordered;
+	}
+
+	/**
+	 * @param array<string, mixed> $row Catalogue row.
+	 * @return array<string, string>
+	 */
+	private static function row_range_slugs(array $row) {
+		$ranges = array();
+		foreach ((array) ($row['range_slugs'] ?? array()) as $range) {
+			$range = sanitize_title((string) $range);
+			if ('' !== $range) {
+				$ranges[ $range ] = $range;
+			}
+		}
+		$range = sanitize_title((string) ($row['range_slug'] ?? ''));
+		if ('' !== $range) {
+			$ranges[ $range ] = $range;
+		}
+		return $ranges;
+	}
+
+	/**
+	 * @param array<string, mixed> $config  Config.
+	 * @param array<string, mixed> $catalog Catalogue.
+	 * @return void
+	 */
+	private function render_bait_format(array $config, array $catalog) {
+		$map      = self::format_range_map($catalog);
+		$selected = sanitize_key((string) ($config['bait_format'] ?? ''));
+		$options  = array(
+			'shelf_life' => __('Shelf Life', 'mad-baits-bundle-builder'),
+			'freezer'    => __('Freezer', 'mad-baits-bundle-builder'),
+			'both'       => __('Both', 'mad-baits-bundle-builder'),
+		);
+		echo '<fieldset class="mb-manager__group">';
+		echo '<legend>' . esc_html__('Bait format', 'mad-baits-bundle-builder') . '</legend>';
+		echo '<div class="mb-manager__checks" data-check-list="formats">';
+		foreach ($options as $value => $label) {
+			$ranges = 'both' === $value ? '' : (string) ($map[ $value ] ?? '');
+			echo '<label class="mb-manager__pill" data-filter-item="formats">';
+			echo '<input type="radio" name="mb_bundle[bait_format]" value="' . esc_attr($value) . '" data-format-option="' . esc_attr($value) . '" data-format-ranges="' . esc_attr($ranges) . '" ' . checked($selected, $value, false) . ' /> ';
+			echo '<span>' . esc_html($label) . '</span></label>';
+		}
+		echo '</div>';
+		echo '<p class="mb-manager__hint" id="mb-format-hint" hidden>' . esc_html__('Choose bait ranges to see freezer and shelf life options.', 'mad-baits-bundle-builder') . '</p>';
+		echo '</fieldset>';
+	}
+
+	/**
 	 * @param array<string, mixed> $config  Config.
 	 * @param array<string, mixed> $catalog Catalogue.
 	 * @return bool
@@ -1210,8 +1466,9 @@ final class MBBB_Bundle_Admin {
 				<p class="mb-preview__meta" id="mb-preview-status"><?php echo esc_html(MBBB_Bundle_Config::status_label((string) $config['status'], $config)); ?></p>
 				<p id="mb-preview-helper"><?php echo esc_html((string) ($display['helper_text'] ?: MBBB_Bundle_Config::choice_sentence($config))); ?></p>
 				<p id="mb-preview-qty"><?php echo esc_html(MBBB_Bundle_Config::choice_sentence($config)); ?></p>
-				<p class="mb-preview__meta" id="mb-preview-ranges"><?php echo esc_html($ranges ? implode(', ', $ranges) : __('No ranges selected', 'mad-baits-bundle-builder')); ?></p>
-				<p class="mb-preview__meta" id="mb-preview-sizes"><?php echo esc_html($sizes ? implode(', ', $sizes) : __('No sizes selected', 'mad-baits-bundle-builder')); ?></p>
+				<p class="mb-preview__meta" id="mb-preview-ranges"><?php echo esc_html($ranges ? __('Ranges: ', 'mad-baits-bundle-builder') . implode(', ', $ranges) : __('No ranges selected', 'mad-baits-bundle-builder')); ?></p>
+				<p class="mb-preview__meta" id="mb-preview-sizes"><?php echo esc_html($sizes ? __('Sizes: ', 'mad-baits-bundle-builder') . implode(', ', $sizes) : __('No sizes selected', 'mad-baits-bundle-builder')); ?></p>
+				<p class="mb-preview__meta" id="mb-preview-format" <?php echo '' === self::format_preview_label($config['bait_format'] ?? '') ? 'hidden' : ''; ?>><?php echo esc_html(self::format_preview_label($config['bait_format'] ?? '')); ?></p>
 				<p id="mb-preview-price"><?php echo esc_html(MBBB_Bundle_Pricing::summary($config)); ?></p>
 				<span class="mb-preview__button" id="mb-preview-button"><?php echo esc_html('' !== (string) $display['button_text'] ? (string) $display['button_text'] : __('Build Your Bundle', 'mad-baits-bundle-builder')); ?></span>
 			</div>
