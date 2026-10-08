@@ -2,7 +2,7 @@
 /**
  * Plugin Name: Mad Baits Bundle Builder
  * Description: Premium mobile-first bundle builder for Mad Baits WooCommerce bundle products.
- * Version: 1.12.0
+ * Version: 1.12.1
  * Author: Mad Baits
  * Requires at least: 6.0
  * Requires PHP: 7.4
@@ -13,7 +13,7 @@
 
 defined('ABSPATH') || exit;
 
-define('MBBB_VERSION', '1.12.0');
+define('MBBB_VERSION', '1.12.1');
 define('MBBB_PLUGIN_FILE', __FILE__);
 define('MBBB_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('MBBB_PLUGIN_URL', plugin_dir_url(__FILE__));

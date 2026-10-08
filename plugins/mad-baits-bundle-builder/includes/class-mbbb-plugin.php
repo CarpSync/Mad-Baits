@@ -293,40 +293,17 @@ final class MBBB_Plugin {
 	}
 
 	/**
-	 * Whether the product should use the bundle-builder PDP (frontend layout + hide WC variations).
+	 * Whether the product should use the bundle-builder PDP.
 	 *
-	 * Primary: bundle builder enabled in product meta.
-	 * Explicit `_mbbb_enabled=no` always opts out (even with leftover slots / Bundles & Deals category).
-	 * Fallback: Bundles & Deals category when builder slots are configured and enabled is not disabled.
+	 * The builder is disabled for every product. Stored slot meta is not read or removed.
 	 *
 	 * @param int $product_id Product ID.
 	 * @return bool
 	 */
 	public function uses_bundle_builder_ui($product_id) {
-		$product_id = absint($product_id);
-		if ($product_id < 1) {
-			return false;
-		}
-
-		$enabled_meta = (string) get_post_meta($product_id, self::META_ENABLED, true);
-		if ('no' === $enabled_meta) {
-			return false;
-		}
-
-		$slots = $this->get_resolved_slots($product_id);
-		if (empty($slots)) {
-			return false;
-		}
-
-		if ('yes' === $enabled_meta) {
-			return true;
-		}
-
-		$cat_slugs = wp_get_post_terms($product_id, 'product_cat', array('fields' => 'slugs'));
-		$cat_slugs = is_array($cat_slugs) && ! is_wp_error($cat_slugs) ? array_map('sanitize_title', $cat_slugs) : array();
-
-		return in_array('bundles-deals', $cat_slugs, true)
-			|| in_array('bundle-deals', $cat_slugs, true);
+		// Off for every product. Slot meta and order history stay stored.
+		unset($product_id);
+		return false;
 	}
 
 	/**
