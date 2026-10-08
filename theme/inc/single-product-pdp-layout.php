@@ -101,6 +101,8 @@ function mad_baits_is_standard_product_pdp($product = null) {
  * @return string[]
  */
 function mad_baits_pdp_body_class($classes) {
+	$classes[] = 'mad-pdp-shell';
+
 	if (mad_baits_is_bundle_builder_product()) {
 		$classes[] = 'mbbb-product';
 		$classes[] = 'mad-bundle-builder-pdp';
@@ -164,8 +166,8 @@ function mad_baits_configure_standard_product_layout_hooks() {
 	add_action('woocommerce_single_product_summary', 'mad_baits_pdp_summary_close_at_end', 99);
 
 	add_action('woocommerce_before_single_product_summary', 'mad_baits_pdp_gallery_column_open', 5);
-	add_action('woocommerce_before_single_product_summary', 'mad_baits_render_pdp_gallery_highlights', 21);
-	add_action('woocommerce_before_single_product_summary', 'mad_baits_pdp_gallery_column_close', 22);
+	add_action('woocommerce_before_single_product_summary', 'mad_baits_pdp_gallery_column_close', 21);
+	add_action('woocommerce_before_single_product_summary', 'mad_baits_render_pdp_gallery_highlights', 22);
 }
 
 /**
@@ -480,6 +482,37 @@ function mad_baits_render_pdp_detail_chips() {
  *
  * @return void
  */
+/**
+ * Visual group for a variation label. Empty means keep the existing order with no heading.
+ *
+ * @param string $label Attribute label.
+ * @return string
+ */
+function mad_baits_pdp_variation_group_label($label) {
+	$text = strtolower(wp_strip_all_tags((string) $label));
+	if ('' === $text) {
+		return '';
+	}
+
+	if (preg_match('/hook\s*bait|hookbait/', $text)) {
+		return __('Choose your hookbaits', 'mad-baits');
+	}
+
+	if (preg_match('/liquid|\bdip\b/', $text)) {
+		return __('Choose your liquid', 'mad-baits');
+	}
+
+	if (false !== strpos($text, 'pellet')) {
+		return __('Choose your pellets', 'mad-baits');
+	}
+
+	if (preg_match('/boilie|\bsplit\b/', $text)) {
+		return __('Choose your boilies', 'mad-baits');
+	}
+
+	return '';
+}
+
 function mad_baits_pdp_gallery_column_open() {
 	echo '<div class="mad-pdp-gallery-col">';
 }
@@ -658,7 +691,7 @@ function mad_baits_pdp_express_checkout_open() {
 		return;
 	}
 
-	echo '<div class="mad-pdp-express"><p class="mad-pdp-express__label">' . esc_html__('Express checkout', 'mad-baits') . '</p>';
+	echo '<div class="mad-pdp-express"><p class="mad-pdp-express__label"><span>' . esc_html__('or continue with express checkout', 'mad-baits') . '</span></p>';
 }
 
 /**

@@ -60,8 +60,8 @@ body.single-product div.product.mad-pdp-product > .up-sells {
 }
 
 body.single-product div.product.mad-pdp-product > .woocommerce-tabs {
-  max-width: 1180px !important;
-  margin-top: 48px !important;
+  max-width: none !important;
+  margin-top: 0 !important;
 }
 
 body.single-product div.product.mad-pdp-product > .mad-session-upsell,
@@ -75,7 +75,7 @@ body.single-product div.product.mad-pdp-product > .mad-pdp-module.mad-session-up
 @media (min-width: 1024px) {
   body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product,
   body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp).woocommerce div.product.mad-pdp-product {
-    grid-template-columns: minmax(0, 1.08fr) minmax(0, 0.92fr) !important;
+    grid-template-columns: minmax(0, 1fr) minmax(420px, 520px) !important;
     column-gap: clamp(2rem, 3.5vw, 3.5rem) !important;
     row-gap: clamp(1.5rem, 2.5vw, 2rem) !important;
     padding: 0 clamp(1.25rem, 2.5vw, 2rem) clamp(2rem, 3vw, 3rem) !important;
@@ -188,7 +188,10 @@ body.single-product div.product.mad-pdp-product > .mad-pdp-module.mad-session-up
 
   body.mad-standard-product-page:not(.mbbb-product):not(.mad-bundle-builder-pdp) div.product.mad-pdp-product > .summary.entry-summary {
     grid-column: 2 !important;
-    grid-row: 1 !important;
+    grid-row: 1 / span 2 !important;
+    align-self: start !important;
+    position: sticky !important;
+    top: 96px !important;
     min-width: 0 !important;
     max-width: none !important;
     width: 100% !important;
@@ -483,6 +486,8 @@ body.single-product .mad-session-upsell .container.mad-pdp-module__inner {
     min-width: 0 !important;
     max-width: none !important;
     padding: clamp(1.1rem, 3vw, 1.35rem) !important;
+    position: static !important;
+    grid-row: auto !important;
   }
 
   body.single-product div.product.mad-pdp-product > .woocommerce-tabs,
