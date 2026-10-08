@@ -661,8 +661,15 @@ final class MBBB_Bundle_Admin {
 			<?php $this->render_checks(__('Available bait ranges', 'mad-baits-bundle-builder'), 'mb_bundle[ranges][]', (array) $catalog['ranges'], (array) $config['ranges'], 'ranges', true); ?>
 		</section>
 		<section class="mb-manager__section" data-show-for="mix_and_match">
-			<?php $this->render_checks(__('Available sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['sizes'], (array) $config['sizes'], 'sizes', true, $split['range_attrs']); ?>
-			<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('Choose bait ranges to see the sizes customers can pick.', 'mad-baits-bundle-builder'); ?></p>
+			<?php if (empty($split['sizes'])) : ?>
+				<fieldset class="mb-manager__group">
+					<legend><?php esc_html_e('Available sizes', 'mad-baits-bundle-builder'); ?></legend>
+					<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('No boilie sizes were found for the selected ranges.', 'mad-baits-bundle-builder'); ?></p>
+				</fieldset>
+			<?php else : ?>
+				<?php $this->render_checks(__('Available sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['sizes'], (array) $config['sizes'], 'sizes', true, $split['range_attrs']); ?>
+				<p class="mb-manager__hint" id="mb-size-hint"><?php esc_html_e('Choose bait ranges to see the sizes customers can pick.', 'mad-baits-bundle-builder'); ?></p>
+			<?php endif; ?>
 		</section>
 		<section class="mb-manager__section" data-show-for="fixed">
 			<h2><?php esc_html_e('Included products', 'mad-baits-bundle-builder'); ?></h2>
@@ -755,20 +762,56 @@ final class MBBB_Bundle_Admin {
 		$ranges = array();
 
 		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
-			if (! is_array($row)) {
+			if (! is_array($row) || (isset($row['boilie']) && empty($row['boilie']))) {
 				continue;
 			}
-			$size  = sanitize_title((string) ($row['size_slug'] ?? ''));
+			$row_ranges = array();
+			foreach ((array) ($row['range_slugs'] ?? array()) as $range) {
+				$range = sanitize_title((string) $range);
+				if ('' !== $range) {
+					$row_ranges[ $range ] = $range;
+				}
+			}
 			$range = sanitize_title((string) ($row['range_slug'] ?? ''));
-			$label = trim((string) ($row['size_label'] ?? ''));
-			if ('' === $label && isset($all[ $size ])) {
-				$label = (string) $all[ $size ];
+			if ('' !== $range) {
+				$row_ranges[ $range ] = $range;
 			}
-			if ('' === $size || '' === $range || ! self::is_boilie_diameter($size, $label)) {
+			if (empty($row_ranges)) {
 				continue;
 			}
-			$simple[ $size ]           = '' !== $label ? $label : $size;
-			$ranges[ $size ][ $range ] = $range;
+
+			$row_sizes = array();
+			foreach ((array) ($row['size_slugs'] ?? array()) as $size) {
+				$size = self::normalize_boilie_size($size);
+				if ('' !== $size) {
+					$row_sizes[ $size ] = $size;
+				}
+			}
+			foreach (array((string) ($row['size_slug'] ?? ''), (string) ($row['size_label'] ?? '')) as $size) {
+				$size = self::normalize_boilie_size($size);
+				if ('' !== $size) {
+					$row_sizes[ $size ] = $size;
+				}
+			}
+			$attributes = isset($row['attributes']) && is_array($row['attributes']) ? $row['attributes'] : array();
+			foreach ($attributes as $name => $value) {
+				if (! self::is_size_attribute_name($name)) {
+					continue;
+				}
+				foreach ((array) $value as $size) {
+					$size = self::normalize_boilie_size($size);
+					if ('' !== $size) {
+						$row_sizes[ $size ] = $size;
+					}
+				}
+			}
+			foreach ($row_sizes as $size) {
+				$label = isset($all[ $size ]) ? (string) $all[ $size ] : $size;
+				$simple[ $size ] = '' !== $label ? $label : $size;
+				foreach ($row_ranges as $range) {
+					$ranges[ $size ][ $range ] = $range;
+				}
+			}
 		}
 
 		$other = array();
@@ -802,17 +845,225 @@ final class MBBB_Bundle_Admin {
 	 * @return bool
 	 */
 	public static function is_boilie_diameter($slug, $label) {
-		$text = strtolower(str_replace(array('_', '-'), ' ', trim($slug . ' ' . $label)));
-		if (preg_match('/\d+(?:\.\d+)?\s*(kg|g|ml|cl|ltr|litre|liter|l)\b/', $text)) {
-			return false;
+		return '' !== self::normalize_boilie_size($slug) || '' !== self::normalize_boilie_size($label);
+	}
+
+	/**
+	 * Turn a catalogue size into a plain boilie diameter such as 15mm.
+	 *
+	 * Pack values like "1kg 15mm" keep the diameter. Weights, volumes, clothing,
+	 * and hookbait labels do not.
+	 *
+	 * @param mixed $value Raw attribute value or slug.
+	 * @return string
+	 */
+	public static function normalize_boilie_size($value) {
+		$text = strtolower(trim((string) $value));
+		$text = str_replace(array('_', '-'), ' ', $text);
+		$text = trim((string) preg_replace('/\s+/', ' ', $text));
+		if ('' === $text || preg_match('/skinz|wafter|pop\s?ups?|dumbell|barrel/', $text)) {
+			return '';
 		}
-		$candidates = array(
-			strtolower(str_replace(array('_', '-'), ' ', trim((string) $slug))),
-			strtolower(str_replace(array('_', '-'), ' ', trim((string) $label))),
+		if (preg_match('/^(\d+(?:\.\d+)?)\s*mm$/', $text, $matches)) {
+			return self::millimetre_slug($matches[1]);
+		}
+		if (preg_match('/^\d+(?:\.\d+)?\s*(?:kg|g)\s+(\d+(?:\.\d+)?)\s*mm$/', $text, $matches)) {
+			return self::millimetre_slug($matches[1]);
+		}
+		return '';
+	}
+
+	/**
+	 * Size attributes used by the live catalogue, including custom names.
+	 *
+	 * @param string $name Attribute name or taxonomy.
+	 * @return bool
+	 */
+	public static function is_size_attribute_name($name) {
+		$key = str_replace('_', '-', sanitize_title((string) $name));
+		return in_array($key, array('pa-size', 'size', 'boilie-size'), true);
+	}
+
+	/**
+	 * Range and boilie sizes for one catalogue row, using the same range slugs as the editor.
+	 *
+	 * @param array<string, mixed> $signals       meta_range, tags, categories, attributes, parent_attributes.
+	 * @param array<string, string> $known_ranges Editor range slug => label.
+	 * @return array{range_slug: string, range_slugs: string[], size_slug: string, size_slugs: string[], size_label: string, boilie: bool}
+	 */
+	public static function describe_catalogue_choice(array $signals, array $known_ranges) {
+		$range = self::resolve_catalogue_range($signals, $known_ranges);
+		$sizes = self::extract_catalogue_sizes($signals);
+		$boilie = self::row_is_boilie($signals);
+		if (! $boilie) {
+			$sizes = array();
+		}
+		$sizes = array_values($sizes);
+
+		return array(
+			'range_slug'  => $range,
+			'range_slugs' => '' !== $range ? array($range) : array(),
+			'size_slug'   => (string) ($sizes[0] ?? ''),
+			'size_slugs'  => $sizes,
+			'size_label'  => (string) ($sizes[0] ?? ''),
+			'boilie'      => $boilie,
 		);
-		foreach ($candidates as $candidate) {
-			if (preg_match('/^\d+(?:\.\d+)?\s*mm$/', $candidate)) {
-				return true;
+	}
+
+	/**
+	 * Map a meta value, tag, or attribute onto an editor range slug.
+	 *
+	 * @param string                $candidate    Raw slug or label.
+	 * @param array<string, string> $known_ranges Editor range slug => label.
+	 * @return string
+	 */
+	public static function canonical_range_slug($candidate, array $known_ranges) {
+		$candidate = sanitize_title((string) $candidate);
+		if ('' === $candidate) {
+			return '';
+		}
+
+		$known = array();
+		foreach ($known_ranges as $slug => $label) {
+			$slug = sanitize_title((string) $slug);
+			if ('' === $slug) {
+				continue;
+			}
+			$known[ $slug ] = $slug;
+			$label_slug     = sanitize_title((string) $label);
+			if ('' !== $label_slug && ! isset($known[ $label_slug ])) {
+				$known[ $label_slug ] = $slug;
+			}
+		}
+		if (isset($known[ $candidate ])) {
+			return $known[ $candidate ];
+		}
+		if (function_exists('mad_baits_resolve_range_tag_slug')) {
+			$resolved = sanitize_title((string) mad_baits_resolve_range_tag_slug($candidate));
+			if (isset($known[ $resolved ])) {
+				return $known[ $resolved ];
+			}
+		}
+		if (class_exists('MBBB_Deal_Builder')) {
+			$matched = sanitize_title((string) MBBB_Deal_Builder::match_option_to_range_slug(str_replace('-', ' ', $candidate)));
+			if ('' !== $matched && isset($known[ $matched ])) {
+				return $known[ $matched ];
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * @param string $number Numeric millimetre value.
+	 * @return string
+	 */
+	private static function millimetre_slug($number) {
+		$number = rtrim(rtrim((string) $number, '0'), '.');
+		if ('' === $number) {
+			$number = '0';
+		}
+		return $number . 'mm';
+	}
+
+	/**
+	 * @param array<string, mixed>  $signals      Catalogue signals.
+	 * @param array<string, string> $known_ranges Editor ranges.
+	 * @return string
+	 */
+	private static function resolve_catalogue_range(array $signals, array $known_ranges) {
+		$queue = array();
+		foreach (array('meta_range', 'pa_range', 'pa_flavour') as $key) {
+			if (! empty($signals[ $key ])) {
+				$queue[] = (string) $signals[ $key ];
+			}
+		}
+		foreach ((array) ($signals['tags'] ?? array()) as $tag) {
+			$queue[] = (string) $tag;
+		}
+		foreach (array('attributes', 'parent_attributes') as $bucket) {
+			foreach ((array) ($signals[ $bucket ] ?? array()) as $name => $value) {
+				$key = str_replace('_', '-', sanitize_title((string) $name));
+				if (! in_array($key, array('pa-range', 'pa-flavour', 'pa-bait-range', 'flavour', 'range'), true)) {
+					continue;
+				}
+				foreach (is_array($value) ? $value : array($value) as $one) {
+					$queue[] = (string) $one;
+				}
+			}
+		}
+
+		foreach ($queue as $candidate) {
+			$slug = self::canonical_range_slug($candidate, $known_ranges);
+			if ('' !== $slug) {
+				return $slug;
+			}
+		}
+
+		return '';
+	}
+
+	/**
+	 * @param array<string, mixed> $signals Catalogue signals.
+	 * @return array<string, string>
+	 */
+	private static function extract_catalogue_sizes(array $signals) {
+		$found    = array();
+		$specific = false;
+		foreach ((array) ($signals['attributes'] ?? array()) as $name => $value) {
+			if (! self::is_size_attribute_name($name)) {
+				continue;
+			}
+			$values = array();
+			foreach (is_array($value) ? $value : array($value) as $one) {
+				if ('' !== trim((string) $one)) {
+					$values[] = (string) $one;
+				}
+			}
+			if (empty($values)) {
+				continue;
+			}
+			$specific = true;
+			foreach ($values as $one) {
+				$size = self::normalize_boilie_size($one);
+				if ('' !== $size) {
+					$found[ $size ] = $size;
+				}
+			}
+		}
+		if ($specific) {
+			return $found;
+		}
+
+		foreach ((array) ($signals['parent_attributes'] ?? array()) as $name => $value) {
+			if (! self::is_size_attribute_name($name)) {
+				continue;
+			}
+			foreach (is_array($value) ? $value : array($value) as $one) {
+				$size = self::normalize_boilie_size($one);
+				if ('' !== $size) {
+					$found[ $size ] = $size;
+				}
+			}
+		}
+
+		return $found;
+	}
+
+	/**
+	 * @param array<string, mixed> $signals Catalogue signals.
+	 * @return bool
+	 */
+	private static function row_is_boilie(array $signals) {
+		$categories = array_map('sanitize_title', (array) ($signals['categories'] ?? array()));
+		if (in_array('boilies', $categories, true)) {
+			return true;
+		}
+		foreach (array('attributes', 'parent_attributes') as $bucket) {
+			foreach (array_keys((array) ($signals[ $bucket ] ?? array())) as $name) {
+				if ('boilie-size' === str_replace('_', '-', sanitize_title((string) $name))) {
+					return true;
+				}
 			}
 		}
 		return false;

@@ -698,48 +698,114 @@ final class MBBB_Bundle_Repository {
 	}
 
 	/**
+	 * Parent attribute options, including custom attributes that are not taxonomies.
+	 *
+	 * @param WC_Product $parent Parent product.
+	 * @return array<string, string[]>
+	 */
+	private static function parent_attribute_options(WC_Product $parent) {
+		$options = array();
+		if (! method_exists($parent, 'get_attributes')) {
+			return $options;
+		}
+		foreach ($parent->get_attributes() as $key => $attribute) {
+			if (is_object($attribute) && method_exists($attribute, 'get_name')) {
+				$name    = (string) $attribute->get_name();
+				$values  = method_exists($attribute, 'get_options') ? (array) $attribute->get_options() : array();
+				$is_tax  = method_exists($attribute, 'is_taxonomy') && $attribute->is_taxonomy();
+				$labels  = array();
+				foreach ($values as $value) {
+					if ($is_tax && function_exists('get_term')) {
+						$term = get_term($value);
+						if ($term instanceof WP_Term) {
+							$labels[] = (string) $term->name;
+							continue;
+						}
+					}
+					$labels[] = (string) $value;
+				}
+				$options[ $name ] = $labels;
+				continue;
+			}
+			if (is_string($key)) {
+				$options[ $key ] = array_map('strval', (array) $attribute);
+			}
+		}
+		return $options;
+	}
+
+	/**
 	 * @param WC_Product            $product Product or variation.
 	 * @param WC_Product            $parent  Parent product.
 	 * @param array<string, string> $ranges  Known ranges.
 	 * @return array<string, mixed>
 	 */
 	private static function product_row(WC_Product $product, WC_Product $parent, array $ranges) {
-		$attributes = array();
-		if ($product->is_type('variation')) {
+		$raw_attributes = array();
+		if ($product->is_type('variation') && method_exists($product, 'get_attributes')) {
 			foreach ($product->get_attributes() as $key => $value) {
-				$attributes[ sanitize_title((string) $key) ] = sanitize_title((string) $value);
+				$raw_attributes[ (string) $key ] = is_array($value) ? $value : (string) $value;
 			}
 		}
+		$parent_attributes = self::parent_attribute_options($parent);
 		foreach (array('pa_size', 'pa_range', 'pa_flavour') as $taxonomy) {
-			if (! empty($attributes[ $taxonomy ]) || ! taxonomy_exists($taxonomy)) {
+			if (! empty($parent_attributes[ $taxonomy ]) || ! function_exists('taxonomy_exists') || ! taxonomy_exists($taxonomy) || ! function_exists('wc_get_product_terms')) {
 				continue;
 			}
-			$terms = wc_get_product_terms($parent->get_id(), $taxonomy, array('fields' => 'slugs'));
-			if (is_array($terms) && ! empty($terms)) {
-				$attributes[ $taxonomy ] = sanitize_title((string) $terms[0]);
+			$terms = wc_get_product_terms($parent->get_id(), $taxonomy, array('fields' => 'names'));
+			if (is_array($terms) && ! is_wp_error($terms) && ! empty($terms)) {
+				$parent_attributes[ $taxonomy ] = array_map('strval', $terms);
 			}
 		}
 
-		$range_slug = sanitize_title((string) get_post_meta($parent->get_id(), '_mad_baits_range_slug', true));
-		if ('' === $range_slug) {
-			$range_slug = sanitize_title((string) ($attributes['pa_range'] ?? $attributes['pa_flavour'] ?? ''));
+		$category_slugs = function_exists('wp_get_post_terms') ? wp_get_post_terms($parent->get_id(), 'product_cat', array('fields' => 'slugs')) : array();
+		$category_slugs = is_array($category_slugs) && ! is_wp_error($category_slugs) ? array_map('sanitize_title', $category_slugs) : array();
+		$tags = function_exists('wp_get_post_terms') ? wp_get_post_terms($parent->get_id(), 'product_tag', array('fields' => 'slugs')) : array();
+		$tags = is_array($tags) && ! is_wp_error($tags) ? array_map('sanitize_title', $tags) : array();
+		$meta_range = function_exists('get_post_meta') ? (string) get_post_meta($parent->get_id(), '_mad_baits_range_slug', true) : '';
+
+		$choice = class_exists('MBBB_Bundle_Admin')
+			? MBBB_Bundle_Admin::describe_catalogue_choice(
+				array(
+					'meta_range'          => $meta_range,
+					'pa_range'            => (string) ($raw_attributes['pa_range'] ?? ''),
+					'pa_flavour'          => (string) ($raw_attributes['pa_flavour'] ?? ''),
+					'tags'                => $tags,
+					'categories'          => $category_slugs,
+					'attributes'          => $raw_attributes,
+					'parent_attributes'   => $parent_attributes,
+				),
+				$ranges
+			)
+			: array(
+				'range_slug' => sanitize_title($meta_range),
+				'range_slugs' => array(),
+				'size_slug' => '',
+				'size_slugs' => array(),
+				'size_label' => '',
+				'boilie' => false,
+			);
+
+		$attributes = array();
+		foreach ($raw_attributes as $key => $value) {
+			if (is_array($value)) {
+				$value = (string) reset($value);
+			}
+			$attributes[ sanitize_title((string) $key) ] = sanitize_title((string) $value);
+		}
+		$range_slug = (string) ($choice['range_slug'] ?? '');
+		$size_slug  = (string) ($choice['size_slug'] ?? '');
+		$size_label = (string) ($choice['size_label'] ?? '');
+		if ('' !== $size_slug) {
+			$attributes['pa_size'] = $size_slug;
+		}
+		if ('' !== $range_slug) {
+			$attributes['pa_range'] = $range_slug;
 		}
 		$range_label = $ranges[ $range_slug ] ?? '';
 		if ('' === $range_label && '' !== $range_slug) {
 			$range_label = ucwords(str_replace('-', ' ', $range_slug));
 		}
-
-		$size_slug  = sanitize_title((string) ($attributes['pa_size'] ?? ''));
-		$size_label = '' !== $size_slug ? strtoupper($size_slug) : '';
-		if ('' !== $size_slug && function_exists('get_term_by')) {
-			$term = get_term_by('slug', $size_slug, 'pa_size');
-			if ($term instanceof WP_Term) {
-				$size_label = $term->name;
-			}
-		}
-
-		$category_slugs = wp_get_post_terms($parent->get_id(), 'product_cat', array('fields' => 'slugs'));
-		$category_slugs = is_array($category_slugs) && ! is_wp_error($category_slugs) ? array_map('sanitize_title', $category_slugs) : array();
 
 		$name = $product->is_type('variation') ? wc_get_formatted_variation($product, true, false, true) : '';
 		$name = trim($parent->get_name() . ('' !== $name ? ' — ' . wp_strip_all_tags($name) : ''));
@@ -751,9 +817,12 @@ final class MBBB_Bundle_Repository {
 			'name'            => $name,
 			'parent_name'     => $parent->get_name(),
 			'range_slug'      => $range_slug,
+			'range_slugs'     => (array) ($choice['range_slugs'] ?? array()),
 			'range_label'     => $range_label,
 			'size_slug'       => $size_slug,
+			'size_slugs'      => (array) ($choice['size_slugs'] ?? array()),
 			'size_label'      => $size_label,
+			'boilie'          => ! empty($choice['boilie']),
 			'category_slugs'  => $category_slugs,
 			'attributes'      => $attributes,
 			'in_stock'        => $in_stock,

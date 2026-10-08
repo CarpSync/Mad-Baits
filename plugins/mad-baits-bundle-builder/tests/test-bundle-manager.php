@@ -750,10 +750,167 @@ $assert(false !== strpos($size_split['range_attrs']['15mm'], 'absorb'), '15mm st
 $assert(false !== strpos($size_split['range_attrs']['18mm'], 'calamari'), '18mm stays tied to every selected boilie range');
 $assert(isset($size_split['other']['1kg'], $size_split['other']['500ml'], $size_split['other']['xl'], $size_split['other']['15mm-skinz']), 'weights, volumes, clothing, and hookbait sizes stay in Advanced Options');
 $assert(false === isset($size_split['sizes']['1kg']), 'a kilogram weight is not offered as a simple boilie size');
+
+$assert('15mm' === MBBB_Bundle_Admin::normalize_boilie_size('15mm'), '15mm stays a boilie size');
+$assert('18mm' === MBBB_Bundle_Admin::normalize_boilie_size('1KG 18MM'), 'a 1kg pack keeps its 18mm boilie diameter');
+$assert('15mm' === MBBB_Bundle_Admin::normalize_boilie_size('1kg 15mm'), 'a 1kg pack keeps its 15mm boilie diameter');
+$assert('' === MBBB_Bundle_Admin::normalize_boilie_size('1kg'), 'a kilogram weight is not a boilie size');
+$assert('' === MBBB_Bundle_Admin::normalize_boilie_size('500ml'), 'a millilitre volume is not a boilie size');
+$assert('' === MBBB_Bundle_Admin::normalize_boilie_size('XL'), 'a clothing size is not a boilie size');
+$assert('' === MBBB_Bundle_Admin::normalize_boilie_size('15mm Skinz'), 'a hookbait size is not a boilie size');
+
+$editor_ranges = array(
+	'absorb'      => 'ABSORB',
+	'asbo'        => 'ASBO',
+	'bsb'         => 'BSB',
+	'calamari'    => 'Calamari',
+	'nutz-banana' => 'Nutz Banana',
+	'nutz-plus'   => 'Nutz Plus',
+	'p-fish-2'    => 'P-Fish',
+	'pandemic'    => 'Pandemic',
+	'stp'         => 'STP',
+	'wicked-white'=> 'Wicked White',
+);
+$staging_row = static function ($signals, $id, $purchasable = true) use ($editor_ranges) {
+	$choice = MBBB_Bundle_Admin::describe_catalogue_choice($signals, $editor_ranges);
+	return array_merge($choice, array(
+		'id'          => $id,
+		'parent_id'   => $id,
+		'name'        => (string) ($signals['name'] ?? ('Product ' . $id)),
+		'in_stock'    => $purchasable,
+		'purchasable' => $purchasable,
+	));
+};
+$nutz_rows = array(
+	$staging_row(array(
+		'name' => 'Nutz Banana Boilies 1kg',
+		'tags' => array('banana', 'boilies', 'nutz-banana'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 15mm'),
+	), 320),
+	$staging_row(array(
+		'name' => 'Nutz Banana Boilies 1kg',
+		'tags' => array('banana', 'boilies', 'nutz-banana'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 18mm'),
+	), 321),
+	$staging_row(array(
+		'name' => 'Nutz Banana Food Dip',
+		'tags' => array('nutz-banana'),
+		'categories' => array('liquids'),
+		'attributes' => array('size' => '500ml'),
+	), 337),
+	$staging_row(array(
+		'name' => 'Nutz Banana Skinz',
+		'tags' => array('nutz-banana'),
+		'categories' => array('hookbaits'),
+		'attributes' => array('size' => '15mm Skinz'),
+	), 323),
+	$staging_row(array(
+		'name' => 'Hoodie',
+		'categories' => array('clothing'),
+		'attributes' => array('size' => 'XL'),
+	), 400),
+	$staging_row(array(
+		'name' => 'Nutz Banana Boilies weight only',
+		'tags' => array('nutz-banana'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg'),
+	), 401),
+);
+$nutz_split = MBBB_Bundle_Admin::split_sizes(array('variations' => $nutz_rows, 'sizes' => array()));
+$assert(array('15mm', '18mm') === array_keys($nutz_split['sizes']), 'a range with 1kg 15mm and 1kg 18mm products returns exactly 15mm and 18mm');
+$assert('nutz-banana' === ($nutz_split['range_attrs']['15mm'] ?? '') && 'nutz-banana' === ($nutz_split['range_attrs']['18mm'] ?? ''), 'those sizes stay tied to the Nutz Banana range tag');
+$assert(! isset($nutz_split['sizes']['1kg'], $nutz_split['sizes']['500ml'], $nutz_split['sizes']['xl'], $nutz_split['sizes']['15mm-skinz']), 'kg, ml, clothing, and hookbait values stay out of Available sizes');
+
+$union_rows = array(
+	$staging_row(array(
+		'name' => 'Pandemic Shelf Life Boilies',
+		'tags' => array('pandemic'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1KG 18MM'),
+	), 318),
+	$staging_row(array(
+		'name' => 'ASBO Shelf Life Boilies',
+		'tags' => array('asbo'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 15mm'),
+	), 315),
+	$staging_row(array(
+		'name' => 'ASBO Shelf Life Boilies',
+		'tags' => array('asbo'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 18mm'),
+	), 316),
+	$staging_row(array(
+		'name' => 'P Fish Boilies 5kg',
+		'tags' => array('p-fish-2'),
+		'categories' => array('boilies'),
+		'attributes' => array('Boilie Size' => '15mm'),
+	), 81),
+);
+$union_split = MBBB_Bundle_Admin::split_sizes(array('variations' => $union_rows, 'sizes' => array()));
+$assert(array('15mm', '18mm') === array_keys($union_split['sizes']), 'several ranges return the union of boilie sizes once each');
+$assert(false !== strpos((string) ($union_split['range_attrs']['18mm'] ?? ''), 'pandemic') && false !== strpos((string) ($union_split['range_attrs']['18mm'] ?? ''), 'asbo'), '18mm is shared by every selected range that sells it');
+$assert('asbo,p-fish-2' === ($union_split['range_attrs']['15mm'] ?? '') || 'p-fish-2,asbo' === ($union_split['range_attrs']['15mm'] ?? ''), '15mm is shared without a duplicate pill');
+
+$oos_rows = array(
+	$staging_row(array(
+		'name' => 'Wicked White Boilies',
+		'tags' => array('wicked-white'),
+		'categories' => array('boilies'),
+		'attributes' => array('SIZE' => '1KG 15MM'),
+	), 313, true),
+	$staging_row(array(
+		'name' => 'Wicked White Boilies',
+		'tags' => array('wicked-white'),
+		'categories' => array('boilies'),
+		'attributes' => array('SIZE' => '1KG 18MM'),
+	), 314, false),
+);
+$oos_split = MBBB_Bundle_Admin::split_sizes(array('variations' => $oos_rows, 'sizes' => array()));
+$oos_config = array(
+	'bundle_type' => 'mix_and_match',
+	'ranges' => array('wicked-white'),
+	'sizes' => array('18mm'),
+	'stock' => array('hide_unavailable' => true, 'prevent_oos' => true),
+);
+$oos_match = MBBB_Bundle_Eligibility::matching($oos_rows, $oos_config);
+$oos_live = MBBB_Bundle_Eligibility::purchasable($oos_rows, $oos_config);
+$assert(isset($oos_split['sizes']['18mm']) && 1 === count($oos_match) && 0 === count($oos_live), 'an out-of-stock boilie size stays listed while purchasable filtering removes that row');
+
+$live_config = array(
+	'bundle_type' => 'mix_and_match',
+	'ranges' => array('nutz-banana'),
+	'sizes' => array('15mm'),
+	'stock' => array('hide_unavailable' => true, 'prevent_oos' => true),
+);
+$live_match = MBBB_Bundle_Eligibility::matching($nutz_rows, $live_config);
+$assert(1 === count($live_match) && 320 === (int) ($live_match[0]['id'] ?? 0), 'the simple size list uses the same range and size match as eligibility');
+
+$any_size = $staging_row(array(
+	'name' => 'ASBO Boilies 5kg',
+	'tags' => array('asbo'),
+	'categories' => array('boilies'),
+	'attributes' => array('Boilie Size' => ''),
+	'parent_attributes' => array('Boilie Size' => array('12mm', '15mm', '18mm', '22mm')),
+), 18);
+$assert(array('12mm', '15mm', '18mm', '22mm') === $any_size['size_slugs'], 'an unset variation size uses every parent Boilie Size');
+$meta_range = $staging_row(array(
+	'name' => 'STP Test Boilie',
+	'meta_range' => 'stp',
+	'categories' => array('boilies'),
+	'attributes' => array('pa_size' => ''),
+	'parent_attributes' => array('pa_size' => array('12mm', '22mm'), 'pa_weight-volume' => array('10kg', '20kg')),
+), 1547);
+$assert('stp' === $meta_range['range_slug'] && array('12mm', '22mm') === $meta_range['size_slugs'], 'range meta and pa_size terms resolve together, without the kilogram weight');
+
+$assert('p-fish-2' === MBBB_Bundle_Admin::canonical_range_slug('P Fish', $editor_ranges), 'a P-Fish flavour label maps to the editor range slug');
 $editor_source = file_get_contents(dirname(__DIR__) . '/includes/bundle-manager/class-mbbb-bundle-admin.php');
 $script_source = file_get_contents(dirname(__DIR__) . '/assets/js/mb-bundle-manager.js');
 $assert(false !== strpos($editor_source, '! $is_new && ! $legacy && self::advanced_is_in_use'), 'a new bundle does not auto-open Advanced Options');
 $assert(false !== strpos($editor_source, 'novalidate'), 'the bundle form does not let the browser block save from a hidden field');
+$assert(false !== strpos($script_source, 'No boilie sizes were found for the selected ranges.'), 'an empty size list tells the owner no boilie sizes were found');
 $assert(false !== strpos($script_source, 'closeAdvanced()'), 'presets close Advanced Options');
 $assert(false !== strpos($script_source, "data-advanced') !== '1'"), 'Advanced Options stays closed unless the bundle already uses them');
 $style_source = file_get_contents(dirname(__DIR__) . '/assets/css/mb-bundle-manager.css');
