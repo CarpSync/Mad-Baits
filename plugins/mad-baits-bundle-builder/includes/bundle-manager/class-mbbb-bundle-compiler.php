@@ -13,13 +13,18 @@ defined('ABSPATH') || exit;
 final class MBBB_Bundle_Compiler {
 
 	/**
-	 * @param array<string, mixed>             $config  Owner config.
-	 * @param array<int, array<string, mixed>> $options Slot options.
+	 * @param array<string, mixed>             $config         Owner config.
+	 * @param array<int, array<string, mixed>> $options        Slot options for a single pool.
+	 * @param array<int, array<string, mixed>> $catalogue_rows Catalogue rows used by item groups.
 	 * @return array<int, array<string, mixed>>
 	 */
-	public static function compile(array $config, array $options) {
+	public static function compile(array $config, array $options, array $catalogue_rows = array()) {
 		if ('fixed' === ($config['bundle_type'] ?? '')) {
 			return self::compile_fixed($config, $options);
+		}
+		$groups = isset($config['groups']) && is_array($config['groups']) ? $config['groups'] : array();
+		if (! empty($groups)) {
+			return self::compile_groups($config, $catalogue_rows);
 		}
 		return self::compile_mix($config, $options);
 	}
@@ -36,6 +41,17 @@ final class MBBB_Bundle_Compiler {
 			foreach ((array) ($config['fixed_items'] ?? array()) as $item) {
 				if (is_array($item)) {
 					$count += max(1, (int) ($item['quantity'] ?? 1));
+				}
+			}
+			return min(MBBB_Bundle_Config::MAX_CHOICES, $count);
+		}
+
+		$groups = isset($config['groups']) && is_array($config['groups']) ? $config['groups'] : array();
+		if (! empty($groups)) {
+			$count = 0;
+			foreach ($groups as $group) {
+				if (is_array($group)) {
+					$count += max(0, (int) ($group['quantity'] ?? 0));
 				}
 			}
 			return min(MBBB_Bundle_Config::MAX_CHOICES, $count);
@@ -58,7 +74,8 @@ final class MBBB_Bundle_Compiler {
 	 * @return int
 	 */
 	public static function required_count(array $config) {
-		if ('fixed' === ($config['bundle_type'] ?? '') || 'exact' === ($config['quantity_mode'] ?? 'exact')) {
+		$groups = isset($config['groups']) && is_array($config['groups']) ? $config['groups'] : array();
+		if ('fixed' === ($config['bundle_type'] ?? '') || 'exact' === ($config['quantity_mode'] ?? 'exact') || ! empty($groups)) {
 			return self::slot_count($config);
 		}
 		return min(self::slot_count($config), max(0, (int) ($config['min_quantity'] ?? 0)));
@@ -94,6 +111,62 @@ final class MBBB_Bundle_Compiler {
 				1 === $index ? $help : '',
 				false
 			);
+		}
+
+		return $slots;
+	}
+
+	/**
+	 * One required slot per customer choice, with each item group keeping its own products.
+	 *
+	 * @param array<string, mixed>             $config         Owner config.
+	 * @param array<int, array<string, mixed>> $catalogue_rows Catalogue rows.
+	 * @return array<int, array<string, mixed>>
+	 */
+	private static function compile_groups(array $config, array $catalogue_rows) {
+		$slots = array();
+		$step  = 0;
+		$used  = array();
+		foreach ((array) ($config['groups'] ?? array()) as $group) {
+			if (! is_array($group) || count($slots) >= MBBB_Bundle_Config::MAX_CHOICES) {
+				continue;
+			}
+			$quantity = max(0, (int) ($group['quantity'] ?? 0));
+			if ($quantity < 1) {
+				continue;
+			}
+			++$step;
+			$type    = (string) ($group['type'] ?? 'other');
+			$base    = MBBB_Bundle_Config::content_type_key($type);
+			$rows    = MBBB_Bundle_Eligibility::matching_group($catalogue_rows, $group, $config);
+			$options = MBBB_Bundle_Eligibility::to_slot_options(MBBB_Bundle_Eligibility::purchasable_only($rows, $config));
+			$sentence = MBBB_Bundle_Config::group_choice_sentence($group);
+			$label    = MBBB_Bundle_Config::content_type_label($type, 1);
+			for ($index = 1; $index <= $quantity && count($slots) < MBBB_Bundle_Config::MAX_CHOICES; $index++) {
+				$number = $index;
+				$key    = $base . '-' . $number;
+				while (isset($used[ $key ])) {
+					++$number;
+					$key = $base . '-' . $number;
+				}
+				$used[ $key ] = true;
+				$slots[]      = self::slot(
+					$quantity > 1 ? $label . ' ' . $index : $label,
+					$key,
+					true,
+					$options,
+					'',
+					false,
+					array(
+						'group_key'      => $base . '-group-' . $step,
+						'group_label'    => MBBB_Bundle_Config::content_type_label($type, 2),
+						'group_step'     => $step,
+						'group_index'    => $index,
+						'group_total'    => $quantity,
+						'group_sentence' => $sentence,
+					)
+				);
+			}
 		}
 
 		return $slots;
@@ -167,8 +240,8 @@ final class MBBB_Bundle_Compiler {
 	 * @param bool                             $auto_select Preselect the only option.
 	 * @return array<string, mixed>
 	 */
-	private static function slot($label, $key, $required, array $options, $help, $auto_select) {
-		return array(
+	private static function slot($label, $key, $required, array $options, $help, $auto_select, array $extra = array()) {
+		$slot = array(
 			'label'          => $label,
 			'key'            => $key,
 			'required'       => $required,
@@ -187,5 +260,10 @@ final class MBBB_Bundle_Compiler {
 			'use_images'     => true,
 			'auto_select'    => $auto_select,
 		);
+		foreach ($extra as $extra_key => $value) {
+			$slot[ $extra_key ] = $value;
+		}
+
+		return $slot;
 	}
 }

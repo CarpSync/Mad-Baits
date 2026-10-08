@@ -35,7 +35,8 @@ final class MBBB_Bundle_Validator {
 		}
 
 		$choices = MBBB_Bundle_Compiler::slot_count($config);
-		if ($choices > MBBB_Bundle_Config::MAX_CHOICES) {
+		$raw     = self::group_quantity_sum($config);
+		if ($choices > MBBB_Bundle_Config::MAX_CHOICES || $raw > MBBB_Bundle_Config::MAX_CHOICES) {
 			$errors[] = sprintf(
 				/* translators: %d: maximum choices */
 				__('Keep the quantity at %d or fewer so the bundle stays easy to build.', 'mad-baits-bundle-builder'),
@@ -64,6 +65,15 @@ final class MBBB_Bundle_Validator {
 			if (empty($config['fixed_items'])) {
 				$errors[] = __('Add at least one product to this bundle before activating it.', 'mad-baits-bundle-builder');
 			}
+		} elseif (! empty($config['groups'])) {
+			$group_errors = isset($context['group_errors']) && is_array($context['group_errors']) ? $context['group_errors'] : array();
+			if (! empty($group_errors)) {
+				$errors = array_merge($errors, $group_errors);
+			} elseif (! self::has_selection($config)) {
+				$errors[] = __('Add at least one item group before activating this bundle.', 'mad-baits-bundle-builder');
+			} elseif ((int) ($context['eligible_purchasable'] ?? 0) < 1) {
+				$errors[] = __('None of the selected products can be bought right now. Check stock before activating this bundle.', 'mad-baits-bundle-builder');
+			}
 		} else {
 			$quantity = 'minimum' === ($config['quantity_mode'] ?? '')
 				? (int) ($config['min_quantity'] ?? 0)
@@ -83,7 +93,7 @@ final class MBBB_Bundle_Validator {
 
 		$live = (int) ($context['eligible_purchasable'] ?? 0);
 
-		if ((self::has_selection($config) || 'fixed' === ($config['bundle_type'] ?? '')) && $live < 1) {
+		if (empty($config['groups']) && (self::has_selection($config) || 'fixed' === ($config['bundle_type'] ?? '')) && $live < 1) {
 			$errors[] = __('None of the selected products can be bought right now. Check stock before activating this bundle.', 'mad-baits-bundle-builder');
 		}
 
@@ -104,15 +114,24 @@ final class MBBB_Bundle_Validator {
 		$errors         = array();
 		$unit           = MBBB_Bundle_Config::unit_word($config, max(2, $selected_count));
 
-		if ('fixed' === ($config['bundle_type'] ?? '') || 'exact' === ($config['quantity_mode'] ?? 'exact')) {
+		$grouped = ! empty($config['groups']) && 'fixed' !== ($config['bundle_type'] ?? '');
+		if ('fixed' === ($config['bundle_type'] ?? '') || 'exact' === ($config['quantity_mode'] ?? 'exact') || $grouped) {
 			$need = MBBB_Bundle_Compiler::slot_count($config);
 			if ($selected_count !== $need) {
-				$errors[] = sprintf(
-					/* translators: 1: quantity 2: unit */
-					__('Choose exactly %1$d %2$s.', 'mad-baits-bundle-builder'),
-					$need,
-					MBBB_Bundle_Config::unit_word($config, $need)
-				);
+				if ($grouped && count((array) $config['groups']) > 1) {
+					$errors[] = sprintf(
+						/* translators: %d: number of choices */
+						__('Choose all %d items in this bundle.', 'mad-baits-bundle-builder'),
+						$need
+					);
+				} else {
+					$errors[] = sprintf(
+						/* translators: 1: quantity 2: unit */
+						__('Choose exactly %1$d %2$s.', 'mad-baits-bundle-builder'),
+						$need,
+						MBBB_Bundle_Config::unit_word($config, $need)
+					);
+				}
 			}
 		} else {
 			$min = (int) ($config['min_quantity'] ?? 0);
@@ -179,11 +198,40 @@ final class MBBB_Bundle_Validator {
 
 	/**
 	 * @param array<string, mixed> $config Owner config.
+	 * @return int
+	 */
+	private static function group_quantity_sum(array $config) {
+		if ('fixed' === ($config['bundle_type'] ?? '') || empty($config['groups']) || ! is_array($config['groups'])) {
+			return 0;
+		}
+		$sum = 0;
+		foreach ($config['groups'] as $group) {
+			if (is_array($group)) {
+				$sum += max(0, (int) ($group['quantity'] ?? 0));
+			}
+		}
+		return $sum;
+	}
+
+	/**
+	 * @param array<string, mixed> $config Owner config.
 	 * @return bool
 	 */
 	private static function has_selection(array $config) {
 		if ('fixed' === ($config['bundle_type'] ?? '')) {
 			return ! empty($config['fixed_items']);
+		}
+		if (! empty($config['groups']) && is_array($config['groups'])) {
+			foreach ($config['groups'] as $group) {
+				if (! is_array($group) || (int) ($group['quantity'] ?? 0) < 1) {
+					continue;
+				}
+				if ('other' === ($group['type'] ?? '') && empty($group['product_ids'])) {
+					continue;
+				}
+				return true;
+			}
+			return false;
 		}
 		return ! empty($config['ranges'])
 			|| ! empty($config['sizes'])

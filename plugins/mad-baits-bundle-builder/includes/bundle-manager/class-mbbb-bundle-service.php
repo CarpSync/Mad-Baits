@@ -53,6 +53,12 @@ final class MBBB_Bundle_Service {
 			$compile  = false;
 		}
 
+		$has_old_selection = ! empty($config['ranges']) || ! empty($config['sizes']) || ! empty($config['categories']) || ! empty($config['product_ids']) || ! empty($config['variation_ids']) || ! empty($config['attributes']);
+		if ($compile && $legacy_locked && empty($config['groups']) && ! $has_old_selection && 'mix_and_match' === ($config['bundle_type'] ?? '')) {
+			$errors[] = __('Add at least one item group before replacing the original customer choices.', 'mad-baits-bundle-builder');
+			$compile  = false;
+		}
+
 		if (! $compile && $existing) {
 			$config = self::merge_cosmetic($existing, $config);
 		}
@@ -91,22 +97,22 @@ final class MBBB_Bundle_Service {
 			$existing = MBBB_Bundle_Repository::project_legacy($product_id);
 		}
 
-		$intent  = sanitize_key((string) ($posted['intent'] ?? 'save'));
-		$config  = MBBB_Bundle_Config::sanitize(self::flatten_post($posted));
-		$catalog = MBBB_Bundle_Repository::catalogue();
-		$matched = MBBB_Bundle_Eligibility::matching($catalog['variations'], $config);
-		$live    = MBBB_Bundle_Eligibility::purchasable($catalog['variations'], $config);
-		$slots   = ($product_id > 0 && class_exists('MBBB_Plugin')) ? MBBB_Plugin::instance()->get_slots($product_id) : array();
-		$plan    = self::plan_save(
+		$intent    = sanitize_key((string) ($posted['intent'] ?? 'save'));
+		$config    = MBBB_Bundle_Config::sanitize(self::flatten_post($posted));
+		$catalog   = MBBB_Bundle_Repository::catalogue();
+		$selection = MBBB_Bundle_Eligibility::selection($catalog['variations'], $config);
+		$slots     = ($product_id > 0 && class_exists('MBBB_Plugin')) ? MBBB_Plugin::instance()->get_slots($product_id) : array();
+		$plan      = self::plan_save(
 			$existing,
 			$config,
 			! empty($posted['update_choices']),
 			$intent,
 			array(
-				'eligible_total'              => count($matched),
-				'eligible_purchasable'        => count($live),
+				'eligible_total'              => count($selection['matched']),
+				'eligible_purchasable'        => count($selection['live']),
+				'group_errors'                => $selection['group_errors'],
 				'legacy_slots_priced'         => MBBB_Bundle_Pricing::slots_have_priced_choices($slots),
-				'will_compile_priced_options' => self::options_are_priced($live),
+				'will_compile_priced_options' => self::options_are_priced($selection['live']),
 			)
 		);
 
@@ -118,7 +124,7 @@ final class MBBB_Bundle_Service {
 			);
 		}
 
-		return MBBB_Bundle_Repository::persist($product_id, $plan['config'], $plan['compile'], $live);
+		return MBBB_Bundle_Repository::persist($product_id, $plan['config'], $plan['compile'], $selection['live']);
 	}
 
 	/**
@@ -149,15 +155,16 @@ final class MBBB_Bundle_Service {
 			);
 		}
 
-		$intent  = 'active' === $status ? 'activate' : ('disabled' === $status ? 'disable' : 'draft');
-		$catalog = MBBB_Bundle_Repository::catalogue();
-		$live    = MBBB_Bundle_Eligibility::purchasable($catalog['variations'], $existing);
-		$slots   = ($product_id > 0 && class_exists('MBBB_Plugin')) ? MBBB_Plugin::instance()->get_slots($product_id) : array();
-		$plan    = self::plan_save($existing, $existing, false, $intent, array(
-			'eligible_total'              => count(MBBB_Bundle_Eligibility::matching($catalog['variations'], $existing)),
-			'eligible_purchasable'        => count($live),
+		$intent    = 'active' === $status ? 'activate' : ('disabled' === $status ? 'disable' : 'draft');
+		$catalog   = MBBB_Bundle_Repository::catalogue();
+		$selection = MBBB_Bundle_Eligibility::selection($catalog['variations'], $existing);
+		$slots     = ($product_id > 0 && class_exists('MBBB_Plugin')) ? MBBB_Plugin::instance()->get_slots($product_id) : array();
+		$plan      = self::plan_save($existing, $existing, false, $intent, array(
+			'eligible_total'              => count($selection['matched']),
+			'eligible_purchasable'        => count($selection['live']),
+			'group_errors'                => $selection['group_errors'],
 			'legacy_slots_priced'         => MBBB_Bundle_Pricing::slots_have_priced_choices($slots),
-			'will_compile_priced_options' => self::options_are_priced($live),
+			'will_compile_priced_options' => self::options_are_priced($selection['live']),
 		));
 
 		if (! empty($plan['errors'])) {
@@ -168,7 +175,7 @@ final class MBBB_Bundle_Service {
 			);
 		}
 
-		return MBBB_Bundle_Repository::persist($product_id, $plan['config'], false, $live);
+		return MBBB_Bundle_Repository::persist($product_id, $plan['config'], false, $selection['live']);
 	}
 
 	/**

@@ -98,8 +98,175 @@
 		return labels.length ? label + ': ' + labels.join(', ') : empty;
 	}
 
-	function formatPreview() {
-		var current = checkedValue('mb_bundle[bait_format]');
+	function readJson(id) {
+		var node = document.getElementById(id);
+		if (!node) {
+			return null;
+		}
+		try {
+			return JSON.parse(node.textContent);
+		} catch (error) {
+			return null;
+		}
+	}
+
+	var contentModel = readJson('mb-content-model') || { types: {}, products: [] };
+	var contentPresets = readJson('mb-content-presets') || {};
+	var typeUnits = {
+		boilies: 'bags',
+		popups: 'tubs',
+		wafters: 'tubs',
+		hookbaits: 'tubs',
+		pellets: 'bags',
+		liquids: 'bottles',
+		other: 'items'
+	};
+	var typeWords = {
+		boilies: ['Boilie', 'Boilies'],
+		popups: ['Pop-up', 'Pop-ups'],
+		wafters: ['Wafter', 'Wafters'],
+		hookbaits: ['Hookbait', 'Hookbaits'],
+		pellets: ['Pellet', 'Pellets'],
+		liquids: ['Liquid', 'Liquids'],
+		other: ['Item', 'Items']
+	};
+
+	function contentCards() {
+		return Array.prototype.slice.call(form.querySelectorAll('[data-group]'));
+	}
+
+	function cardField(card, field) {
+		return card.querySelector('[data-field="' + field + '"]');
+	}
+
+	function cardType(card) {
+		var input = card.querySelector('[data-field="type"]:checked');
+		return input ? input.value : 'boilies';
+	}
+
+	function checkedChoices(card, kind) {
+		var values = [];
+		card.querySelectorAll('[data-choice="' + kind + '"]:checked').forEach(function (input) {
+			values.push(input.value);
+		});
+		return values;
+	}
+
+	function choiceLabels(card, kind) {
+		var labels = [];
+		card.querySelectorAll('[data-choice="' + kind + '"]:checked').forEach(function (input) {
+			var span = input.parentElement ? input.parentElement.querySelector('span') : null;
+			labels.push(span ? span.textContent.trim() : input.value);
+		});
+		return labels;
+	}
+
+	function unitPair(unit) {
+		var map = {
+			bags: ['bag', 'bags'],
+			tubs: ['tub', 'tubs'],
+			bottles: ['bottle', 'bottles'],
+			items: ['item', 'items']
+		};
+		return map[unit] || map.items;
+	}
+
+	function makeChoice(value, label, checked, kind) {
+		var wrap = document.createElement('label');
+		wrap.className = kind === 'products' ? 'mb-content-card__product' : 'mb-manager__pill';
+		wrap.setAttribute('data-filter-item', kind);
+		var input = document.createElement('input');
+		input.type = 'checkbox';
+		input.value = value;
+		input.checked = !!checked;
+		input.setAttribute('data-choice', kind);
+		var span = document.createElement('span');
+		span.textContent = label;
+		wrap.appendChild(input);
+		wrap.appendChild(document.createTextNode(' '));
+		wrap.appendChild(span);
+		return wrap;
+	}
+
+	function fillCardChoices(card, group) {
+		var type = cardType(card);
+		var info = (contentModel.types && contentModel.types[type]) || { ranges: {}, sizes: {}, formats: {} };
+		var rangeList = card.querySelector('[data-range-list]');
+		var sizeList = card.querySelector('[data-size-list]');
+		var selectedRanges = group.ranges || [];
+		var selectedSizes = group.sizes || [];
+		var selectedProducts = (group.product_ids || []).map(String);
+		if (rangeList) {
+			rangeList.textContent = '';
+			Object.keys(info.ranges || {}).forEach(function (slug) {
+				rangeList.appendChild(makeChoice(slug, info.ranges[slug], selectedRanges.indexOf(slug) !== -1, 'ranges'));
+			});
+		}
+		if (sizeList) {
+			sizeList.textContent = '';
+			Object.keys(info.sizes || {}).forEach(function (slug) {
+				var size = info.sizes[slug] || {};
+				var item = makeChoice(slug, size.label || slug, selectedSizes.indexOf(slug) !== -1, 'sizes');
+				item.setAttribute('data-size-ranges', (size.ranges || []).join(','));
+				sizeList.appendChild(item);
+			});
+		}
+		var formats = info.formats || {};
+		card.querySelectorAll('[data-field="bait_format"]').forEach(function (input) {
+			if (input.value === 'both') {
+				return;
+			}
+			input.setAttribute('data-format-ranges', (formats[input.value] || []).join(','));
+		});
+		var productList = card.querySelector('[data-product-list]');
+		if (productList && type === 'other') {
+			productList.textContent = '';
+			(contentModel.products || []).forEach(function (product) {
+				productList.appendChild(makeChoice(String(product.id), product.name, selectedProducts.indexOf(String(product.id)) !== -1, 'products'));
+			});
+		}
+	}
+
+	function filterCardSizes(card) {
+		var ranges = checkedChoices(card, 'ranges');
+		var hasRangeChoices = !!card.querySelector('[data-range-list] input');
+		var visible = 0;
+		card.querySelectorAll('[data-size-list] [data-filter-item]').forEach(function (item) {
+			var input = item.querySelector('input');
+			var known = (item.getAttribute('data-size-ranges') || '').split(',').filter(Boolean);
+			var hide = false;
+			if (hasRangeChoices && !ranges.length) {
+				hide = !(input && input.checked);
+			} else if (ranges.length && known.length && !ranges.some(function (slug) {
+				return known.indexOf(slug) !== -1;
+			})) {
+				hide = true;
+				if (input) {
+					input.checked = false;
+				}
+			}
+			item.hidden = hide;
+			if (!hide) {
+				visible += 1;
+			}
+		});
+		var hint = card.querySelector('[data-size-hint]');
+		var type = cardType(card);
+		if (hint) {
+			hint.hidden = visible > 0 || !card.querySelector('[data-size-list] [data-filter-item]');
+			hint.textContent = ranges.length
+				? (type === 'boilies' ? 'No boilie sizes were found for the selected ranges.' : 'No sizes were found for the selected ranges.')
+				: 'Choose bait ranges to see the sizes customers can pick.';
+		}
+		var rangeHint = card.querySelector('[data-range-hint]');
+		if (rangeHint) {
+			var empty = !card.querySelector('[data-range-list] input');
+			rangeHint.hidden = !empty;
+			rangeHint.textContent = empty ? 'Customers can choose any product of this type.' : '';
+		}
+	}
+
+	function formatPreview(current) {
 		if (current === 'both') {
 			return 'Format: Shelf Life + Freezer';
 		}
@@ -110,6 +277,175 @@
 			return 'Format: Freezer';
 		}
 		return '';
+	}
+
+	function cardFormatValue(card) {
+		var input = card.querySelector('[data-field="bait_format"]:checked');
+		return input ? input.value : '';
+	}
+
+	function refreshCard(card) {
+		var type = cardType(card);
+		var qty = parseInt((cardField(card, 'quantity') || {}).value, 10) || 0;
+		var unit = (cardField(card, 'unit') || {}).value || 'items';
+		var pair = unitPair(unit);
+		var words = typeWords[type] || typeWords.other;
+		var open = card.getAttribute('data-open') === '1';
+		var editor = card.querySelector('[data-group-editor]');
+		if (editor) {
+			editor.hidden = !open;
+		}
+		var edit = card.querySelector('[data-group-edit]');
+		if (edit) {
+			edit.textContent = open ? 'Done' : 'Edit';
+		}
+		card.querySelectorAll('[data-panel]').forEach(function (panel) {
+			var name = panel.getAttribute('data-panel');
+			var show = false;
+			if (name === 'products') {
+				show = type === 'other';
+			} else if (name === 'format') {
+				show = type === 'boilies';
+			} else {
+				show = type !== 'other';
+			}
+			panel.hidden = !show;
+		});
+		filterCardSizes(card);
+		textNode(card, '[data-summary-title]', words[1]);
+		textNode(card, '[data-summary-qty]', qty + ' ' + (qty === 1 ? pair[0] : pair[1]));
+		var detail = type === 'other' ? choiceLabels(card, 'products') : choiceLabels(card, 'ranges');
+		textNode(card, '[data-summary-detail]', detail.length ? detail.join(', ') : (type === 'other' ? 'Choose products' : 'Any range'));
+		var sizes = choiceLabels(card, 'sizes');
+		textNode(card, '[data-summary-sizes]', sizes.join(' / '));
+		var formatNode = card.querySelector('[data-summary-format]');
+		var formatText = type === 'boilies' ? formatPreview(cardFormatValue(card)).replace('Format: ', '') : '';
+		if (formatNode) {
+			formatNode.hidden = formatText === '';
+			formatNode.textContent = formatText;
+		}
+	}
+
+	function textNode(card, selector, value) {
+		var node = card.querySelector(selector);
+		if (node) {
+			node.textContent = value;
+		}
+	}
+
+	function reindexCards() {
+		contentCards().forEach(function (card, index) {
+			var prefix = 'mb_bundle[groups][' + index + ']';
+			card.querySelectorAll('[data-field="type"]').forEach(function (input) {
+				input.name = prefix + '[type]';
+			});
+			var quantity = cardField(card, 'quantity');
+			if (quantity) {
+				quantity.name = prefix + '[quantity]';
+			}
+			var unit = cardField(card, 'unit');
+			if (unit) {
+				unit.name = prefix + '[unit]';
+			}
+			card.querySelectorAll('[data-field="bait_format"]').forEach(function (input) {
+				input.name = prefix + '[bait_format]';
+			});
+			card.querySelectorAll('[data-choice="ranges"]').forEach(function (input) {
+				input.name = prefix + '[ranges][]';
+			});
+			card.querySelectorAll('[data-choice="sizes"]').forEach(function (input) {
+				input.name = prefix + '[sizes][]';
+			});
+			card.querySelectorAll('[data-choice="products"]').forEach(function (input) {
+				input.name = prefix + '[product_ids][]';
+			});
+		});
+		var sum = 0;
+		contentCards().forEach(function (card) {
+			sum += parseInt((cardField(card, 'quantity') || {}).value, 10) || 0;
+		});
+		var qty = document.getElementById('mb-bundle-quantity');
+		var unitField = document.getElementById('mb-bundle-unit');
+		if (qty) {
+			qty.value = String(sum);
+		}
+		var first = contentCards()[0];
+		if (unitField && first && cardField(first, 'unit')) {
+			unitField.value = cardField(first, 'unit').value;
+		}
+	}
+
+	function addContentCard(group, open) {
+		var template = document.getElementById('mb-content-template');
+		var host = document.getElementById('mb-content-cards');
+		if (!template || !host || !template.content.firstElementChild) {
+			return null;
+		}
+		var card = template.content.firstElementChild.cloneNode(true);
+		host.appendChild(card);
+		group = group || {};
+		var type = group.type || 'boilies';
+		card.querySelectorAll('[data-field="type"]').forEach(function (input) {
+			input.checked = input.value === type;
+		});
+		var quantity = cardField(card, 'quantity');
+		if (quantity) {
+			quantity.value = String(group.quantity || 1);
+		}
+		var unit = cardField(card, 'unit');
+		if (unit) {
+			unit.value = group.unit || typeUnits[type] || 'items';
+		}
+		fillCardChoices(card, group);
+		if (group.bait_format) {
+			var format = card.querySelector('[data-field="bait_format"][value="' + group.bait_format + '"]');
+			if (format) {
+				format.checked = true;
+			}
+			if (form.getAttribute('data-new') !== '1') {
+				card.setAttribute('data-format-touched', '1');
+			}
+		}
+		card.setAttribute('data-open', open ? '1' : '0');
+		refreshCard(card);
+		reindexCards();
+		return card;
+	}
+
+	function buildContentCards() {
+		var host = document.getElementById('mb-content-cards');
+		if (!host || host.childElementCount) {
+			return;
+		}
+		var initial = readJson('mb-content-initial') || [];
+		var openFirst = form.getAttribute('data-new') === '1';
+		initial.forEach(function (group, index) {
+			addContentCard(group, openFirst && index === 0);
+		});
+	}
+
+	function contentsSentence() {
+		var parts = [];
+		contentCards().forEach(function (card) {
+			var qty = parseInt((cardField(card, 'quantity') || {}).value, 10) || 0;
+			if (qty < 1) {
+				return;
+			}
+			var unit = (cardField(card, 'unit') || {}).value || 'items';
+			var pair = unitPair(unit);
+			var type = cardType(card);
+			var plural = {
+				boilies: 'boilies',
+				popups: 'pop-ups',
+				wafters: 'wafters',
+				hookbaits: 'hookbaits',
+				pellets: 'pellets',
+				liquids: 'liquids',
+				other: 'products'
+			}[type] || 'products';
+			parts.push(qty + ' ' + (qty === 1 ? pair[0] : pair[1]) + ' of ' + plural);
+		});
+		return parts.join(', ');
 	}
 
 	function statusLabel() {
@@ -123,24 +459,28 @@
 
 	function updatePreview() {
 		var name = value('mb_bundle[name]') || 'Bundle name';
-		var helper = value('mb_bundle[helper_text]') || choiceSentence();
+		var sentence = contentsSentence() || choiceSentence();
+		var helper = value('mb_bundle[helper_text]') || sentence;
 		var badge = value('mb_bundle[badge]');
 		var badgeNode = document.getElementById('mb-preview-badge');
+		var boilieCard = contentCards().filter(function (card) {
+			return cardType(card) === 'boilies';
+		})[0];
 		text('mb-preview-name', name);
 		text('mb-preview-status', statusLabel());
 		text('mb-preview-helper', helper);
-		text('mb-preview-qty', choiceSentence());
-		text('mb-preview-ranges', prefixed('ranges', 'Ranges', 'No ranges selected'));
-		text('mb-preview-sizes', prefixed('sizes', 'Sizes', 'No sizes selected'));
+		text('mb-preview-qty', sentence);
+		text('mb-preview-ranges', boilieCard && choiceLabels(boilieCard, 'ranges').length ? 'Ranges: ' + choiceLabels(boilieCard, 'ranges').join(', ') : 'No ranges selected');
+		text('mb-preview-sizes', boilieCard && choiceLabels(boilieCard, 'sizes').length ? 'Sizes: ' + choiceLabels(boilieCard, 'sizes').join(', ') : 'No sizes selected');
 		var formatNode = document.getElementById('mb-preview-format');
-		var formatText = formatPreview();
+		var formatText = boilieCard ? formatPreview(cardFormatValue(boilieCard)) : '';
 		if (formatNode) {
 			formatNode.hidden = formatText === '';
 			formatNode.textContent = formatText;
 		}
 		text('mb-preview-price', priceSummary());
 		text('mb-preview-button', value('mb_bundle[button_text]') || 'Build Your Bundle');
-		text('mb-bundle-choice-preview', choiceSentence());
+		text('mb-bundle-choice-preview', sentence);
 		text('mb-price-summary', priceSummary());
 		if (badgeNode) {
 			badgeNode.hidden = badge === '';
@@ -210,17 +550,13 @@
 		}
 	}
 
-	var formatTouched = form.getAttribute('data-new') !== '1' && !!form.querySelector('[name="mb_bundle[bait_format]"]:checked');
+	var formatTouched = form.getAttribute('data-new') !== '1' && !!form.querySelector('[data-field="bait_format"]:checked');
 	var allowFormatDefault = form.getAttribute('data-new') === '1';
 
-	function formatInput(format) {
-		return form.querySelector('[name="mb_bundle[bait_format]"][value="' + format + '"]');
-	}
-
-	function formatsForRanges(ranges) {
+	function formatsForRanges(card, ranges) {
 		var found = { shelf_life: false, freezer: false };
 		['shelf_life', 'freezer'].forEach(function (format) {
-			var input = formatInput(format);
+			var input = card.querySelector('[data-field="bait_format"][value="' + format + '"]');
 			if (!input) {
 				return;
 			}
@@ -245,12 +581,15 @@
 		return '';
 	}
 
-	function syncFormats() {
-		var ranges = selectedRangeValues();
-		var found = formatsForRanges(ranges);
+	function syncCardFormats(card) {
+		if (cardType(card) !== 'boilies') {
+			return;
+		}
+		var ranges = checkedChoices(card, 'ranges');
+		var found = formatsForRanges(card, ranges);
 		var bothAvailable = found.shelf_life && found.freezer;
 		['shelf_life', 'freezer', 'both'].forEach(function (format) {
-			var input = formatInput(format);
+			var input = card.querySelector('[data-field="bait_format"][value="' + format + '"]');
 			if (!input) {
 				return;
 			}
@@ -265,10 +604,11 @@
 			}
 		});
 
-		var current = form.querySelector('[name="mb_bundle[bait_format]"]:checked');
+		var current = card.querySelector('[data-field="bait_format"]:checked');
 		var currentValid = current && !current.disabled;
+		var touched = card.getAttribute('data-format-touched') === '1';
 		var pick = '';
-		if (formatTouched && currentValid) {
+		if ((touched || formatTouched) && currentValid) {
 			pick = current.value;
 		} else if (allowFormatDefault) {
 			pick = defaultFormat(found);
@@ -276,13 +616,13 @@
 			pick = current.value;
 		}
 		['shelf_life', 'freezer', 'both'].forEach(function (format) {
-			var input = formatInput(format);
+			var input = card.querySelector('[data-field="bait_format"][value="' + format + '"]');
 			if (input) {
 				input.checked = pick !== '' && format === pick && !input.disabled;
 			}
 		});
 
-		var hint = document.getElementById('mb-format-hint');
+		var hint = card.querySelector('[data-format-hint]');
 		if (hint) {
 			if (!ranges.length) {
 				hint.hidden = false;
@@ -294,6 +634,13 @@
 				hint.hidden = true;
 			}
 		}
+	}
+
+	function syncFormats() {
+		contentCards().forEach(function (card) {
+			syncCardFormats(card);
+			refreshCard(card);
+		});
 	}
 
 	function updateSizeHint() {
@@ -352,27 +699,13 @@
 		if (form.getAttribute('data-new') !== '1') {
 			return;
 		}
-		var presets = {
-			'10kg': { quantity: '10', sizes: ['15mm', '18mm'] },
-			'20kg': { quantity: '20', sizes: ['15mm', '18mm'] },
-			'5kg': { quantity: '5', sizes: ['15mm', '18mm'] },
-			blank: { quantity: '10', sizes: [], clear: true }
-		};
-		var preset = presets[key];
+		var preset = contentPresets[key];
 		if (!preset) {
 			return;
 		}
 		setRadio('mb_bundle[bundle_type]', 'mix_and_match');
 		setRadio('mb_bundle[pricing_mode]', 'fixed');
 		setRadio('mb_bundle[status]', 'draft');
-		var qty = form.querySelector('[name="mb_bundle[quantity]"]');
-		if (qty) {
-			qty.value = preset.quantity;
-		}
-		var unit = form.querySelector('[name="mb_bundle[unit]"]');
-		if (unit) {
-			unit.value = 'bags';
-		}
 		if (preset.clear) {
 			['mb_bundle[name]', 'mb_bundle[fixed_price]', 'mb_bundle[helper_text]', 'mb_bundle[badge]'].forEach(function (fieldName) {
 				var field = form.querySelector('[name="' + fieldName + '"]');
@@ -380,20 +713,19 @@
 					field.value = '';
 				}
 			});
-			form.querySelectorAll('[data-check-list="ranges"] input').forEach(function (input) {
-				input.checked = false;
-			});
 		}
-		form.querySelectorAll('[data-check-list="sizes"] input').forEach(function (input) {
-			var span = input.parentElement ? input.parentElement.querySelector('span') : null;
-			var blob = ((input.value || '') + ' ' + (span ? span.textContent : '')).toLowerCase().replace(/\s+/g, '');
-			input.checked = preset.sizes.some(function (size) {
-				return blob.indexOf(size.replace(/\s+/g, '')) !== -1;
-			});
+		var host = document.getElementById('mb-content-cards');
+		if (host) {
+			host.textContent = '';
+		}
+		(preset.groups || []).forEach(function (group, index) {
+			addContentCard(group, key === 'blank' && index === 0);
 		});
 		formatTouched = false;
+		contentCards().forEach(function (card) {
+			card.removeAttribute('data-format-touched');
+		});
 		toggleShows();
-		applyListFilter('sizes', false);
 		syncFormats();
 		closeAdvanced();
 		updatePreview();
@@ -422,6 +754,20 @@
 
 	form.addEventListener('input', function (event) {
 		markLegacyChoices(event);
+		if (event.target && event.target.hasAttribute('data-product-search')) {
+			var query = event.target.value.toLowerCase();
+			var panel = event.target.closest('[data-panel]');
+			if (panel) {
+				panel.querySelectorAll('[data-filter-item]').forEach(function (item) {
+					item.hidden = query !== '' && item.textContent.toLowerCase().indexOf(query) === -1;
+				});
+			}
+		}
+		var contentCard = event.target && event.target.closest ? event.target.closest('[data-group]') : null;
+		if (contentCard) {
+			refreshCard(contentCard);
+			reindexCards();
+		}
 		updatePreview();
 		toggleShows();
 	});
@@ -430,12 +776,34 @@
 		if (event.target && event.target.closest && event.target.type === 'checkbox' && event.target.closest('[data-check-list="fixed"]')) {
 			syncFixedQty(event.target);
 		}
-		if (event.target && event.target.name === 'mb_bundle[bait_format]') {
+		var contentCard = event.target && event.target.closest ? event.target.closest('[data-group]') : null;
+		if (contentCard && event.target.getAttribute('data-field') === 'type') {
+			var nextType = event.target.value;
+			var unitInput = cardField(contentCard, 'unit');
+			if (unitInput) {
+				unitInput.value = typeUnits[nextType] || 'items';
+			}
+			contentCard.removeAttribute('data-format-touched');
+			fillCardChoices(contentCard, {
+				ranges: [],
+				sizes: [],
+				product_ids: checkedChoices(contentCard, 'products')
+			});
+		}
+		if (contentCard && event.target.getAttribute('data-field') === 'bait_format') {
 			formatTouched = true;
+			contentCard.setAttribute('data-format-touched', '1');
 		}
 		if (event.target && event.target.closest('[data-check-list="ranges"]')) {
 			applyListFilter('sizes', true);
 			syncFormats();
+		}
+		if (contentCard && event.target.getAttribute('data-choice') === 'ranges') {
+			syncFormats();
+		}
+		if (contentCard) {
+			refreshCard(contentCard);
+			reindexCards();
 		}
 		updatePreview();
 		toggleShows();
@@ -469,6 +837,39 @@
 		input.addEventListener('input', function () {
 			applyListFilter(input.getAttribute('data-filter-list'), false);
 		});
+	});
+
+	var addGroup = document.getElementById('mb-add-group');
+	if (addGroup) {
+		addGroup.addEventListener('click', function () {
+			markLegacyChoices({ target: addGroup });
+			addContentCard({ type: 'boilies', quantity: 1, unit: 'bags' }, true);
+			syncFormats();
+			updatePreview();
+			refreshCount();
+		});
+	}
+
+	form.addEventListener('click', function (event) {
+		var edit = event.target && event.target.closest ? event.target.closest('[data-group-edit]') : null;
+		var remove = event.target && event.target.closest ? event.target.closest('[data-group-remove]') : null;
+		if (!edit && !remove) {
+			return;
+		}
+		var card = (edit || remove).closest('[data-group]');
+		if (!card) {
+			return;
+		}
+		markLegacyChoices({ target: edit || remove });
+		if (edit) {
+			card.setAttribute('data-open', card.getAttribute('data-open') === '1' ? '0' : '1');
+			refreshCard(card);
+			return;
+		}
+		card.remove();
+		reindexCards();
+		updatePreview();
+		refreshCount();
 	});
 
 	form.querySelectorAll('[data-preset]').forEach(function (button) {
@@ -543,6 +944,7 @@
 		frame.open();
 	});
 
+	buildContentCards();
 	toggleShows();
 	applyListFilter('sizes', false);
 	syncFormats();
