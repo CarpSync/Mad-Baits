@@ -218,18 +218,33 @@ final class MBBB_Bundle_Eligibility {
 	 * @return string
 	 */
 	public static function group_gap_message(array $group) {
-		$plural = MBBB_Bundle_Config::content_type_plural((string) ($group['type'] ?? 'other'));
-		if (! empty($group['ranges']) || ! empty($group['sizes']) || ! empty($group['product_ids'])) {
+		$type   = sanitize_key((string) ($group['type'] ?? 'other'));
+		$plural = MBBB_Bundle_Config::content_type_plural($type);
+		if ('boilies' === $type) {
+			if (! empty($group['ranges']) || ! empty($group['sizes']) || ! empty($group['product_ids'])) {
+				return sprintf(
+					/* translators: %s: product type plural, such as boilies */
+					__('No %s are available for the selected ranges.', 'mad-baits-bundle-builder'),
+					$plural
+				);
+			}
 			return sprintf(
-				/* translators: %s: product type plural, such as pop-ups */
-				__('No %s are available for the selected ranges.', 'mad-baits-bundle-builder'),
+				/* translators: %s: product type plural */
+				__('No %s are available for this item group.', 'mad-baits-bundle-builder'),
+				$plural
+			);
+		}
+		if (empty($group['product_ids'])) {
+			return sprintf(
+				/* translators: %s: product type plural, such as liquids */
+				__('Choose which %s the customer can pick.', 'mad-baits-bundle-builder'),
 				$plural
 			);
 		}
 
 		return sprintf(
 			/* translators: %s: product type plural */
-			__('No %s are available for this item group.', 'mad-baits-bundle-builder'),
+			__('No %s are available for the selected products.', 'mad-baits-bundle-builder'),
 			$plural
 		);
 	}
@@ -245,12 +260,12 @@ final class MBBB_Bundle_Eligibility {
 			if ($id < 1) {
 				continue;
 			}
-			$label = trim((string) ($variation['name'] ?? ''));
+			$label = class_exists('MBBB_Bundle_Admin') ? MBBB_Bundle_Admin::customer_choice_label($variation) : '';
 			if ('' === $label) {
-				$label = sprintf(
-					/* translators: %s: product name fallback */
-					__('Included product', 'mad-baits-bundle-builder')
-				);
+				$label = trim((string) ($variation['name'] ?? ''));
+			}
+			if ('' === $label) {
+				$label = __('Included product', 'mad-baits-bundle-builder');
 			}
 			$options[] = array(
 				'label'      => $label,
@@ -285,17 +300,21 @@ final class MBBB_Bundle_Eligibility {
 	 */
 	private static function matches_group(array $variation, array $group, array $config) {
 		$type = sanitize_key((string) ($group['type'] ?? ''));
+		$sizes = array_map('sanitize_title', (array) ($group['sizes'] ?? array()));
+		$sizes = array_values(array_filter($sizes));
 		if ('other' === $type) {
 			$ids = array_map('absint', (array) ($group['product_ids'] ?? array()));
 			if (empty($ids) || ! self::row_has_id($variation, $ids)) {
 				return false;
 			}
-		} else {
+			if (! empty($sizes) && ! self::matches_selected_options($variation, $sizes)) {
+				return false;
+			}
+		} elseif ('boilies' === $type) {
 			if ((string) ($variation['product_type'] ?? '') !== $type) {
 				return false;
 			}
 			$ranges = array_map('sanitize_title', (array) ($group['ranges'] ?? array()));
-			$sizes  = array_map('sanitize_title', (array) ($group['sizes'] ?? array()));
 			$ids    = array_map('absint', (array) ($group['product_ids'] ?? array()));
 			if (! empty($ranges) && ! self::matches_any_label($variation, $ranges, array('range_slug', 'pa_range', 'pa_flavour', 'pa_bait-range'))) {
 				return false;
@@ -303,13 +322,22 @@ final class MBBB_Bundle_Eligibility {
 			if (! empty($sizes) && ! self::matches_sizes($variation, $sizes)) {
 				return false;
 			}
-			if ('boilies' === $type) {
-				$format = sanitize_key((string) ($group['bait_format'] ?? ''));
-				if (in_array($format, array('shelf_life', 'freezer', 'both'), true) && ! self::matches_format($variation, $format)) {
-					return false;
-				}
+			$format = sanitize_key((string) ($group['bait_format'] ?? ''));
+			if (in_array($format, array('shelf_life', 'freezer', 'both'), true) && ! self::matches_format($variation, $format)) {
+				return false;
 			}
 			if (! empty($ids) && ! self::row_has_id($variation, $ids)) {
+				return false;
+			}
+		} else {
+			if ((string) ($variation['product_type'] ?? '') !== $type) {
+				return false;
+			}
+			$ids = array_map('absint', (array) ($group['product_ids'] ?? array()));
+			if (empty($ids) || ! self::row_has_id($variation, $ids)) {
+				return false;
+			}
+			if (! empty($sizes) && ! self::matches_selected_options($variation, $sizes)) {
 				return false;
 			}
 		}
@@ -367,6 +395,44 @@ final class MBBB_Bundle_Eligibility {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Selected options of one kind are alternatives. Different kinds all apply.
+	 *
+	 * A liquid bottle size does not also have to match a bait range.
+	 *
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @param string[]             $selected  Selected option slugs.
+	 * @return bool
+	 */
+	private static function matches_selected_options(array $variation, array $selected) {
+		$have = array();
+		foreach (class_exists('MBBB_Bundle_Admin') ? MBBB_Bundle_Admin::row_option_slugs($variation) : array() as $slug) {
+			$have[ $slug ] = MBBB_Bundle_Admin::option_match_kind($slug);
+		}
+		$wanted = array();
+		foreach ($selected as $slug) {
+			$slug = sanitize_title((string) $slug);
+			if ('' === $slug) {
+				continue;
+			}
+			$kind = class_exists('MBBB_Bundle_Admin') ? MBBB_Bundle_Admin::option_match_kind($slug) : 'other';
+			$wanted[ $kind ][ $slug ] = $slug;
+		}
+		foreach ($wanted as $kind => $slugs) {
+			$hit = false;
+			foreach ($have as $slug => $have_kind) {
+				if ($have_kind === $kind && isset($slugs[ $slug ])) {
+					$hit = true;
+					break;
+				}
+			}
+			if (! $hit) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**

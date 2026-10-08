@@ -173,7 +173,7 @@
 
 	function makeChoice(value, label, checked, kind) {
 		var wrap = document.createElement('label');
-		wrap.className = kind === 'products' ? 'mb-content-card__product' : 'mb-manager__pill';
+		wrap.className = 'mb-manager__pill';
 		wrap.setAttribute('data-filter-item', kind);
 		var input = document.createElement('input');
 		input.type = 'checkbox';
@@ -188,6 +188,24 @@
 		return wrap;
 	}
 
+	function typeProducts(type) {
+		var info = (contentModel.types && contentModel.types[type]) || {};
+		return info.products || [];
+	}
+
+	function optionGroupLabel(kind, type) {
+		if (kind === 'volume') {
+			return type === 'liquids' ? 'Bottle size' : 'Pot size';
+		}
+		if (kind === 'pack') {
+			return 'Pack size';
+		}
+		if (kind === 'other' || kind === 'flavour' || kind === 'choice') {
+			return 'Flavour';
+		}
+		return 'Size';
+	}
+
 	function fillCardChoices(card, group) {
 		var type = cardType(card);
 		var info = (contentModel.types && contentModel.types[type]) || { ranges: {}, sizes: {}, formats: {} };
@@ -198,18 +216,22 @@
 		var selectedProducts = (group.product_ids || []).map(String);
 		if (rangeList) {
 			rangeList.textContent = '';
-			Object.keys(info.ranges || {}).forEach(function (slug) {
-				rangeList.appendChild(makeChoice(slug, info.ranges[slug], selectedRanges.indexOf(slug) !== -1, 'ranges'));
-			});
+			if (type === 'boilies') {
+				Object.keys(info.ranges || {}).forEach(function (slug) {
+					rangeList.appendChild(makeChoice(slug, info.ranges[slug], selectedRanges.indexOf(slug) !== -1, 'ranges'));
+				});
+			}
 		}
 		if (sizeList) {
 			sizeList.textContent = '';
-			Object.keys(info.sizes || {}).forEach(function (slug) {
-				var size = info.sizes[slug] || {};
-				var item = makeChoice(slug, size.label || slug, selectedSizes.indexOf(slug) !== -1, 'sizes');
-				item.setAttribute('data-size-ranges', (size.ranges || []).join(','));
-				sizeList.appendChild(item);
-			});
+			if (type === 'boilies') {
+				Object.keys(info.sizes || {}).forEach(function (slug) {
+					var size = info.sizes[slug] || {};
+					var item = makeChoice(slug, size.label || slug, selectedSizes.indexOf(slug) !== -1, 'sizes');
+					item.setAttribute('data-size-ranges', (size.ranges || []).join(','));
+					sizeList.appendChild(item);
+				});
+			}
 		}
 		var formats = info.formats || {};
 		card.querySelectorAll('[data-field="bait_format"]').forEach(function (input) {
@@ -219,15 +241,85 @@
 			input.setAttribute('data-format-ranges', (formats[input.value] || []).join(','));
 		});
 		var productList = card.querySelector('[data-product-list]');
-		if (productList && type === 'other') {
+		if (productList) {
 			productList.textContent = '';
-			(contentModel.products || []).forEach(function (product) {
-				productList.appendChild(makeChoice(String(product.id), product.name, selectedProducts.indexOf(String(product.id)) !== -1, 'products'));
-			});
+			if (type !== 'boilies') {
+				typeProducts(type).forEach(function (product) {
+					var checked = selectedProducts.indexOf(String(product.id)) !== -1;
+					if (!selectedProducts.length && selectedRanges.length) {
+						var known = product.ranges || [];
+						checked = selectedRanges.some(function (slug) {
+							return known.indexOf(slug) !== -1;
+						});
+					}
+					productList.appendChild(makeChoice(String(product.id), product.name, checked, 'products'));
+				});
+			}
+		}
+		if (type !== 'boilies') {
+			card.setAttribute('data-pending-sizes', selectedSizes.join(','));
 		}
 	}
 
+	function refreshOptionGroups(card) {
+		var host = card.querySelector('[data-option-host]');
+		if (!host) {
+			return;
+		}
+		var type = cardType(card);
+		if (type === 'boilies') {
+			host.textContent = '';
+			host.hidden = true;
+			return;
+		}
+		var pending = card.getAttribute('data-pending-sizes');
+		var selected = pending !== null ? pending.split(',').filter(Boolean) : checkedChoices(card, 'sizes');
+		card.removeAttribute('data-pending-sizes');
+		var groups = {};
+		var picked = checkedChoices(card, 'products');
+		typeProducts(type).forEach(function (product) {
+			if (picked.indexOf(String(product.id)) === -1) {
+				return;
+			}
+			Object.keys(product.options || {}).forEach(function (kind) {
+				groups[kind] = groups[kind] || {};
+				(product.options[kind] || []).forEach(function (option) {
+					groups[kind][option.slug] = option.label || option.slug;
+				});
+			});
+		});
+		host.textContent = '';
+		var shown = false;
+		['size', 'volume', 'pack', 'other'].forEach(function (kind) {
+			var values = groups[kind];
+			if (!values) {
+				return;
+			}
+			var slugs = Object.keys(values);
+			if (!slugs.length) {
+				return;
+			}
+			shown = true;
+			var field = document.createElement('fieldset');
+			field.className = 'mb-manager__group';
+			var legend = document.createElement('legend');
+			legend.textContent = optionGroupLabel(kind, type);
+			field.appendChild(legend);
+			var list = document.createElement('div');
+			list.className = 'mb-manager__checks';
+			slugs.forEach(function (slug) {
+				list.appendChild(makeChoice(slug, values[slug], selected.indexOf(slug) !== -1, 'sizes'));
+			});
+			field.appendChild(list);
+			host.appendChild(field);
+		});
+		host.hidden = !shown;
+	}
+
 	function filterCardSizes(card) {
+		if (cardType(card) !== 'boilies') {
+			return;
+		}
 		var ranges = checkedChoices(card, 'ranges');
 		var hasRangeChoices = !!card.querySelector('[data-range-list] input');
 		var visible = 0;
@@ -301,21 +393,22 @@
 		}
 		card.querySelectorAll('[data-panel]').forEach(function (panel) {
 			var name = panel.getAttribute('data-panel');
-			var show = false;
-			if (name === 'products') {
-				show = type === 'other';
-			} else if (name === 'format') {
-				show = type === 'boilies';
-			} else {
-				show = type !== 'other';
-			}
+			var show = name === 'products' ? type !== 'boilies' : type === 'boilies';
 			panel.hidden = !show;
 		});
 		filterCardSizes(card);
+		refreshOptionGroups(card);
+		var productHint = card.querySelector('[data-product-hint]');
+		if (productHint) {
+			var productCount = card.querySelectorAll('[data-product-list] input').length;
+			var plural = (typeWords[type] || typeWords.other)[1].toLowerCase();
+			productHint.hidden = type === 'boilies' || productCount > 0;
+			productHint.textContent = productCount ? '' : 'No ' + plural + ' are in the catalogue yet.';
+		}
 		textNode(card, '[data-summary-title]', words[1]);
 		textNode(card, '[data-summary-qty]', qty + ' ' + (qty === 1 ? pair[0] : pair[1]));
-		var detail = type === 'other' ? choiceLabels(card, 'products') : choiceLabels(card, 'ranges');
-		textNode(card, '[data-summary-detail]', detail.length ? detail.join(', ') : (type === 'other' ? 'Choose products' : 'Any range'));
+		var detail = type === 'boilies' ? choiceLabels(card, 'ranges') : choiceLabels(card, 'products');
+		textNode(card, '[data-summary-detail]', detail.length ? detail.join(', ') : (type === 'boilies' ? 'Any range' : 'Choose products'));
 		var sizes = choiceLabels(card, 'sizes');
 		textNode(card, '[data-summary-sizes]', sizes.join(' / '));
 		var formatNode = card.querySelector('[data-summary-format]');
