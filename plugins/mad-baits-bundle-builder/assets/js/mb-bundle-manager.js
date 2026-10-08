@@ -198,7 +198,7 @@
 		});
 		hint.hidden = visible > 0;
 		hint.textContent = selectedRangeValues().length
-			? 'None of the selected ranges have a boilie size yet.'
+			? 'No boilie sizes were found for the selected ranges.'
 			: 'Choose bait ranges to see the sizes customers can pick.';
 	}
 

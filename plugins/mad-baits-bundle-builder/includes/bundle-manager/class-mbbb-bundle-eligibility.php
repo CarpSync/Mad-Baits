@@ -77,7 +77,7 @@ final class MBBB_Bundle_Eligibility {
 		if (! empty($ranges) && ! self::matches_any_label($variation, $ranges, array('range_slug', 'pa_range', 'pa_flavour', 'pa_bait-range'))) {
 			return false;
 		}
-		if (! empty($sizes) && ! self::matches_any_label($variation, $sizes, array('size_slug', 'pa_size'))) {
+		if (! empty($sizes) && ! self::matches_sizes($variation, $sizes)) {
 			return false;
 		}
 		if (! empty($categories) && ! self::matches_categories($variation, $categories)) {
@@ -165,6 +165,37 @@ final class MBBB_Bundle_Eligibility {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Match boilie diameters stored on the row before falling back to labels.
+	 *
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @param string[]             $sizes     Selected size slugs.
+	 * @return bool
+	 */
+	private static function matches_sizes(array $variation, array $sizes) {
+		$row_sizes = array();
+		foreach ((array) ($variation['size_slugs'] ?? array()) as $size) {
+			$row_sizes[] = (string) $size;
+		}
+		if (isset($variation['size_slug'])) {
+			$row_sizes[] = (string) $variation['size_slug'];
+		}
+		$normalised = array();
+		foreach ($row_sizes as $size) {
+			$slug = class_exists('MBBB_Bundle_Admin')
+				? MBBB_Bundle_Admin::normalize_boilie_size($size)
+				: sanitize_title($size);
+			if ('' !== $slug) {
+				$normalised[ $slug ] = $slug;
+			}
+		}
+		if (! empty($normalised)) {
+			return ! empty(array_intersect(array_values($normalised), $sizes));
+		}
+
+		return self::matches_any_label($variation, $sizes, array('size_slug', 'pa_size'));
 	}
 
 	/**
