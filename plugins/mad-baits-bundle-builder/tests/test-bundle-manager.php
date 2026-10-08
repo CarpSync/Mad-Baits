@@ -419,14 +419,124 @@ if (! class_exists('WC_Product')) {
 				MBBB_Bundle_Runtime::apply_cart_prices($GLOBALS['mbbb_test_cart']);
 			}
 		}
+		public function get_price($context = 'view') {
+			unset($context);
+			return $this->price;
+		}
+	}
+}
+if (! class_exists('WC_Product_Simple')) {
+	class WC_Product_Simple extends WC_Product {
+		public $status = 'draft';
+		public $regular = '';
+		public $catalog = 'visible';
+		public $short = '';
+		public $image = 0;
+		public $explicit_name = '';
+
+		public function set_name($name) {
+			$this->explicit_name = (string) $name;
+		}
+		public function get_name() {
+			return '' !== $this->explicit_name ? $this->explicit_name : parent::get_name();
+		}
+		public function set_status($status) {
+			$this->status = (string) $status;
+		}
+		public function get_status() {
+			return $this->status;
+		}
+		public function set_catalog_visibility($visibility) {
+			$this->catalog = (string) $visibility;
+		}
+		public function set_sold_individually($value) {
+			unset($value);
+		}
+		public function set_manage_stock($value) {
+			unset($value);
+		}
+		public function set_stock_status($value) {
+			unset($value);
+		}
+		public function set_short_description($text) {
+			$this->short = (string) $text;
+		}
+		public function get_short_description() {
+			return $this->short;
+		}
+		public function set_image_id($id) {
+			$this->image = (int) $id;
+		}
+		public function get_image_id() {
+			return $this->image;
+		}
+		public function set_regular_price($price) {
+			$this->regular = (string) $price;
+		}
+		public function set_sale_price($price) {
+			unset($price);
+		}
+		public function get_regular_price($context = 'view') {
+			unset($context);
+			return $this->regular;
+		}
+		public function save() {
+			$mode = isset($GLOBALS['mbbb_test_fail_save']) ? (string) $GLOBALS['mbbb_test_fail_save'] : '';
+			if ('zero' === $mode) {
+				return 0;
+			}
+			if ('error' === $mode) {
+				return new WP_Error('product_save_failed', 'insert failed');
+			}
+			if ('throw' === $mode) {
+				throw new RuntimeException('database refused the insert');
+			}
+			if ($this->id < 1) {
+				$this->id = (int) ($GLOBALS['mbbb_test_next_id'] ?? 2000);
+				$GLOBALS['mbbb_test_next_id'] = $this->id + 1;
+			}
+			$GLOBALS['mbbb_test_posts'][ $this->id ] = array(
+				'post_type'           => 'product',
+				'post_status'         => $this->status,
+				'post_title'          => $this->explicit_name,
+				'post_excerpt'        => $this->short,
+				'catalog_visibility'  => $this->catalog,
+			);
+			if ('' !== $this->regular) {
+				update_post_meta($this->id, '_regular_price', $this->regular);
+				update_post_meta($this->id, '_price', $this->regular);
+			}
+			if ($this->image > 0) {
+				update_post_meta($this->id, '_thumbnail_id', $this->image);
+			}
+			return $this->id;
+		}
+		public static function from_store($id) {
+			$id      = (int) $id;
+			$post    = $GLOBALS['mbbb_test_posts'][ $id ];
+			$meta    = isset($GLOBALS['mbbb_test_meta'][ $id ]) && is_array($GLOBALS['mbbb_test_meta'][ $id ]) ? $GLOBALS['mbbb_test_meta'][ $id ] : array();
+			$product = new self($id);
+			$product->explicit_name = (string) ($post['post_title'] ?? '');
+			$product->status        = (string) ($post['post_status'] ?? 'draft');
+			$product->short         = (string) ($post['post_excerpt'] ?? '');
+			$product->catalog       = (string) ($post['catalog_visibility'] ?? 'visible');
+			$product->regular       = (string) ($meta['_regular_price'] ?? '');
+			$product->price         = is_numeric($product->regular) ? (float) $product->regular : $product->price;
+			$product->image         = (int) ($meta['_thumbnail_id'] ?? 0);
+			return $product;
+		}
 	}
 }
 if (! class_exists('WP_Error')) {
 	class WP_Error {
-		public $message;
+		public $code = '';
+		public $message = '';
 		public function __construct($code = '', $message = '') {
-			unset($code);
+			$this->code = (string) $code;
 			$this->message = $message;
+		}
+		public function get_error_code() {
+			return $this->code;
 		}
 		public function get_error_message() {
 			return $this->message;
@@ -456,8 +566,12 @@ if (! function_exists('get_post_meta')) {
 }
 if (! function_exists('wc_get_product')) {
 	function wc_get_product($id) {
-		$product = new WC_Product((int) $id);
-		$product->stock = 5 !== (int) $id;
+		$id = (int) $id;
+		if ($id > 0 && isset($GLOBALS['mbbb_test_posts'][ $id ]) && class_exists('WC_Product_Simple')) {
+			return WC_Product_Simple::from_store($id);
+		}
+		$product = new WC_Product($id);
+		$product->stock = 5 !== $id;
 		return $product;
 	}
 }
@@ -639,7 +753,280 @@ $assert(false === isset($size_split['sizes']['1kg']), 'a kilogram weight is not 
 $editor_source = file_get_contents(dirname(__DIR__) . '/includes/bundle-manager/class-mbbb-bundle-admin.php');
 $script_source = file_get_contents(dirname(__DIR__) . '/assets/js/mb-bundle-manager.js');
 $assert(false !== strpos($editor_source, '! $is_new && ! $legacy && self::advanced_is_in_use'), 'a new bundle does not auto-open Advanced Options');
+$assert(false !== strpos($editor_source, 'novalidate'), 'the bundle form does not let the browser block save from a hidden field');
 $assert(false !== strpos($script_source, 'closeAdvanced()'), 'presets close Advanced Options');
+$assert(false !== strpos($script_source, "data-advanced') !== '1'"), 'Advanced Options stays closed unless the bundle already uses them');
+$style_source = file_get_contents(dirname(__DIR__) . '/assets/css/mb-bundle-manager.css');
+$assert(false !== strpos($style_source, '.mb-manager__advanced:not([open]) > :not(summary)'), 'a closed Advanced Options panel cannot show its fields');
+
+$fresh = MBBB_Bundle_Config::defaults();
+$fresh['display']['helper_text'] = 'Choose any 10 bags from the ranges below.';
+$fresh['display']['button_text'] = 'Build Your Bundle';
+$fresh['sizes'] = array('15mm', '18mm');
+$fresh['stock'] = array('hide_unavailable' => true, 'prevent_oos' => true);
+$assert(false === MBBB_Bundle_Admin::advanced_is_in_use($fresh), 'default quantity, stock, helper text, fixed pricing, and boilie sizes stay simple');
+$percent_advanced = $fresh;
+$percent_advanced['pricing']['mode'] = 'percent';
+$assert(true === MBBB_Bundle_Admin::advanced_is_in_use($percent_advanced), 'a percentage discount is an owner-chosen advanced setting');
+$dated = $fresh;
+$dated['start_date'] = '2026-12-01';
+$assert(true === MBBB_Bundle_Admin::advanced_is_in_use($dated), 'a start date is an owner-chosen advanced setting');
+$other_size = $fresh;
+$other_size['sizes'] = array('15mm', '1kg');
+$assert(true === MBBB_Bundle_Admin::advanced_is_in_use($other_size), 'a weight selected as a size is an owner-chosen advanced setting');
+$described = $fresh;
+$described['short_description'] = 'Internal note';
+$assert(true === MBBB_Bundle_Admin::advanced_is_in_use($described), 'a short description is an owner-chosen advanced setting');
+
+if (! function_exists('update_post_meta')) {
+	function update_post_meta($post_id, $key, $value) {
+		$post_id = (int) $post_id;
+		if (! isset($GLOBALS['mbbb_test_meta'][ $post_id ]) || ! is_array($GLOBALS['mbbb_test_meta'][ $post_id ])) {
+			$GLOBALS['mbbb_test_meta'][ $post_id ] = array();
+		}
+		$GLOBALS['mbbb_test_meta'][ $post_id ][ $key ] = $value;
+		return true;
+	}
+}
+if (! class_exists('WP_Post')) {
+	class WP_Post {
+		public $ID = 0;
+		public $post_type = '';
+		public $post_status = '';
+		public $post_title = '';
+		public $post_excerpt = '';
+	}
+}
+if (! function_exists('get_post')) {
+	function get_post($post_id) {
+		$post_id = (int) $post_id;
+		if (! isset($GLOBALS['mbbb_test_posts'][ $post_id ])) {
+			return null;
+		}
+		$row = $GLOBALS['mbbb_test_posts'][ $post_id ];
+		$post = new WP_Post();
+		$post->ID = $post_id;
+		$post->post_type = (string) ($row['post_type'] ?? '');
+		$post->post_status = (string) ($row['post_status'] ?? '');
+		$post->post_title = (string) ($row['post_title'] ?? '');
+		$post->post_excerpt = (string) ($row['post_excerpt'] ?? '');
+		return $post;
+	}
+}
+if (! function_exists('get_option')) {
+	function get_option($key, $default = false) {
+		unset($key);
+		return $default;
+	}
+}
+if (! function_exists('get_post_modified_time')) {
+	function get_post_modified_time($format = '', $gmt = false, $post = null) {
+		unset($format, $gmt, $post);
+		return '8 Oct 2026';
+	}
+}
+if (! function_exists('admin_url')) {
+	function admin_url($path = '') {
+		return 'https://example.test/wp-admin/' . ltrim((string) $path, '/');
+	}
+}
+if (! function_exists('wp_nonce_url')) {
+	function wp_nonce_url($url, $action = -1) {
+		unset($action);
+		return $url;
+	}
+}
+if (! function_exists('get_permalink')) {
+	function get_permalink($post = 0) {
+		return 'https://example.test/?p=' . (int) $post;
+	}
+}
+if (! function_exists('taxonomy_exists')) {
+	function taxonomy_exists($taxonomy) {
+		unset($taxonomy);
+		return false;
+	}
+}
+if (! class_exists('wpdb')) {
+	class wpdb {
+		public $posts = 'wp_posts';
+		public $postmeta = 'wp_postmeta';
+		public function prepare($query, ...$args) {
+			if (1 === count($args) && is_array($args[0])) {
+				$args = $args[0];
+			}
+			foreach ($args as $arg) {
+				$replacement = is_int($arg) ? (string) $arg : "'" . (string) $arg . "'";
+				$query = preg_replace('/%[sd]/', $replacement, $query, 1);
+			}
+			return $query;
+		}
+		public function get_col($query) {
+			preg_match_all("/'([^']+)'/", (string) $query, $matches);
+			$keys = $matches[1];
+			$ids  = array();
+			foreach ($GLOBALS['mbbb_test_meta'] as $post_id => $meta) {
+				if (! is_array($meta)) {
+					continue;
+				}
+				$post = $GLOBALS['mbbb_test_posts'][ $post_id ] ?? null;
+				if (! is_array($post) || 'product' !== ($post['post_type'] ?? '')) {
+					continue;
+				}
+				if (! in_array($post['post_status'] ?? '', array('publish', 'draft', 'private', 'pending', 'future'), true)) {
+					continue;
+				}
+				foreach ($keys as $key) {
+					if (array_key_exists($key, $meta)) {
+						$ids[] = (int) $post_id;
+						break;
+					}
+				}
+			}
+			return $ids;
+		}
+	}
+}
+
+require dirname(__DIR__) . '/includes/bundle-manager/class-mbbb-bundle-repository.php';
+
+$GLOBALS['wpdb'] = new wpdb();
+$GLOBALS['mbbb_test_posts'] = isset($GLOBALS['mbbb_test_posts']) && is_array($GLOBALS['mbbb_test_posts']) ? $GLOBALS['mbbb_test_posts'] : array();
+$GLOBALS['mbbb_test_next_id'] = 2000;
+
+$bundle_catalogue = array(
+	'variations' => array(
+		array('id' => 1, 'parent_id' => 10, 'name' => 'Strawberry 15mm', 'range_slug' => 'strawberry', 'size_slug' => '15mm', 'attributes' => array('pa_size' => '15mm'), 'category_slugs' => array('boilies'), 'in_stock' => true, 'purchasable' => true, 'price' => 8.50),
+		array('id' => 2, 'parent_id' => 10, 'name' => 'Strawberry 18mm', 'range_slug' => 'strawberry', 'size_slug' => '18mm', 'attributes' => array('pa_size' => '18mm'), 'category_slugs' => array('boilies'), 'in_stock' => true, 'purchasable' => true, 'price' => 8.50),
+	),
+	'ranges' => array('strawberry' => 'Strawberry'),
+	'sizes' => array('15mm' => '15mm', '18mm' => '18mm'),
+	'categories' => array(),
+	'attributes' => array(),
+	'products' => array(10 => 'Strawberry'),
+);
+$catalogue_property = new ReflectionProperty('MBBB_Bundle_Repository', 'catalogue_cache');
+$catalogue_property->setAccessible(true);
+$catalogue_property->setValue(null, $bundle_catalogue);
+
+$bundle_row = static function ($rows, $name) {
+	foreach ($rows as $row) {
+		if ((string) ($row['name'] ?? '') === $name) {
+			return $row;
+		}
+	}
+	return null;
+};
+
+$save_bundle = static function ($intent, $name) {
+	return MBBB_Bundle_Service::save_from_post(array(
+		'product_id' => 0,
+		'intent'     => $intent,
+		'mb_bundle'  => array(
+			'name'            => $name,
+			'status'          => 'draft',
+			'bundle_type'     => 'mix_and_match',
+			'quantity_mode'   => 'exact',
+			'quantity'        => 10,
+			'unit'            => 'bags',
+			'ranges'          => array('strawberry'),
+			'sizes'           => array('15mm', '18mm'),
+			'pricing_mode'    => 'fixed',
+			'fixed_price'     => '74.99',
+			'helper_text'     => 'Choose any 10 bags from the ranges below.',
+			'button_text'     => 'Build Your Bundle',
+			'percent'         => 10,
+			'hide_unavailable'=> '1',
+			'prevent_oos'     => '1',
+		),
+	));
+};
+
+$prove_saved = static function ($result, $name, $enabled, $post_status) use ($assert, $bundle_row, $catalogue_property) {
+	$assert(true === $result['success'] && (int) $result['product_id'] > 0, $name . ' returns a real product ID');
+	$id   = (int) $result['product_id'];
+	$post = get_post($id);
+	$assert($post instanceof WP_Post && 'product' === $post->post_type && $post_status === $post->post_status, $name . ' is stored as a WooCommerce product');
+	$owner = get_post_meta($id, '_mbbb_owner_bundle', true);
+	$assert(is_array($owner) && $name === ($owner['name'] ?? ''), $name . ' stores _mbbb_owner_bundle');
+	$assert($enabled === (string) get_post_meta($id, '_mbbb_enabled', true), $name . ' stores _mbbb_enabled as ' . $enabled);
+	$slots = get_post_meta($id, '_mbbb_slots', true);
+	$assert(is_array($slots) && 10 === count($slots), $name . ' stores compiled _mbbb_slots');
+	$assert('74.99' === (string) get_post_meta($id, '_regular_price', true) && '74.99' === (string) get_post_meta($id, '_price', true), $name . ' stores the bundle price');
+	$assert(array('strawberry') === ($owner['ranges'] ?? null) && array('15mm', '18mm') === ($owner['sizes'] ?? null), $name . ' stores the selected ranges and sizes');
+	$listed = $bundle_row(MBBB_Bundle_Repository::list_bundles(), $name);
+	$assert(is_array($listed) && $id === (int) $listed['id'], $name . ' appears in the Bundle Manager list');
+	$catalogue_property->setValue(null, null);
+	$reloaded = MBBB_Bundle_Repository::get_owner_config($id);
+	$listed_again = $bundle_row(MBBB_Bundle_Repository::list_bundles(), $name);
+	$assert(is_array($reloaded) && $name === ($reloaded['name'] ?? '') && is_array($listed_again), $name . ' remains present after a fresh read');
+};
+
+$draft_result = $save_bundle('draft', 'Draft Test Bundle');
+$prove_saved($draft_result, 'Draft Test Bundle', 'no', 'draft');
+$catalogue_property->setValue(null, $bundle_catalogue);
+$activate_result = $save_bundle('activate', 'Active Test Bundle');
+$prove_saved($activate_result, 'Active Test Bundle', 'yes', 'publish');
+$draft_row = $bundle_row(MBBB_Bundle_Repository::list_bundles(array('status' => 'draft')), 'Draft Test Bundle');
+$active_row = $bundle_row(MBBB_Bundle_Repository::list_bundles(array('status' => 'active')), 'Active Test Bundle');
+$assert(is_array($draft_row) && 'draft' === $draft_row['status_key'], 'Save Draft appears in the draft list');
+$assert(is_array($active_row) && 'active' === $active_row['status_key'], 'Save & Activate appears in the active list');
+$assert('hidden' === ($GLOBALS['mbbb_test_posts'][ (int) $draft_result['product_id'] ]['catalog_visibility'] ?? ''), 'a draft bundle can be catalogue-hidden and still be saved');
+
+$disabled = MBBB_Bundle_Config::sanitize(array(
+	'name' => 'Disabled Test Bundle',
+	'status' => 'disabled',
+	'bundle_type' => 'mix_and_match',
+	'quantity' => 10,
+	'ranges' => array('strawberry'),
+	'sizes' => array('15mm'),
+	'pricing' => array('mode' => 'fixed', 'fixed_price' => '74.99'),
+	'managed_by' => 'bundle-manager',
+));
+$disabled_result = MBBB_Bundle_Repository::persist(0, $disabled, true, $bundle_catalogue['variations']);
+$assert(true === $disabled_result['success'], 'a disabled bundle can be saved');
+$scheduled = $disabled;
+$scheduled['name'] = 'Scheduled Test Bundle';
+$scheduled['status'] = 'active';
+$scheduled['start_date'] = '2026-12-01';
+$scheduled_result = MBBB_Bundle_Repository::persist(0, $scheduled, true, $bundle_catalogue['variations']);
+$assert(true === $scheduled_result['success'] && 'hidden' === ($GLOBALS['mbbb_test_posts'][ (int) $scheduled_result['product_id'] ]['catalog_visibility'] ?? ''), 'a scheduled bundle stays saved while hidden from the catalogue');
+$all_rows = MBBB_Bundle_Repository::list_bundles();
+$assert(is_array($bundle_row($all_rows, 'Disabled Test Bundle')) && is_array($bundle_row(MBBB_Bundle_Repository::list_bundles(array('status' => 'disabled')), 'Disabled Test Bundle')), 'disabled manager bundles appear in the list');
+$assert(is_array($bundle_row($all_rows, 'Scheduled Test Bundle')) && 'scheduled' === ($bundle_row(MBBB_Bundle_Repository::list_bundles(array('status' => 'scheduled')), 'Scheduled Test Bundle')['status_key'] ?? ''), 'scheduled manager bundles appear in the list');
+
+$GLOBALS['mbbb_test_posts'][880] = array(
+	'post_type' => 'product',
+	'post_status' => 'publish',
+	'post_title' => 'Legacy Hidden Bundle',
+	'post_excerpt' => '',
+	'catalog_visibility' => 'hidden',
+);
+$GLOBALS['mbbb_test_meta'][880]['_mbbb_enabled'] = 'yes';
+$GLOBALS['mbbb_test_meta'][880]['_mbbb_slots'] = array(array('label' => '5KG Split 1', 'key' => 'split-1'));
+$GLOBALS['mbbb_test_meta'][880]['_mbbb_deal_meta'] = array('boilie_ranges' => array('asbo'));
+$GLOBALS['mbbb_test_meta'][880]['_regular_price'] = '89.99';
+$legacy_row = $bundle_row(MBBB_Bundle_Repository::list_bundles(), 'Legacy Hidden Bundle');
+$assert(null === MBBB_Bundle_Repository::get_owner_config(880) && is_array($legacy_row) && ! empty($legacy_row['legacy']), 'a legacy bundle with no owner meta still appears when catalogue-hidden');
+
+$failed_config = MBBB_Bundle_Config::sanitize(array(
+	'name' => 'Unsaved Test Bundle',
+	'status' => 'active',
+	'quantity' => 10,
+	'ranges' => array('strawberry'),
+	'sizes' => array('15mm'),
+	'pricing' => array('mode' => 'fixed', 'fixed_price' => '74.99'),
+));
+foreach (array('zero', 'error', 'throw') as $failure_mode) {
+	$GLOBALS['mbbb_test_fail_save'] = $failure_mode;
+	$failed = MBBB_Bundle_Repository::persist(0, $failed_config, true, $bundle_catalogue['variations']);
+	unset($GLOBALS['mbbb_test_fail_save']);
+	$failed_text = implode(' ', $failed['errors']);
+	$assert(false === $failed['success'] && 0 === (int) $failed['product_id'], 'a ' . $failure_mode . ' save does not report success');
+	$assert('Bundle could not be created. No product record was saved.' === $failed_text, 'a ' . $failure_mode . ' save explains that no product was saved');
+	$assert(false === strpos($failed_text, 'database refused') && false === strpos($failed_text, 'insert failed'), 'a ' . $failure_mode . ' save does not expose the internal error');
+}
+$assert(null === $bundle_row(MBBB_Bundle_Repository::list_bundles(), 'Unsaved Test Bundle'), 'a failed create does not appear in the Bundle Manager list');
 
 if ($failures > 0) {
 	fwrite(STDERR, "{$failures} failed.\n");

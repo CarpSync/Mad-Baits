@@ -29,8 +29,8 @@ final class MBBB_Bundle_Repository {
 		$rows   = array();
 
 		foreach (self::bundle_ids() as $product_id) {
-			$product = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
-			if (! $product instanceof WC_Product) {
+			$record = self::list_record($product_id);
+			if (null === $record) {
 				continue;
 			}
 
@@ -51,14 +51,14 @@ final class MBBB_Bundle_Repository {
 			if ('all' !== $type && $type !== (string) $config['bundle_type']) {
 				continue;
 			}
-			if ('' !== $search && false === strpos(strtolower($product->get_name()), $search)) {
+			if ('' !== $search && false === strpos(strtolower((string) $record['name']), $search)) {
 				continue;
 			}
 
-			$image_id = (int) $product->get_image_id();
+			$image_id = (int) $record['image_id'];
 			$rows[]   = array(
 				'id'             => $product_id,
-				'name'           => $product->get_name(),
+				'name'           => (string) $record['name'],
 				'image'          => $image_id && function_exists('wp_get_attachment_image_url') ? (string) wp_get_attachment_image_url($image_id, 'thumbnail') : '',
 				'status_key'     => $effective,
 				'status_label'   => MBBB_Bundle_Config::status_label($effective, $config, $today),
@@ -72,7 +72,7 @@ final class MBBB_Bundle_Repository {
 				'modified'       => get_post_modified_time(get_option('date_format') . ' ' . get_option('time_format'), false, $product_id),
 				'legacy'         => $legacy || ! empty($config['legacy']),
 				'edit_url'       => admin_url('admin.php?page=madbaits-bundles&action=edit&bundle_id=' . $product_id),
-				'preview_url'    => 'publish' === $product->get_status() ? get_permalink($product_id) : '',
+				'preview_url'    => 'publish' === (string) $record['post_status'] ? get_permalink($product_id) : '',
 				'duplicate_url'  => wp_nonce_url(admin_url('admin.php?page=madbaits-bundles&action=duplicate&bundle_id=' . $product_id), 'mb_bundle_duplicate_' . $product_id),
 				'toggle_url'     => wp_nonce_url(admin_url('admin.php?page=madbaits-bundles&action=toggle&bundle_id=' . $product_id), 'mb_bundle_toggle_' . $product_id),
 				'delete_url'     => wp_nonce_url(admin_url('admin.php?page=madbaits-bundles&action=delete&bundle_id=' . $product_id), 'mb_bundle_delete_' . $product_id),
@@ -191,73 +191,122 @@ final class MBBB_Bundle_Repository {
 	 */
 	public static function persist($product_id, array $config, $compile, array $live_rows = array()) {
 		$product_id = absint($product_id);
+		$creating   = $product_id < 1;
 		if (! function_exists('wc_get_product') || ! class_exists('WC_Product_Simple')) {
-			return array(
-				'success'    => false,
-				'product_id' => $product_id,
-				'errors'     => array(__('WooCommerce needs to be active before bundles can be saved.', 'mad-baits-bundle-builder')),
-			);
+			return self::failed_save($product_id, $creating, 'WooCommerce is not available');
 		}
 
-		$config  = MBBB_Bundle_Config::sanitize($config);
-		$product = $product_id > 0 ? wc_get_product($product_id) : null;
-		$created = ! $product instanceof WC_Product;
-		if ($created) {
-			$product = new WC_Product_Simple();
-			$product->set_catalog_visibility('visible');
-			$product->set_sold_individually(false);
-			$product->set_manage_stock(false);
-			$product->set_stock_status('instock');
-		}
-
-		if ($compile && ! $created) {
-			self::maybe_snapshot($product_id);
-		}
-
-		$product->set_name($config['name']);
-		$product->set_short_description($config['short_description']);
-		$product->set_image_id((int) $config['image_id']);
-		self::apply_price($product, $config);
-		self::apply_post_status($product, $config);
-
-		$product_id = (int) $product->save();
-		if ($product_id < 1) {
-			return array(
-				'success'    => false,
-				'product_id' => 0,
-				'errors'     => array(__('The bundle could not be saved. Please try again.', 'mad-baits-bundle-builder')),
-			);
-		}
-
-		update_post_meta($product_id, MBBB_Bundle_Config::META_KEY, $config);
-		$enabled = 'active' === (string) $config['status'] ? 'yes' : 'no';
-		$slots   = null;
-		if ($compile) {
-			$options = MBBB_Bundle_Eligibility::to_slot_options($live_rows);
-			$slots   = MBBB_Bundle_Compiler::compile($config, $options);
-		}
-
-		if (class_exists('MBBB_Plugin')) {
-			$plugin   = MBBB_Plugin::instance();
-			$settings = $plugin->get_settings($product_id);
-			$plugin->save_product_bundle_meta($product_id, $enabled, $settings, $slots);
-		} else {
-			update_post_meta($product_id, '_mbbb_enabled', $enabled);
-			if (null !== $slots) {
-				update_post_meta($product_id, '_mbbb_slots', $slots);
+		try {
+			$config = MBBB_Bundle_Config::sanitize($config);
+			if ($creating) {
+				$product = new WC_Product_Simple();
+				$product->set_catalog_visibility('visible');
+				$product->set_sold_individually(false);
+				$product->set_manage_stock(false);
+				$product->set_stock_status('instock');
+			} else {
+				$product = wc_get_product($product_id);
+				if (! $product instanceof WC_Product) {
+					self::log_failure('Product ' . $product_id . ' could not be loaded for saving.');
+					return array(
+						'success'    => false,
+						'product_id' => $product_id,
+						'errors'     => array(__('That bundle could not be found.', 'mad-baits-bundle-builder')),
+					);
+				}
 			}
-		}
 
-		self::sync_deal_meta($product_id, $config, $compile);
-		if (class_exists('MBBB_Admin_Setup')) {
-			MBBB_Admin_Setup::ensure_bundle_category($product_id);
-		}
+			if ($compile && ! $creating) {
+				self::maybe_snapshot($product_id);
+			}
 
-		return array(
-			'success'    => true,
-			'product_id' => $product_id,
-			'errors'     => array(),
-		);
+			$product->set_name($config['name']);
+			$product->set_short_description($config['short_description']);
+			$product->set_image_id((int) $config['image_id']);
+			self::apply_price($product, $config);
+			self::apply_post_status($product, $config);
+
+			$enabled = 'active' === (string) $config['status'] ? 'yes' : 'no';
+			$slots   = null;
+			if ($compile) {
+				$options = MBBB_Bundle_Eligibility::to_slot_options($live_rows);
+				$slots   = MBBB_Bundle_Compiler::compile($config, $options);
+			}
+			if (method_exists($product, 'update_meta_data')) {
+				$product->update_meta_data(MBBB_Bundle_Config::META_KEY, $config);
+				$product->update_meta_data('_mbbb_enabled', $enabled);
+				if (null !== $slots) {
+					$product->update_meta_data('_mbbb_slots', $slots);
+				}
+			}
+
+			$saved = $product->save();
+			if (is_wp_error($saved)) {
+				return self::failed_save($creating ? 0 : $product_id, $creating, 'Product save failed: ' . $saved->get_error_code() . ' ' . $saved->get_error_message());
+			}
+			$product_id = absint($saved);
+			if ($product_id < 1) {
+				return self::failed_save(0, true, 'Product save did not return an ID.');
+			}
+
+			update_post_meta($product_id, MBBB_Bundle_Config::META_KEY, $config);
+			if (class_exists('MBBB_Plugin')) {
+				$plugin   = MBBB_Plugin::instance();
+				$settings = $plugin->get_settings($product_id);
+				$written  = $plugin->save_product_bundle_meta($product_id, $enabled, $settings, $slots);
+				if (! $written) {
+					return self::failed_save($product_id, $creating, 'Bundle meta was not written for product ' . $product_id . '.');
+				}
+			} else {
+				update_post_meta($product_id, '_mbbb_enabled', $enabled);
+				if (null !== $slots) {
+					update_post_meta($product_id, '_mbbb_slots', $slots);
+				}
+			}
+
+			self::sync_deal_meta($product_id, $config, $compile);
+			if (class_exists('MBBB_Admin_Setup')) {
+				MBBB_Admin_Setup::ensure_bundle_category($product_id);
+			}
+
+			$problem = self::persistence_problem($product_id, $config, (bool) $compile, $enabled);
+			if ('' !== $problem) {
+				return self::failed_save($product_id, $creating, 'Product ' . $product_id . ' failed read-back: ' . $problem);
+			}
+
+			return array(
+				'success'    => true,
+				'product_id' => $product_id,
+				'errors'     => array(),
+			);
+		} catch (Throwable $error) {
+			return self::failed_save($product_id, $creating, $error::class . ': ' . $error->getMessage());
+		}
+	}
+
+	/**
+	 * Record a save failure without exposing the internal reason to the owner.
+	 *
+	 * @param string $message Safe diagnostic text.
+	 * @return void
+	 */
+	public static function log_failure($message) {
+		$message = trim(preg_replace('/\s+/', ' ', wp_strip_all_tags((string) $message)));
+		if ('' === $message) {
+			return;
+		}
+		if (function_exists('mb_substr')) {
+			$message = mb_substr($message, 0, 300);
+		} else {
+			$message = substr($message, 0, 300);
+		}
+		$line = 'Mad Baits Bundle Manager: ' . $message;
+		if (function_exists('error_log')) {
+			error_log($line);
+		}
+		if (class_exists('MBBB_Plugin', false)) {
+			MBBB_Plugin::instance()->log($line, 'error');
+		}
 	}
 
 	/**
@@ -463,17 +512,133 @@ final class MBBB_Bundle_Repository {
 			$ids = array_merge($ids, MBBB_Deal_Builder::get_all_deal_product_ids());
 		}
 		global $wpdb;
-		if ($wpdb instanceof wpdb) {
-			$meta_ids = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT DISTINCT post_id FROM {$wpdb->postmeta} WHERE meta_key = %s",
-					MBBB_Bundle_Config::META_KEY
-				)
+		if ($wpdb instanceof wpdb && isset($wpdb->posts, $wpdb->postmeta)) {
+			$keys = array(
+				MBBB_Bundle_Config::META_KEY,
+				'_mbbb_enabled',
+				'_mbbb_deal_meta',
+				'_mbbb_slots',
 			);
-			$ids = array_merge($ids, array_map('absint', (array) $meta_ids));
+			$sql      = "SELECT DISTINCT p.ID FROM {$wpdb->posts} p INNER JOIN {$wpdb->postmeta} pm ON pm.post_id = p.ID WHERE p.post_type = 'product' AND p.post_status IN ('publish','draft','private','pending','future') AND pm.meta_key IN (" . implode(', ', array_fill(0, count($keys), '%s')) . ')';
+			$meta_ids = $wpdb->get_col($wpdb->prepare($sql, ...$keys));
+			$ids      = array_merge($ids, array_map('absint', (array) $meta_ids));
 		}
 		$ids = array_values(array_unique(array_filter(array_map('absint', $ids))));
 		return $ids;
+	}
+
+	/**
+	 * Product fields for the admin list. Catalogue visibility is not used.
+	 *
+	 * @param int $product_id Product ID.
+	 * @return array{name: string, post_status: string, image_id: int}|null
+	 */
+	private static function list_record($product_id) {
+		$product_id = absint($product_id);
+		$allowed    = array('publish', 'draft', 'private', 'pending', 'future');
+		$product    = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
+		if ($product instanceof WC_Product && (int) $product->get_id() === $product_id) {
+			$status = (string) $product->get_status();
+			if (! in_array($status, $allowed, true)) {
+				return null;
+			}
+			return array(
+				'name'        => $product->get_name(),
+				'post_status' => $status,
+				'image_id'    => (int) $product->get_image_id(),
+			);
+		}
+
+		$post = function_exists('get_post') ? get_post($product_id) : null;
+		if (! $post instanceof WP_Post || 'product' !== $post->post_type || ! in_array($post->post_status, $allowed, true)) {
+			return null;
+		}
+		return array(
+			'name'        => (string) $post->post_title,
+			'post_status' => (string) $post->post_status,
+			'image_id'    => absint(get_post_meta($product_id, '_thumbnail_id', true)),
+		);
+	}
+
+	/**
+	 * @param int    $product_id Product ID, when one exists.
+	 * @param bool   $creating   True when this request was a new bundle.
+	 * @param string $reason     Internal reason, logged separately.
+	 * @return array{success: bool, product_id: int, errors: string[]}
+	 */
+	private static function failed_save($product_id, $creating, $reason) {
+		self::log_failure($reason);
+		$product_id = absint($product_id);
+		$missing    = $creating && ! self::product_record_exists($product_id);
+		return array(
+			'success'    => false,
+			'product_id' => $missing ? 0 : $product_id,
+			'errors'     => array(
+				$missing
+					? __('Bundle could not be created. No product record was saved.', 'mad-baits-bundle-builder')
+					: __('Bundle could not be saved. The bundle settings were not stored.', 'mad-baits-bundle-builder'),
+			),
+		);
+	}
+
+	/**
+	 * @param int $product_id Product ID.
+	 * @return bool
+	 */
+	private static function product_record_exists($product_id) {
+		$product_id = absint($product_id);
+		if ($product_id < 1) {
+			return false;
+		}
+		$post = function_exists('get_post') ? get_post($product_id) : null;
+		if ($post instanceof WP_Post) {
+			return 'product' === $post->post_type && ! in_array($post->post_status, array('trash', 'auto-draft'), true);
+		}
+		$product = function_exists('wc_get_product') ? wc_get_product($product_id) : null;
+		return $product instanceof WC_Product && (int) $product->get_id() === $product_id;
+	}
+
+	/**
+	 * Confirm the product and bundle meta can be read back after save.
+	 *
+	 * @param int                  $product_id Product ID.
+	 * @param array<string, mixed> $config     Config that was written.
+	 * @param bool                 $compile    Whether slots were written.
+	 * @param string               $enabled    Expected yes|no.
+	 * @return string Empty when the save can be read back.
+	 */
+	private static function persistence_problem($product_id, array $config, $compile, $enabled) {
+		if (! self::product_record_exists($product_id)) {
+			return 'no product record';
+		}
+		$stored = get_post_meta($product_id, MBBB_Bundle_Config::META_KEY, true);
+		if (! is_array($stored)) {
+			return 'owner meta missing';
+		}
+		$stored = MBBB_Bundle_Config::sanitize($stored);
+		if ((string) $stored['name'] !== (string) $config['name']) {
+			return 'owner meta name mismatch';
+		}
+		if ($stored['ranges'] !== $config['ranges'] || $stored['sizes'] !== $config['sizes']) {
+			return 'owner meta choices mismatch';
+		}
+		if ((string) get_post_meta($product_id, '_mbbb_enabled', true) !== $enabled) {
+			return 'enabled meta mismatch';
+		}
+		if ($compile && ! is_array(get_post_meta($product_id, '_mbbb_slots', true))) {
+			return 'slots meta missing';
+		}
+		$pricing = isset($config['pricing']) && is_array($config['pricing']) ? $config['pricing'] : array();
+		if ('fixed' === (string) ($pricing['mode'] ?? '') && is_numeric($pricing['fixed_price'] ?? null) && (float) $pricing['fixed_price'] > 0) {
+			$price = get_post_meta($product_id, '_regular_price', true);
+			if (! is_numeric($price) || round((float) $price, 2) !== round((float) $pricing['fixed_price'], 2)) {
+				$price = get_post_meta($product_id, '_price', true);
+			}
+			if (! is_numeric($price) || round((float) $price, 2) !== round((float) $pricing['fixed_price'], 2)) {
+				return 'price meta mismatch';
+			}
+		}
+		return '';
 	}
 
 	/**

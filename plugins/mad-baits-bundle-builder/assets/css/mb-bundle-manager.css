@@ -467,6 +467,10 @@
 	list-style: disclosure-open;
 }
 
+.mb-manager__advanced:not([open]) > :not(summary) {
+	display: none !important;
+}
+
 .mb-preview {
 	background: #171717;
 	color: #f5f5f5;

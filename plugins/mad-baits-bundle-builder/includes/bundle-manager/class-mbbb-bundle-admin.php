@@ -136,15 +136,34 @@ final class MBBB_Bundle_Admin {
 			check_admin_referer('mb_bundle_save');
 			$posted = wp_unslash($_POST);
 			$posted = self::normalise_fixed_items($posted);
-			$result = MBBB_Bundle_Service::save_from_post($posted);
-			if ($result['success']) {
+			try {
+				$result = MBBB_Bundle_Service::save_from_post($posted);
+			} catch (Throwable $error) {
+				MBBB_Bundle_Repository::log_failure($error::class . ': ' . $error->getMessage());
+				$existing = absint($posted['product_id'] ?? 0);
+				$result   = array(
+					'success'    => false,
+					'product_id' => $existing,
+					'errors'     => array(
+						$existing > 0
+							? __('Bundle could not be saved. The bundle settings were not stored.', 'mad-baits-bundle-builder')
+							: __('Bundle could not be created. No product record was saved.', 'mad-baits-bundle-builder'),
+					),
+				);
+			}
+			if (! empty($result['success']) && absint($result['product_id'] ?? 0) > 0) {
+				$this->clear_form_state();
 				$this->flash(__('Bundle saved.', 'mad-baits-bundle-builder'));
 				wp_safe_redirect(admin_url('admin.php?page=madbaits-bundles&action=edit&bundle_id=' . absint($result['product_id'])));
 				exit;
 			}
-			set_transient('mb_bundle_errors_' . get_current_user_id(), $result['errors'], 60);
-			set_transient('mb_bundle_posted_' . get_current_user_id(), $posted, 60);
-			$back = absint($result['product_id']) > 0
+			if (! empty($result['success'])) {
+				$result['success'] = false;
+				$result['errors']  = array(__('Bundle could not be created. No product record was saved.', 'mad-baits-bundle-builder'));
+				MBBB_Bundle_Repository::log_failure('Save reported success without a product ID.');
+			}
+			$this->remember_failure(isset($result['errors']) && is_array($result['errors']) ? $result['errors'] : array(), $posted);
+			$back = absint($result['product_id'] ?? 0) > 0
 				? admin_url('admin.php?page=madbaits-bundles&action=edit&bundle_id=' . absint($result['product_id']))
 				: admin_url('admin.php?page=madbaits-bundles&action=new');
 			wp_safe_redirect($back);
@@ -434,10 +453,8 @@ final class MBBB_Bundle_Admin {
 	private function render_editor() {
 		$bundle_id = isset($_GET['bundle_id']) ? absint($_GET['bundle_id']) : 0;
 		$state     = MBBB_Bundle_Repository::editor_state($bundle_id);
-		$errors    = get_transient('mb_bundle_errors_' . get_current_user_id());
-		$posted    = get_transient('mb_bundle_posted_' . get_current_user_id());
-		delete_transient('mb_bundle_errors_' . get_current_user_id());
-		delete_transient('mb_bundle_posted_' . get_current_user_id());
+		$errors    = $this->take_user_value('mb_bundle_errors');
+		$posted    = $this->take_user_value('mb_bundle_posted');
 		if (is_array($posted)) {
 			$state['config'] = MBBB_Bundle_Config::sanitize(MBBB_Bundle_Service::flatten_post($posted));
 			if ($bundle_id > 0) {
@@ -469,7 +486,7 @@ final class MBBB_Bundle_Admin {
 		}
 		$advanced_open = ! $is_new && ! $legacy && self::advanced_is_in_use($config, $catalog);
 		?>
-		<form method="post" class="mb-manager__editor" id="mb-bundle-editor" data-legacy="<?php echo $legacy ? '1' : '0'; ?>" data-new="<?php echo $is_new ? '1' : '0'; ?>">
+		<form method="post" class="mb-manager__editor" id="mb-bundle-editor" novalidate data-legacy="<?php echo $legacy ? '1' : '0'; ?>" data-new="<?php echo $is_new ? '1' : '0'; ?>" data-advanced="<?php echo $advanced_open ? '1' : '0'; ?>">
 			<?php wp_nonce_field('mb_bundle_save'); ?>
 			<input type="hidden" name="page" value="madbaits-bundles" />
 			<input type="hidden" name="mb_bundle_save" value="1" />
@@ -806,7 +823,8 @@ final class MBBB_Bundle_Admin {
 	 * @param array<string, mixed> $catalog Catalogue.
 	 * @return bool
 	 */
-	private static function advanced_is_in_use(array $config, array $catalog = array()) {
+	public static function advanced_is_in_use(array $config, array $catalog = array()) {
+		unset($catalog);
 		$pricing = isset($config['pricing']) && is_array($config['pricing']) ? $config['pricing'] : array();
 		if ('fixed' !== (string) ($pricing['mode'] ?? 'fixed')) {
 			return true;
@@ -814,7 +832,7 @@ final class MBBB_Bundle_Admin {
 		if ('' !== (string) ($config['start_date'] ?? '') || '' !== (string) ($config['end_date'] ?? '')) {
 			return true;
 		}
-		if ('exact' !== (string) ($config['quantity_mode'] ?? 'exact') || (int) ($config['multiple_of'] ?? 0) > 0) {
+		if ('exact' !== (string) ($config['quantity_mode'] ?? 'exact') || (int) ($config['multiple_of'] ?? 0) > 1) {
 			return true;
 		}
 		if ('' !== trim((string) ($config['short_description'] ?? ''))) {
@@ -829,10 +847,9 @@ final class MBBB_Bundle_Admin {
 				return true;
 			}
 		}
-		$split = self::split_sizes($catalog);
 		foreach ((array) ($config['sizes'] ?? array()) as $size) {
 			$size = sanitize_title((string) $size);
-			if ('' !== $size && ! isset($split['sizes'][ $size ])) {
+			if ('' !== $size && ! self::is_boilie_diameter($size, $size)) {
 				return true;
 			}
 		}
@@ -1037,8 +1054,9 @@ final class MBBB_Bundle_Admin {
 			}
 			$id  = (int) $row['id'];
 			$qty = $selected[ $id ] ?? 1;
-			echo '<label class="mb-manager__pill" data-filter-item="fixed"><input type="checkbox" name="mb_bundle[fixed_selected][]" value="' . esc_attr((string) $id) . '" ' . checked(isset($selected[ $id ]), true, false) . ' /> <span>' . esc_html((string) ($row['name'] ?? '')) . '</span>';
-			echo ' <input class="mb-manager__qty" type="number" min="1" max="' . esc_attr((string) MBBB_Bundle_Config::MAX_CHOICES) . '" name="mb_bundle[fixed_qty][' . esc_attr((string) $id) . ']" value="' . esc_attr((string) $qty) . '" aria-label="' . esc_attr__('Quantity', 'mad-baits-bundle-builder') . '" /></label>';
+			$checked = isset($selected[ $id ]);
+			echo '<label class="mb-manager__pill" data-filter-item="fixed"><input type="checkbox" name="mb_bundle[fixed_selected][]" value="' . esc_attr((string) $id) . '" ' . checked($checked, true, false) . ' /> <span>' . esc_html((string) ($row['name'] ?? '')) . '</span>';
+			echo ' <input class="mb-manager__qty" type="number" min="1" max="' . esc_attr((string) MBBB_Bundle_Config::MAX_CHOICES) . '" name="mb_bundle[fixed_qty][' . esc_attr((string) $id) . ']" value="' . esc_attr((string) $qty) . '" aria-label="' . esc_attr__('Quantity', 'mad-baits-bundle-builder') . '"' . ($checked ? '' : ' disabled') . ' /></label>';
 		}
 		if (empty($catalog['variations'])) {
 			echo '<p class="mb-manager__hint">' . esc_html__('No products are available to include yet.', 'mad-baits-bundle-builder') . '</p>';
@@ -1113,18 +1131,71 @@ final class MBBB_Bundle_Admin {
 	 * @return void
 	 */
 	private function flash($message) {
-		set_transient('mb_bundle_notice_' . get_current_user_id(), $message, 30);
+		$this->store_user_value('mb_bundle_notice', $message);
+	}
+
+	/**
+	 * @param string[]             $errors Validation or save errors.
+	 * @param array<string, mixed> $posted Submitted form.
+	 * @return void
+	 */
+	private function remember_failure(array $errors, array $posted) {
+		unset($posted['_wpnonce'], $posted['_wp_http_referer']);
+		$this->store_user_value('mb_bundle_errors', array_values(array_filter(array_map('strval', $errors))));
+		$this->store_user_value('mb_bundle_posted', $posted);
+	}
+
+	/**
+	 * @return void
+	 */
+	private function clear_form_state() {
+		foreach (array('mb_bundle_errors', 'mb_bundle_posted') as $key) {
+			$this->take_user_value($key);
+		}
+	}
+
+	/**
+	 * @param string $key   User meta key.
+	 * @param mixed  $value Value to keep until the next screen.
+	 * @return void
+	 */
+	private function store_user_value($key, $value) {
+		$user_id = function_exists('get_current_user_id') ? (int) get_current_user_id() : 0;
+		if ($user_id > 0 && function_exists('update_user_meta')) {
+			update_user_meta($user_id, $key, $value);
+		}
+		if (function_exists('set_transient')) {
+			set_transient($key . '_' . $user_id, $value, 120);
+		}
+	}
+
+	/**
+	 * @param string $key User meta key.
+	 * @return mixed
+	 */
+	private function take_user_value($key) {
+		$user_id = function_exists('get_current_user_id') ? (int) get_current_user_id() : 0;
+		$value   = ($user_id > 0 && function_exists('get_user_meta')) ? get_user_meta($user_id, $key, true) : null;
+		if ($user_id > 0 && function_exists('delete_user_meta')) {
+			delete_user_meta($user_id, $key);
+		}
+		if ((null === $value || '' === $value || array() === $value) && function_exists('get_transient')) {
+			$value = get_transient($key . '_' . $user_id);
+		}
+		if (function_exists('delete_transient')) {
+			delete_transient($key . '_' . $user_id);
+		}
+		return $value;
 	}
 
 	/**
 	 * @return void
 	 */
 	private function render_notice() {
-		$notice = get_transient('mb_bundle_notice_' . get_current_user_id());
+		$notice = $this->take_user_value('mb_bundle_notice');
 		if (! is_string($notice) || '' === $notice) {
 			return;
 		}
-		delete_transient('mb_bundle_notice_' . get_current_user_id());
 		echo '<div class="mb-manager__notice" role="status">' . esc_html($notice) . '</div>';
 	}
 
