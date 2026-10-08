@@ -624,6 +624,42 @@ function mad_baits_enqueue_standard_product_pdp_styles() {
 add_action('wp_enqueue_scripts', 'mad_baits_enqueue_standard_product_pdp_styles', 65);
 
 /**
+ * Shared product-page shell. Loads after bundle and standard PDP styles.
+ *
+ * @return void
+ */
+function mad_baits_enqueue_product_pdp_shell() {
+	if (! function_exists('is_product') || ! is_product()) {
+		return;
+	}
+
+	$path = get_theme_file_path('assets/css/scoped/product-pdp-shell.css');
+	if (! file_exists($path)) {
+		return;
+	}
+
+	$deps = array('mad-baits-product');
+	foreach (array(
+		'mad-baits-product-pdp-layout-fixes',
+		'mad-baits-product-standard-pdp',
+		'mad-baits-product-bundle-pdp-layout',
+		'mad-baits-visual-consistency',
+	) as $handle) {
+		if (wp_style_is($handle, 'enqueued') || wp_style_is($handle, 'registered')) {
+			$deps[] = $handle;
+		}
+	}
+
+	wp_enqueue_style(
+		'mad-baits-product-pdp-shell',
+		get_theme_file_uri('assets/css/scoped/product-pdp-shell.css'),
+		$deps,
+		mad_baits_get_asset_version($path)
+	);
+}
+add_action('wp_enqueue_scripts', 'mad_baits_enqueue_product_pdp_shell', 140);
+
+/**
  * Final visual consistency layer (loads after scoped/page CSS).
  *
  * @return void
