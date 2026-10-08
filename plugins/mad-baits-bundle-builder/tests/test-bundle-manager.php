@@ -905,6 +905,167 @@ $meta_range = $staging_row(array(
 ), 1547);
 $assert('stp' === $meta_range['range_slug'] && array('12mm', '22mm') === $meta_range['size_slugs'], 'range meta and pa_size terms resolve together, without the kilogram weight');
 
+$assert('shelf_life' === MBBB_Bundle_Admin::normalize_bait_format('Shelf Life'), 'Shelf Life is a bait format');
+$assert('shelf_life' === MBBB_Bundle_Admin::normalize_bait_format('shelf-life'), 'a shelf-life tag is a bait format');
+$assert('freezer' === MBBB_Bundle_Admin::normalize_bait_format('Freezer'), 'Freezer is a bait format');
+$assert('freezer' === MBBB_Bundle_Admin::normalize_bait_format('midi freezer1kg'), 'a combined BBB freezer value is freezer');
+$assert('shelf_life' === MBBB_Bundle_Admin::normalize_bait_format('midi shelf life1kg'), 'a combined BBB shelf life value is shelf life');
+$assert('' === MBBB_Bundle_Admin::normalize_bait_format('Freezer or Shelf life'), 'the attribute name is not itself both formats');
+$assert('' === MBBB_Bundle_Admin::normalize_bait_format('Plum & Shelfish'), 'Shelfish is not shelf life');
+
+$format_rows = array(
+	$staging_row(array(
+		'name' => 'Pandemic Shelf Life Boilies – 1kg',
+		'tags' => array('pandemic', 'shelf-life', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 15mm'),
+	), 318),
+	$staging_row(array(
+		'name' => 'Pandemic Shelf Life Boilies – 1kg',
+		'tags' => array('pandemic', 'shelf-life', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 18mm'),
+	), 486),
+	$staging_row(array(
+		'name' => 'P Fish Boilies – 5kg',
+		'tags' => array('p-fish-2', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('Boilie Size' => '15mm', 'Freezer or Shelf life' => 'Shelf Life'),
+	), 268),
+	$staging_row(array(
+		'name' => 'P Fish Boilies – 5kg',
+		'tags' => array('p-fish-2', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('Boilie Size' => '15mm', 'Freezer or Shelf life' => 'Freezer'),
+	), 265),
+	$staging_row(array(
+		'name' => 'P Fish Boilies – 5kg',
+		'tags' => array('p-fish-2', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('Boilie Size' => '18mm', 'Freezer or Shelf life' => 'Freezer'),
+	), 264),
+	$staging_row(array(
+		'name' => 'Pandemic Boilies – 5kg',
+		'tags' => array('pandemic', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('Boilie Size' => '', 'Freezer or Shelf Life' => ''),
+		'parent_attributes' => array(
+			'Boilie Size' => array('15mm', '18mm'),
+			'Freezer or Shelf Life' => array('Freezer', 'Shelf Life'),
+		),
+	), 108),
+	$staging_row(array(
+		'name' => 'ASBO Boilies – 5kg',
+		'tags' => array('asbo', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('Boilie Size' => '', 'Freezer/Shelf life' => ''),
+		'parent_attributes' => array(
+			'Boilie Size' => array('15mm'),
+			'Freezer/Shelf life' => array('Freezer', 'Shelf life'),
+		),
+	), 105),
+	$staging_row(array(
+		'name' => 'Nutz STP Boilies',
+		'tags' => array('nutz-plus', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '15mm', 'Type' => 'Shelf Life'),
+	), 846),
+	$staging_row(array(
+		'name' => 'Nutz STP Boilies',
+		'tags' => array('nutz-plus', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '15mm', 'Type' => 'Freezer'),
+	), 845),
+	$staging_row(array(
+		'name' => 'BBB Boilies',
+		'tags' => array('bbb', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('type' => 'midi freezer1kg'),
+	), 488),
+	$staging_row(array(
+		'name' => 'Nutz Banana Boilies – 1kg',
+		'tags' => array('nutz-banana', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('size' => '1kg 15mm'),
+	), 3201),
+	$staging_row(array(
+		'name' => 'Wicked White Boilies – 1kg',
+		'tags' => array('wicked-white', 'boilies'),
+		'categories' => array('boilies'),
+		'attributes' => array('SIZE' => '1KG 15MM'),
+	), 3131),
+	$staging_row(array(
+		'name' => 'Compulsive Angler Wafters',
+		'tags' => array('wicked-white'),
+		'categories' => array('boilies'),
+		'attributes' => array('flavour' => 'Plum & Shelfish'),
+	), 87),
+	$staging_row(array(
+		'name' => 'P-Fish Freezer Paste – 500g',
+		'tags' => array('p-fish-2', 'freezer'),
+		'categories' => array('paste'),
+		'attributes' => array(),
+	), 309),
+);
+$assert(array('shelf_life') === $format_rows[0]['formats'], 'a shelf-life tag and title resolve to shelf life only');
+$assert(array('shelf_life') === $format_rows[2]['formats'] && array('freezer') === $format_rows[3]['formats'], 'Freezer or Shelf life is read from the variation value');
+$assert(array('shelf_life', 'freezer') === $format_rows[5]['formats'], 'an any-variation uses both parent Freezer and Shelf Life values once');
+$assert(array('shelf_life', 'freezer') === $format_rows[6]['formats'], 'Freezer/Shelf life parent options resolve to both formats');
+$assert(array('shelf_life') === $format_rows[7]['formats'] && array('freezer') === $format_rows[8]['formats'], 'a Type value of Shelf Life or Freezer is the format');
+$assert(array('freezer') === $format_rows[9]['formats'], 'BBB type values such as midi freezer1kg resolve to freezer');
+$assert(array() === $format_rows[10]['formats'] && array() === $format_rows[11]['formats'], 'Nutz Banana and Wicked White 1kg products with no format signal stay unresolved');
+$assert(array() === $format_rows[12]['formats'], 'a Shelfish flavour is not treated as shelf life');
+$assert(array() === $format_rows[13]['formats'] && empty($format_rows[13]['boilie']), 'a freezer paste tag does not become a boilie format');
+
+$format_config = static function ($ranges, $sizes, $format) {
+	return array(
+		'bundle_type' => 'mix_and_match',
+		'ranges' => $ranges,
+		'sizes' => $sizes,
+		'bait_format' => $format,
+		'stock' => array('hide_unavailable' => true, 'prevent_oos' => true),
+	);
+};
+$format_ids = static function ($rows) {
+	return array_map(static function ($row) {
+		return (int) ($row['id'] ?? 0);
+	}, $rows);
+};
+$shelf_only = MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('pandemic'), array('15mm'), 'shelf_life'));
+$freezer_only = MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('p-fish-2'), array('15mm'), 'freezer'));
+$both_formats = MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('pandemic', 'p-fish-2'), array('15mm'), 'both'));
+$unsupported = MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('wicked-white'), array('15mm'), 'freezer'));
+$combined = MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('pandemic', 'asbo'), array('15mm'), 'shelf_life'));
+$assert(array(318, 108) === $format_ids($shelf_only), 'Shelf Life returns only shelf-life products for the selected range and size');
+$assert(array(265) === $format_ids($freezer_only), 'Freezer returns only freezer products for the selected range and size');
+$both_ids = $format_ids($both_formats);
+$assert(array(318, 268, 265, 108) === $both_ids && count($both_ids) === count(array_unique($both_ids)), 'Both returns shelf life and freezer once each, with no duplicate products');
+$assert(array() === $format_ids($unsupported), 'an unsupported format and range combination returns no eligibility');
+$assert(array(318, 108, 105) === $format_ids($combined), 'ranges, sizes, and bait format are combined');
+$assert(array() === $format_ids(MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('nutz-banana'), array('15mm'), 'shelf_life'))), 'Shelf Life does not include a range product with no format');
+$legacy_format = MBBB_Bundle_Eligibility::matching($format_rows, $format_config(array('nutz-banana'), array('15mm'), ''));
+$assert(array(3201) === $format_ids($legacy_format), 'a bundle with no bait format keeps matching products that have no format signal');
+
+$pandemic_formats = MBBB_Bundle_Admin::formats_for_ranges($format_rows, array('pandemic'));
+$mixed_formats = MBBB_Bundle_Admin::formats_for_ranges($format_rows, array('pandemic', 'p-fish-2'));
+$wicked_formats = MBBB_Bundle_Admin::formats_for_ranges($format_rows, array('wicked-white'));
+$assert(array('shelf_life', 'freezer') === $pandemic_formats, 'Pandemic has both a shelf-life product and an any-variation that covers freezer');
+$assert('both' === MBBB_Bundle_Admin::default_bait_format($pandemic_formats), 'Both is the default only when both formats are available');
+$assert(array('shelf_life') === MBBB_Bundle_Admin::formats_for_ranges(array($format_rows[0], $format_rows[1]), array('pandemic')), 'Pandemic 1kg on its own only supports shelf life');
+$assert('shelf_life' === MBBB_Bundle_Admin::default_bait_format(array('shelf_life')), 'a shelf-life-only selection defaults to Shelf Life');
+$assert('freezer' === MBBB_Bundle_Admin::default_bait_format(array('freezer')), 'a freezer-only selection defaults to Freezer');
+$assert(array('shelf_life', 'freezer') === $mixed_formats && 'both' === MBBB_Bundle_Admin::default_bait_format($mixed_formats), 'adding a range that sells the other format updates the available choices');
+$assert(array() === $wicked_formats && '' === MBBB_Bundle_Admin::default_bait_format($wicked_formats), 'Both is not offered when the selected ranges have no format');
+$format_map = MBBB_Bundle_Admin::format_range_map(array('variations' => $format_rows));
+$assert(1 === substr_count((string) $format_map['shelf_life'], 'pandemic') && false !== strpos((string) $format_map['freezer'], 'p-fish-2'), 'format pills list each range once');
+$stored_format = MBBB_Bundle_Config::sanitize(array('name' => 'Legacy', 'bait_format' => 'fresh'));
+$assert('' === $stored_format['bait_format'], 'legacy and unknown formats do not start filtering');
+$with_format = $stored_format;
+$with_format['bait_format'] = 'shelf_life';
+$assert(MBBB_Bundle_Config::structure_signature($stored_format) !== MBBB_Bundle_Config::structure_signature($with_format), 'changing bait format counts as a customer-choice change');
+$assert('Format: Shelf Life + Freezer' === MBBB_Bundle_Admin::format_preview_label('both'), 'Both previews as Shelf Life + Freezer');
+$assert('Format: Shelf Life' === MBBB_Bundle_Admin::format_preview_label('shelf_life'), 'Shelf Life previews on its own');
+
 $assert('p-fish-2' === MBBB_Bundle_Admin::canonical_range_slug('P Fish', $editor_ranges), 'a P-Fish flavour label maps to the editor range slug');
 $editor_source = file_get_contents(dirname(__DIR__) . '/includes/bundle-manager/class-mbbb-bundle-admin.php');
 $script_source = file_get_contents(dirname(__DIR__) . '/assets/js/mb-bundle-manager.js');
@@ -915,6 +1076,10 @@ $assert(false !== strpos($script_source, 'closeAdvanced()'), 'presets close Adva
 $assert(false !== strpos($script_source, "data-advanced') !== '1'"), 'Advanced Options stays closed unless the bundle already uses them');
 $style_source = file_get_contents(dirname(__DIR__) . '/assets/css/mb-bundle-manager.css');
 $assert(false !== strpos($style_source, '.mb-manager__advanced:not([open]) > :not(summary)'), 'a closed Advanced Options panel cannot show its fields');
+$assert(false !== strpos($editor_source, 'Bait format') && false !== strpos($editor_source, 'data-format-ranges'), 'the simple editor offers bait format under the sizes');
+$assert(false !== strpos($editor_source, 'mb-bundle-choices') && false !== strpos($script_source, 'syncFormats'), 'bait format stays inside the customer-choice panel');
+$assert(false !== strpos($script_source, 'Format: Shelf Life + Freezer') && false !== strpos($script_source, 'formatTouched = false'), 'boilie presets use the smart format default and the preview names it');
+$assert(false !== strpos($style_source, '.mb-manager__pill:has(input:checked)'), 'a selected format pill uses the same checked style as ranges and sizes');
 
 $fresh = MBBB_Bundle_Config::defaults();
 $fresh['display']['helper_text'] = 'Choose any 10 bags from the ranges below.';

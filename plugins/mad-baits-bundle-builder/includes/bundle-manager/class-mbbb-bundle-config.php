@@ -41,6 +41,7 @@ final class MBBB_Bundle_Config {
 			'unit_custom'       => '',
 			'ranges'            => array(),
 			'sizes'             => array(),
+			'bait_format'       => '',
 			'categories'        => array(),
 			'product_ids'       => array(),
 			'variation_ids'     => array(),
@@ -113,6 +114,8 @@ final class MBBB_Bundle_Config {
 
 		$config['ranges']        = self::string_list($input['ranges'] ?? array());
 		$config['sizes']         = self::string_list($input['sizes'] ?? array());
+		$bait_format             = sanitize_key((string) ($input['bait_format'] ?? ''));
+		$config['bait_format']   = in_array($bait_format, array('shelf_life', 'freezer', 'both'), true) ? $bait_format : '';
 		$config['categories']    = self::string_list($input['categories'] ?? array());
 		$config['product_ids']   = self::int_list($input['product_ids'] ?? array());
 		$config['variation_ids'] = self::int_list($input['variation_ids'] ?? array());
@@ -357,6 +360,7 @@ final class MBBB_Bundle_Config {
 			'unit_custom'   => (string) ($config['unit_custom'] ?? ''),
 			'ranges'        => self::string_list($config['ranges'] ?? array()),
 			'sizes'         => self::string_list($config['sizes'] ?? array()),
+			'bait_format'   => sanitize_key((string) ($config['bait_format'] ?? '')),
 			'categories'    => self::string_list($config['categories'] ?? array()),
 			'product_ids'   => self::int_list($config['product_ids'] ?? array()),
 			'variation_ids' => self::int_list($config['variation_ids'] ?? array()),
