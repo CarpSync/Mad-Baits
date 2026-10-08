@@ -599,9 +599,8 @@
 	width: 5.5rem;
 }
 
-.mb-content-card__products {
-	max-height: 220px;
-	overflow: auto;
+.mb-content-card [data-option-host] {
+	margin-top: 0.35rem;
 }
 
 .mb-content-card__product {

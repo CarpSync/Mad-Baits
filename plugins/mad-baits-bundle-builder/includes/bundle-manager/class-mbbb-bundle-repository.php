@@ -834,6 +834,7 @@ final class MBBB_Bundle_Repository {
 			'formats'         => array_values((array) ($choice['formats'] ?? array())),
 			'boilie'          => ! empty($choice['boilie']),
 			'product_type'    => (string) ($choice['product_type'] ?? ''),
+			'options'         => isset($choice['options']) && is_array($choice['options']) ? $choice['options'] : array(),
 			'category_slugs'  => $category_slugs,
 			'attributes'      => $attributes,
 			'in_stock'        => $in_stock,

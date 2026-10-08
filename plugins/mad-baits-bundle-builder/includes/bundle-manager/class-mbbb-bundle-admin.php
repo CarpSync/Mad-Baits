@@ -701,7 +701,7 @@ final class MBBB_Bundle_Admin {
 			</div>
 			<?php $this->render_stock_section($config); ?>
 			<div data-show-for="mix_and_match" data-structure="1">
-				<p class="mb-manager__hint"><?php esc_html_e('Leave a limit empty if it should not narrow the bundle. These limits apply as well as the ranges and sizes on each item group.', 'mad-baits-bundle-builder'); ?></p>
+				<p class="mb-manager__hint"><?php esc_html_e('Leave these empty for the normal choices. They are extra limits for a power user, applied as well as each item group.', 'mad-baits-bundle-builder'); ?></p>
 				<?php
 				$split = self::split_sizes($catalog);
 				$this->render_checks(__('Other sizes', 'mad-baits-bundle-builder'), 'mb_bundle[sizes][]', $split['other'], (array) $config['sizes'], 'other-sizes', false);
@@ -894,6 +894,7 @@ final class MBBB_Bundle_Admin {
 			'formats'      => $formats,
 			'boilie'       => $boilie,
 			'product_type' => $type,
+			'options'      => self::catalogue_options($signals),
 		);
 	}
 
@@ -937,6 +938,236 @@ final class MBBB_Bundle_Admin {
 		}
 
 		return 'other';
+	}
+
+	/**
+	 * Size, bottle, pack, or flavour kind for one stored option slug.
+	 *
+	 * Metric kinds are read from the slug. Flavour names and other real
+	 * variation labels share the "other" kind so they stay one choice list.
+	 *
+	 * @param string $slug Option slug.
+	 * @return string size|volume|pack|other
+	 */
+	public static function option_kind($slug) {
+		$slug = sanitize_title((string) $slug);
+		if (in_array($slug, array('mixed', 'skinz', 'pastels'), true) || 1 === preg_match('/mm$/', $slug)) {
+			return 'size';
+		}
+		if (1 === preg_match('/(?:ml|ltr)$/', $slug)) {
+			return 'volume';
+		}
+		if (1 === preg_match('/kg$/', $slug)) {
+			return 'pack';
+		}
+		return 'other';
+	}
+
+	/**
+	 * Kind used when several selected options must agree.
+	 *
+	 * Values in the same kind are alternatives. A pellet can require both a
+	 * diameter and a pack weight because those are different kinds.
+	 *
+	 * @param string $slug Option slug.
+	 * @return string
+	 */
+	public static function option_match_kind($slug) {
+		return self::option_kind($slug);
+	}
+
+	/**
+	 * Owner-facing name for one option group.
+	 *
+	 * @param string $kind size|volume|pack|other.
+	 * @param string $type Product type key.
+	 * @return string
+	 */
+	public static function option_group_label($kind, $type) {
+		if ('volume' === $kind) {
+			return 'liquids' === $type
+				? __('Bottle size', 'mad-baits-bundle-builder')
+				: __('Pot size', 'mad-baits-bundle-builder');
+		}
+		if ('pack' === $kind) {
+			return __('Pack size', 'mad-baits-bundle-builder');
+		}
+		if ('other' === $kind) {
+			return __('Flavour', 'mad-baits-bundle-builder');
+		}
+		return __('Size', 'mad-baits-bundle-builder');
+	}
+
+	/**
+	 * Short label for a customer or owner option.
+	 *
+	 * @param string $slug Option slug.
+	 * @return string
+	 */
+	public static function option_display_label($slug) {
+		$slug = sanitize_title((string) $slug);
+		if ('' === $slug) {
+			return '';
+		}
+		if (in_array($slug, array('mixed', 'skinz', 'pastels'), true)) {
+			return ucfirst($slug);
+		}
+		if (preg_match('/^(\d+(?:\.\d+)?)(mm|ml|kg|ltr)$/', $slug, $matches)) {
+			return $matches[1] . $matches[2];
+		}
+		if (preg_match('/^(\d+(?:\.\d+)?)-(\d+(?:\.\d+)?)mm$/', $slug, $matches)) {
+			return $matches[1] . '-' . $matches[2] . 'mm';
+		}
+		if (preg_match('/^(\d+(?:\.\d+)?)x(\d+(?:\.\d+)?)mm$/', $slug, $matches)) {
+			return $matches[1] . 'x' . $matches[2] . 'mm';
+		}
+		return ucwords(str_replace('-', ' ', $slug));
+	}
+
+	/**
+	 * Customer-facing choice, without attribute names.
+	 *
+	 * Boilies keep the catalogue name. Other products lead with the product
+	 * name and append only the sizes that are not already in that name.
+	 *
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @return string
+	 */
+	public static function customer_choice_label(array $variation) {
+		$name   = trim((string) ($variation['name'] ?? ''));
+		$parent = trim((string) ($variation['parent_name'] ?? ''));
+		if ('' === $parent || 'boilies' === (string) ($variation['product_type'] ?? '')) {
+			return $name;
+		}
+
+		$bits = array();
+		foreach (self::row_option_slugs($variation) as $slug) {
+			$label = self::option_display_label($slug);
+			if ('' === $label || false !== stripos($parent, $label)) {
+				continue;
+			}
+			$bits[ $label ] = $label;
+		}
+		if (empty($bits)) {
+			return '' !== $name ? $name : $parent;
+		}
+
+		return trim($parent . ' ' . implode(' ', $bits));
+	}
+
+	/**
+	 * Options that actually exist on one catalogue product.
+	 *
+	 * Variation attributes win, then the parent attributes, then the title.
+	 * Tags, categories, and unrelated attributes such as bait type are ignored.
+	 *
+	 * @param array<string, mixed> $signals Catalogue signals.
+	 * @return array<string, array<string, string>> kind => slug => label
+	 */
+	public static function catalogue_options(array $signals) {
+		$variation = self::options_in_attributes((array) ($signals['attributes'] ?? array()));
+		if ($variation['present']) {
+			return $variation['options'];
+		}
+		$parent = self::options_in_attributes((array) ($signals['parent_attributes'] ?? array()));
+		if ($parent['present']) {
+			return $parent['options'];
+		}
+
+		$options = array();
+		foreach (array('name', 'parent_name') as $key) {
+			self::add_text_options($options, $signals[ $key ] ?? '');
+		}
+		return $options;
+	}
+
+	/**
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @return string[]
+	 */
+	/**
+	 * Option groups on a catalogue row, filled from stored options or size slugs.
+	 *
+	 * @param array<string, mixed> $row Catalogue row.
+	 * @return array<string, array<string, string>>
+	 */
+	public static function row_option_map(array $row) {
+		$map     = array();
+		$options = isset($row['options']) && is_array($row['options']) ? $row['options'] : array();
+		foreach ($options as $kind => $values) {
+			if (! is_array($values)) {
+				continue;
+			}
+			$kind = sanitize_key((string) $kind);
+			if (in_array($kind, array('choice', 'flavour', 'color', 'colour'), true)) {
+				$kind = 'other';
+			}
+			if ('' === $kind) {
+				$kind = 'other';
+			}
+			foreach ($values as $slug => $label) {
+				if (is_array($label)) {
+					$slug  = $label['slug'] ?? $slug;
+					$label = $label['label'] ?? $slug;
+				}
+				$token = sanitize_title(is_int($slug) ? (string) $label : (string) $slug);
+				if ('' === $token) {
+					continue;
+				}
+				$text = is_int($slug) ? self::option_display_label($token) : trim((string) $label);
+				if ('' === $text) {
+					$text = self::option_display_label($token);
+				}
+				$map[ $kind ][ $token ] = $text;
+			}
+		}
+		foreach ((array) ($row['size_slugs'] ?? array()) as $slug) {
+			$slug = sanitize_title((string) $slug);
+			if ('' === $slug) {
+				continue;
+			}
+			$kind = self::option_kind($slug);
+			if (! isset($map[ $kind ][ $slug ])) {
+				$map[ $kind ][ $slug ] = self::option_display_label($slug);
+			}
+		}
+		return $map;
+	}
+
+	/**
+	 * @param array<string, mixed> $variation Catalogue row.
+	 * @return string[]
+	 */
+	public static function row_option_slugs(array $variation) {
+		$slugs = array();
+		foreach ((array) ($variation['size_slugs'] ?? array()) as $slug) {
+			$slug = sanitize_title((string) $slug);
+			if ('' !== $slug) {
+				$slugs[ $slug ] = $slug;
+			}
+		}
+		if (isset($variation['size_slug'])) {
+			$slug = sanitize_title((string) $variation['size_slug']);
+			if ('' !== $slug) {
+				$slugs[ $slug ] = $slug;
+			}
+		}
+		foreach ((array) ($variation['options'] ?? array()) as $values) {
+			if (! is_array($values)) {
+				continue;
+			}
+			foreach ($values as $slug => $label) {
+				$token = is_int($slug) ? (string) $label : (string) $slug;
+				if (is_array($label) && isset($label['slug'])) {
+					$token = (string) $label['slug'];
+				}
+				$token = sanitize_title($token);
+				if ('' !== $token) {
+					$slugs[ $token ] = $token;
+				}
+			}
+		}
+		return array_values($slugs);
 	}
 
 	/**
@@ -1219,10 +1450,7 @@ final class MBBB_Bundle_Admin {
 	 * @return string
 	 */
 	private static function millimetre_slug($number) {
-		$number = rtrim(rtrim((string) $number, '0'), '.');
-		if ('' === $number) {
-			$number = '0';
-		}
+		$number = self::pack_number($number);
 		return $number . 'mm';
 	}
 
@@ -1329,7 +1557,10 @@ final class MBBB_Bundle_Admin {
 	 * @return string
 	 */
 	private static function pack_number($number) {
-		$number = rtrim(rtrim((string) $number, '0'), '.');
+		$number = (string) $number;
+		if (false !== strpos($number, '.')) {
+			$number = rtrim(rtrim($number, '0'), '.');
+		}
 		return '' === $number ? '0' : $number;
 	}
 
@@ -1340,6 +1571,109 @@ final class MBBB_Bundle_Admin {
 	private static function is_pack_attribute_name($name) {
 		$key = str_replace('_', '-', sanitize_title((string) $name));
 		return in_array($key, array('pa-size', 'size', 'type', 'pa-type'), true);
+	}
+
+	/**
+	 * Flavour and colour attributes. Unrelated names such as bait type are not included.
+	 *
+	 * @param string $name Attribute name.
+	 * @return bool
+	 */
+	private static function is_flavour_attribute_name($name) {
+		$key = str_replace('_', '-', sanitize_title((string) $name));
+		return in_array($key, array('flavour', 'pa-flavour', 'flavor', 'pa-flavor', 'colour', 'color', 'pa-colour', 'pa-color'), true);
+	}
+
+	/**
+	 * @param array<string, mixed> $attributes Attribute values.
+	 * @return array{present: bool, options: array<string, array<string, string>>}
+	 */
+	private static function options_in_attributes(array $attributes) {
+		$present = false;
+		$options = array();
+		foreach ($attributes as $name => $value) {
+			$is_pack    = self::is_pack_attribute_name($name);
+			$is_flavour = self::is_flavour_attribute_name($name);
+			if (! $is_pack && ! $is_flavour) {
+				continue;
+			}
+			$present = true;
+			foreach (is_array($value) ? $value : array($value) as $one) {
+				$before = count(self::flatten_option_map($options));
+				if ($is_flavour) {
+					$label = trim(html_entity_decode((string) $one, ENT_QUOTES));
+					$sizes = self::extract_pack_size_list($one);
+					if ('' !== $label && empty($sizes) && 1 !== preg_match('/\bpastels?\b/i', $label)) {
+						self::add_option($options, 'other', sanitize_title($label), $label);
+					}
+				}
+				self::add_text_options($options, $one);
+				if ($is_pack && count(self::flatten_option_map($options)) === $before) {
+					$label = trim(html_entity_decode((string) $one, ENT_QUOTES));
+					if ('' !== $label) {
+						self::add_option($options, 'other', sanitize_title($label), $label);
+					}
+				}
+			}
+		}
+		return array(
+			'present' => $present,
+			'options' => $options,
+		);
+	}
+
+	/**
+	 * @param array<string, array<string, string>> $options Option map.
+	 * @param mixed                                $value   Raw attribute or title.
+	 * @return void
+	 */
+	private static function add_text_options(array &$options, $value) {
+		$text = strtolower(trim(html_entity_decode((string) $value, ENT_QUOTES)));
+		if (1 === preg_match('/\bpastels?\b/', $text)) {
+			self::add_option($options, 'size', 'pastels', 'Pastels');
+		}
+		foreach (self::extract_pack_size_list($value) as $slug) {
+			self::add_option($options, self::option_kind($slug), $slug, self::option_display_label($slug));
+		}
+	}
+
+	/**
+	 * @param array<string, array<string, string>> $options Option map.
+	 * @param string                               $kind    Option kind.
+	 * @param string                               $slug    Option slug.
+	 * @param string                               $label   Owner label.
+	 * @return void
+	 */
+	private static function add_option(array &$options, $kind, $slug, $label) {
+		$slug = sanitize_title((string) $slug);
+		$kind = sanitize_key((string) $kind);
+		if ('' === $slug || '' === $kind) {
+			return;
+		}
+		if (! isset($options[ $kind ]) || ! is_array($options[ $kind ])) {
+			$options[ $kind ] = array();
+		}
+		if (! isset($options[ $kind ][ $slug ])) {
+			$options[ $kind ][ $slug ] = '' !== trim((string) $label) ? trim((string) $label) : self::option_display_label($slug);
+		}
+	}
+
+	/**
+	 * @param array<string, array<string, string>> $options Option map.
+	 * @return string[]
+	 */
+	private static function flatten_option_map(array $options) {
+		$flat = array();
+		foreach ($options as $values) {
+			if (! is_array($values)) {
+				continue;
+			}
+			foreach ($values as $slug => $label) {
+				unset($label);
+				$flat[] = (string) $slug;
+			}
+		}
+		return $flat;
 	}
 
 	/**
@@ -1515,6 +1849,7 @@ final class MBBB_Bundle_Admin {
 		}
 		$ranges   = isset($catalog['ranges']) && is_array($catalog['ranges']) ? $catalog['ranges'] : array();
 		$products = array();
+		$by_type  = array();
 		foreach ((array) ($catalog['variations'] ?? array()) as $row) {
 			if (! is_array($row)) {
 				continue;
@@ -1568,6 +1903,22 @@ final class MBBB_Bundle_Admin {
 					'id'   => $id,
 					'name' => $name,
 				);
+				if (! isset($by_type[ $type ][ $id ])) {
+					$by_type[ $type ][ $id ] = array(
+						'id'      => $id,
+						'name'    => $name,
+						'ranges'  => array(),
+						'options' => array(),
+					);
+				}
+				if ('' !== $range) {
+					$by_type[ $type ][ $id ]['ranges'][ $range ] = $range;
+				}
+				foreach (self::row_option_map($row) as $kind => $kind_options) {
+					foreach ($kind_options as $slug => $label) {
+						$by_type[ $type ][ $id ]['options'][ $kind ][ $slug ] = $label;
+					}
+				}
 			}
 		}
 		foreach ($types as $type => $info) {
@@ -1576,6 +1927,36 @@ final class MBBB_Bundle_Admin {
 			}
 			$types[ $type ]['formats']['shelf_life'] = array_values($info['formats']['shelf_life']);
 			$types[ $type ]['formats']['freezer']    = array_values($info['formats']['freezer']);
+			$typed_products = array();
+			foreach ($by_type[ $type ] ?? array() as $product) {
+				$option_lists = array();
+				foreach ((array) $product['options'] as $kind => $kind_options) {
+					$list = array();
+					foreach ($kind_options as $slug => $label) {
+						$list[] = array(
+							'slug'  => (string) $slug,
+							'label' => (string) $label,
+						);
+					}
+					usort(
+						$list,
+						static function ($left, $right) {
+							return strnatcasecmp((string) $left['label'], (string) $right['label']);
+						}
+					);
+					$option_lists[ $kind ] = $list;
+				}
+				$product['ranges']  = array_values($product['ranges']);
+				$product['options'] = $option_lists;
+				$typed_products[]   = $product;
+			}
+			usort(
+				$typed_products,
+				static function ($left, $right) {
+					return strnatcasecmp((string) $left['name'], (string) $right['name']);
+				}
+			);
+			$types[ $type ]['products'] = $typed_products;
 		}
 
 		return array(
@@ -1649,10 +2030,12 @@ final class MBBB_Bundle_Admin {
 						<p class="mb-manager__hint" data-format-hint hidden><?php esc_html_e('Choose bait ranges to see freezer and shelf life options.', 'mad-baits-bundle-builder'); ?></p>
 					</fieldset>
 					<fieldset class="mb-manager__group" data-panel="products">
-						<legend><?php esc_html_e('Products', 'mad-baits-bundle-builder'); ?></legend>
+						<legend><?php esc_html_e('Available products', 'mad-baits-bundle-builder'); ?></legend>
 						<input type="search" data-product-search placeholder="<?php esc_attr_e('Search products', 'mad-baits-bundle-builder'); ?>" />
-						<div class="mb-manager__checks mb-content-card__products" data-product-list></div>
+						<div class="mb-manager__checks mb-manager__checks--scroll" data-product-list></div>
+						<p class="mb-manager__hint" data-product-hint hidden></p>
 					</fieldset>
+					<div data-option-host></div>
 				</div>
 			</article>
 		</template>

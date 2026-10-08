@@ -1397,6 +1397,8 @@ $assert(array('18mm') === MBBB_Bundle_Admin::extract_pack_size_list('18mm round'
 $assert(array('mixed') === MBBB_Bundle_Admin::extract_pack_size_list('Mixed'), 'mixed is a hookbait size');
 $assert(array('skinz') === MBBB_Bundle_Admin::extract_pack_size_list('Skinz Wafter'), 'skinz is a hookbait size');
 $assert(array('500ml') === MBBB_Bundle_Admin::extract_pack_size_list('Salmon oil 500'), 'a trailing bottle number is millilitres');
+$assert(array('500ml') === MBBB_Bundle_Admin::extract_pack_size_list('500ml'), '500ml stays 500ml');
+$assert(array('1000ml') === MBBB_Bundle_Admin::extract_pack_size_list('1000ml'), '1000ml does not collapse to 1ml');
 $assert(array('8mm', '1kg') === MBBB_Bundle_Admin::extract_pack_size_list('Pellets 8mm / 1kg'), 'a pellet title can carry diameter and pack weight');
 $assert(array('1ltr') === MBBB_Bundle_Admin::extract_pack_size_list('1 L'), '1L is a bottle size');
 $assert(array() === MBBB_Bundle_Admin::extract_pack_size_list('Pastels'), 'pastels is not a size');
@@ -1443,7 +1445,7 @@ $assert('boilie-group-1' === $boilies_only_slots[0]['group_key'] && 10 === (int)
 
 $with_popup = $group_bundle(array(
 	array('type' => 'boilies', 'quantity' => 10, 'unit' => 'bags', 'ranges' => array('pandemic'), 'sizes' => array('15mm')),
-	array('type' => 'popups', 'quantity' => 1, 'unit' => 'tubs', 'ranges' => array('pandemic')),
+	array('type' => 'popups', 'quantity' => 1, 'unit' => 'tubs', 'product_ids' => array(11, 12)),
 ));
 $with_popup_slots = MBBB_Bundle_Compiler::compile($with_popup, array(), $typed_rows);
 $assert(11 === count($with_popup_slots), '10 boilies and 1 pop-up compile 11 required slots');
@@ -1454,8 +1456,8 @@ $assert('Choose your 10 boilies' === $with_popup_slots[0]['group_sentence'] && '
 
 $with_wafter = $group_bundle(array(
 	array('type' => 'boilies', 'quantity' => 10, 'unit' => 'bags', 'ranges' => array('pandemic')),
-	array('type' => 'popups', 'quantity' => 1, 'unit' => 'tubs'),
-	array('type' => 'wafters', 'quantity' => 1, 'unit' => 'tubs'),
+	array('type' => 'popups', 'quantity' => 1, 'unit' => 'tubs', 'product_ids' => array(11)),
+	array('type' => 'wafters', 'quantity' => 1, 'unit' => 'tubs', 'product_ids' => array(13)),
 ));
 $with_wafter_slots = MBBB_Bundle_Compiler::compile($with_wafter, array(), $typed_rows);
 $assert(12 === count($with_wafter_slots) && 'Wafter' === $with_wafter_slots[11]['label'], '10 boilies, 1 pop-up, and 1 wafter compile 12 slots');
@@ -1466,7 +1468,7 @@ $assert(count($with_wafter_slots) === count(array_filter($with_wafter_slots, sta
 
 $with_pellets = $group_bundle(array(
 	array('type' => 'boilies', 'quantity' => 4, 'unit' => 'bags'),
-	array('type' => 'pellets', 'quantity' => 2, 'unit' => 'bags', 'sizes' => array('8mm')),
+	array('type' => 'pellets', 'quantity' => 2, 'unit' => 'bags', 'product_ids' => array(14), 'sizes' => array('8mm')),
 ));
 $pellet_slots = MBBB_Bundle_Compiler::compile($with_pellets, array(), $typed_rows);
 $assert(6 === count($pellet_slots) && 'Pellet 1' === $pellet_slots[4]['label'] && 'Pellet 2' === $pellet_slots[5]['label'], 'boilies and pellets keep different quantities');
@@ -1474,15 +1476,15 @@ $assert(array(6) === $option_ids($pellet_slots[4]), 'pellet size 8mm matches the
 
 $with_liquid = $group_bundle(array(
 	array('type' => 'boilies', 'quantity' => 5, 'unit' => 'bags'),
-	array('type' => 'liquids', 'quantity' => 1, 'unit' => 'bottles', 'sizes' => array('500ml')),
+	array('type' => 'liquids', 'quantity' => 1, 'unit' => 'bottles', 'product_ids' => array(15), 'sizes' => array('500ml')),
 ));
 $liquid_slots = MBBB_Bundle_Compiler::compile($with_liquid, array(), $typed_rows);
 $assert(6 === count($liquid_slots) && 'Liquid' === $liquid_slots[5]['label'] && array(7) === $option_ids($liquid_slots[5]), 'boilies and a liquid bottle compile together');
 
 $mixed_qty = $group_bundle(array(
 	array('type' => 'boilies', 'quantity' => 2, 'unit' => 'bags'),
-	array('type' => 'pellets', 'quantity' => 3, 'unit' => 'bags'),
-	array('type' => 'liquids', 'quantity' => 1, 'unit' => 'bottles'),
+	array('type' => 'pellets', 'quantity' => 3, 'unit' => 'bags', 'product_ids' => array(14)),
+	array('type' => 'liquids', 'quantity' => 1, 'unit' => 'bottles', 'product_ids' => array(15)),
 ));
 $mixed_slots = MBBB_Bundle_Compiler::compile($mixed_qty, array(), $typed_rows);
 $assert(6 === count($mixed_slots) && 2 === (int) $mixed_slots[0]['group_total'] && 3 === (int) $mixed_slots[2]['group_total'] && 1 === (int) $mixed_slots[5]['group_total'], 'each group keeps its own quantity');
@@ -1523,7 +1525,7 @@ $gap_plan = MBBB_Bundle_Service::plan_save(null, $group_bundle(array(
 	'group_errors' => $gap['group_errors'],
 	'will_compile_priced_options' => true,
 ));
-$assert(false !== strpos(implode(' ', $gap_plan['errors']), 'No pop-ups are available for the selected ranges.'), 'activation explains when a group matches nothing');
+$assert(false !== strpos(implode(' ', $gap_plan['errors']), 'Choose which pop-ups the customer can pick.'), 'activation explains when a group has no products chosen');
 $zero_gap = MBBB_Bundle_Eligibility::selection($typed_rows, $group_bundle(array(
 	array('type' => 'popups', 'quantity' => 0, 'unit' => 'tubs'),
 )));
@@ -1562,6 +1564,135 @@ $assert(3 === count($presets['10kg']['groups']), 'the 10kg preset does not inven
 $assert('liquids' === $presets['20kg']['groups'][3]['type'] && 20 === (int) $presets['20kg']['groups'][0]['quantity'], 'the 20kg preset adds one liquid to the hookbait groups');
 $assert(5 === (int) $presets['5kg']['groups'][0]['quantity'] && 'liquids' === $presets['5kg']['groups'][3]['type'], 'the 5kg preset follows the boilie, hookbait, and dip shape');
 $assert(false !== strpos($editor_source, 'Bundle contents') && false !== strpos($script_source, 'formatTouched = false'), 'bundle contents stay in the simple editor and presets still use the format default');
+
+$liquid_signals = MBBB_Bundle_Admin::describe_catalogue_choice(array(
+	'name' => 'ASBO Liquid Food Dip',
+	'tags' => array('liquids'),
+	'categories' => array('liquids'),
+	'parent_attributes' => array('size' => array('500ml', '1ltr')),
+), $editor_ranges);
+$assert('liquids' === $liquid_signals['product_type'] && '' === $liquid_signals['range_slug'], 'a liquid does not need a bait range');
+$assert(array('500ml', '1ltr') === array_keys($liquid_signals['options']['volume'] ?? array()), 'a liquid bottle size comes from its size attribute');
+
+$stp_liquid = MBBB_Bundle_Admin::describe_catalogue_choice(array(
+	'name' => 'STP Liquid',
+	'categories' => array('liquids'),
+	'parent_attributes' => array('Bait Type' => array('Liquid Food')),
+), $editor_ranges);
+$assert('liquids' === $stp_liquid['product_type'] && array() === $stp_liquid['options'], 'a bait type attribute is not treated as a liquid choice');
+
+$popup_options = MBBB_Bundle_Admin::describe_catalogue_choice(array(
+	'name' => 'ASBO Matching Pop Ups',
+	'tags' => array('pop-ups'),
+	'categories' => array('hookbaits'),
+	'parent_attributes' => array('TYPE' => array('12-16MM', '14MM', 'Pastels')),
+), $editor_ranges);
+$assert(array('12-16mm', '14mm', 'pastels') === array_keys($popup_options['options']['size'] ?? array()), 'pop-up diameters and pastels come from the product type values');
+$assert(! isset($popup_options['options']['volume']), 'pop-up choices do not invent a bottle size');
+
+$wafter_options = MBBB_Bundle_Admin::describe_catalogue_choice(array(
+	'name' => 'ASBO Wafters',
+	'tags' => array('wafters'),
+	'categories' => array('hookbaits'),
+	'parent_attributes' => array('size' => array('mixed', '18mm', 'Skinz')),
+), $editor_ranges);
+$assert(array('mixed', '18mm', 'skinz') === array_keys($wafter_options['options']['size'] ?? array()), 'wafter sizes stay on the wafter product');
+
+$pellet_options = MBBB_Bundle_Admin::describe_catalogue_choice(array(
+	'name' => 'Pandemic Pellets – 8mm / 1kg',
+	'tags' => array('pellets'),
+	'categories' => array('pellets'),
+), $editor_ranges);
+$assert(array('8mm') === array_keys($pellet_options['options']['size'] ?? array()) && array('1kg') === array_keys($pellet_options['options']['pack'] ?? array()), 'pellet diameter and pack weight stay separate');
+$assert(array('5kg') === MBBB_Bundle_Admin::extract_pack_size_list('Matching Pellets – 5kg'), 'a 5kg pellet pack does not become 5ml');
+
+$flavour_popup = MBBB_Bundle_Admin::describe_catalogue_choice(array(
+	'name' => 'Bait Matching Pop Ups',
+	'tags' => array('pop-ups'),
+	'categories' => array('hookbaits'),
+	'attributes' => array('Flavour' => 'ASBO'),
+), $editor_ranges);
+$assert('ASBO' === ($flavour_popup['options']['other']['asbo'] ?? ''), 'a pop-up flavour is kept as a flavour choice');
+
+$product_rows = array(
+	array('id' => 208, 'parent_id' => 34, 'parent_name' => 'ASBO Liquid Food Dip', 'name' => 'size: 500ml', 'product_type' => 'liquids', 'range_slug' => '', 'size_slugs' => array('500ml'), 'in_stock' => true, 'purchasable' => true, 'price' => 9),
+	array('id' => 207, 'parent_id' => 34, 'parent_name' => 'ASBO Liquid Food Dip', 'name' => 'size: 1ltr', 'product_type' => 'liquids', 'range_slug' => '', 'size_slugs' => array('1ltr'), 'in_stock' => true, 'purchasable' => true, 'price' => 12),
+	array('id' => 235, 'parent_id' => 47, 'parent_name' => 'Calamino Liquid Food', 'name' => 'Calamino Liquid Food', 'product_type' => 'liquids', 'range_slug' => '', 'size_slugs' => array('500ml'), 'in_stock' => true, 'purchasable' => true, 'price' => 9),
+	array('id' => 206, 'parent_id' => 33, 'parent_name' => 'Pandemic Liquid Food Dip', 'name' => 'Pandemic Liquid Food Dip', 'product_type' => 'liquids', 'range_slug' => 'pandemic', 'size_slugs' => array('500ml'), 'in_stock' => false, 'purchasable' => false, 'price' => 9),
+	array('id' => 321, 'parent_id' => 321, 'parent_name' => 'Nutz Banana Pop Ups', 'name' => 'Nutz Banana Pop Ups', 'product_type' => 'popups', 'range_slug' => '', 'size_slugs' => array(), 'in_stock' => true, 'purchasable' => true, 'price' => 6),
+	array('id' => 400, 'parent_id' => 296, 'parent_name' => 'ASBO Matching Pop Ups', 'name' => 'ASBO Matching Pop Ups', 'product_type' => 'popups', 'range_slug' => '', 'size_slugs' => array('12-16mm'), 'options' => array('size' => array('12-16mm' => '12-16mm', 'pastels' => 'Pastels')), 'in_stock' => true, 'purchasable' => true, 'price' => 6),
+	array('id' => 119, 'parent_id' => 22, 'parent_name' => 'ASBO Wafters', 'name' => 'ASBO Wafters', 'product_type' => 'wafters', 'range_slug' => '', 'size_slugs' => array('18mm'), 'in_stock' => true, 'purchasable' => true, 'price' => 7),
+	array('id' => 342, 'parent_id' => 342, 'parent_name' => 'Pandemic Pellets', 'name' => 'Pandemic Pellets', 'product_type' => 'pellets', 'range_slug' => '', 'size_slugs' => array('8mm', '1kg'), 'in_stock' => true, 'purchasable' => true, 'price' => 5),
+	array('id' => 50, 'parent_id' => 50, 'parent_name' => 'ASBO Matching Pellets', 'name' => 'ASBO Matching Pellets', 'product_type' => 'pellets', 'range_slug' => '', 'size_slugs' => array('5kg'), 'in_stock' => true, 'purchasable' => true, 'price' => 22),
+	array('id' => 509, 'parent_id' => 345, 'parent_name' => 'Bait Matching Spray', 'name' => 'Bait Matching Spray', 'product_type' => 'other', 'range_slug' => '', 'size_slugs' => array('50ml'), 'in_stock' => true, 'purchasable' => true, 'price' => 5),
+	array('id' => 1, 'parent_id' => 10, 'parent_name' => 'Pandemic Shelf Life', 'name' => 'Pandemic 15mm', 'product_type' => 'boilies', 'range_slug' => 'pandemic', 'size_slug' => '15mm', 'size_slugs' => array('15mm'), 'formats' => array('shelf_life'), 'in_stock' => true, 'purchasable' => true, 'price' => 8),
+);
+$choice_model = MBBB_Bundle_Admin::contents_model(array('variations' => $product_rows, 'ranges' => array('pandemic' => 'Pandemic')));
+$liquid_products = $choice_model['types']['liquids']['products'] ?? array();
+$liquid_names = array();
+$asbo_sizes = array();
+foreach ($liquid_products as $product) {
+	$liquid_names[] = $product['name'];
+	if (34 === (int) $product['id']) {
+		foreach ((array) ($product['options']['volume'] ?? array()) as $option) {
+			$asbo_sizes[] = $option['slug'];
+		}
+	}
+}
+$assert(array('ASBO Liquid Food Dip', 'Calamino Liquid Food', 'Pandemic Liquid Food Dip') === $liquid_names, 'liquids are listed without selecting a range');
+$assert(array('1ltr', '500ml') === $asbo_sizes && ! in_array('5ml', $asbo_sizes, true) && ! in_array('50ml', $asbo_sizes, true), 'liquid sizes come from the selected product and skip unrelated volumes');
+$popup_names = array();
+foreach ($choice_model['types']['popups']['products'] ?? array() as $product) {
+	$popup_names[] = $product['name'];
+}
+$assert(array('ASBO Matching Pop Ups', 'Nutz Banana Pop Ups') === $popup_names, 'pop-ups are listed as products');
+$wafter_names = array();
+foreach ($choice_model['types']['wafters']['products'] ?? array() as $product) {
+	$wafter_names[] = $product['name'];
+}
+$assert(array('ASBO Wafters') === $wafter_names, 'wafters are listed as products');
+$pellet_names = array();
+$pandemic_pellet = array();
+foreach ($choice_model['types']['pellets']['products'] ?? array() as $product) {
+	$pellet_names[] = $product['name'];
+	if (342 === (int) $product['id']) {
+		$pandemic_pellet = $product['options'];
+	}
+}
+$assert(array('ASBO Matching Pellets', 'Pandemic Pellets') === $pellet_names, 'pellets are listed as products');
+$assert(array('8mm') === array_column($pandemic_pellet['size'] ?? array(), 'slug') && array('1kg') === array_column($pandemic_pellet['pack'] ?? array(), 'slug'), 'a selected pellet keeps its own diameter and pack size');
+$assert(! isset($pandemic_pellet['volume']), 'a pellet does not show a liquid bottle size');
+
+$liquid_choice = $group_bundle(array(
+	array('type' => 'liquids', 'quantity' => 1, 'unit' => 'bottles', 'product_ids' => array(34), 'ranges' => array('pandemic'), 'sizes' => array('500ml')),
+));
+$liquid_choice_slots = MBBB_Bundle_Compiler::compile($liquid_choice, array(), $product_rows);
+$assert(array(208) === $option_ids($liquid_choice_slots[0]), 'a selected liquid and bottle size compile without a matching range');
+$assert('ASBO Liquid Food Dip 500ml' === ($liquid_choice_slots[0]['manual_options'][0]['label'] ?? '') && false === strpos((string) ($liquid_choice_slots[0]['manual_options'][0]['label'] ?? ''), 'size:'), 'the customer sees the liquid name and bottle size');
+
+$oos_liquid = $group_bundle(array(
+	array('type' => 'liquids', 'quantity' => 1, 'unit' => 'bottles', 'product_ids' => array(33)),
+));
+$oos_slots = MBBB_Bundle_Compiler::compile($oos_liquid, array(), $product_rows);
+$assert(array() === $option_ids($oos_slots[0]), 'an out-of-stock liquid is excluded after the product is selected');
+
+$pellet_filter = $group_bundle(array(
+	array('type' => 'pellets', 'quantity' => 1, 'unit' => 'bags', 'product_ids' => array(342, 50), 'sizes' => array('8mm', '1kg')),
+));
+$pellet_filter_slots = MBBB_Bundle_Compiler::compile($pellet_filter, array(), $product_rows);
+$assert(array(342) === $option_ids($pellet_filter_slots[0]), 'pellet diameter and pack size both have to match');
+
+$boilie_still = $group_bundle(array(
+	array('type' => 'boilies', 'quantity' => 1, 'unit' => 'bags', 'ranges' => array('pandemic'), 'sizes' => array('15mm'), 'bait_format' => 'shelf_life'),
+));
+$boilie_still_slots = MBBB_Bundle_Compiler::compile($boilie_still, array(), $product_rows);
+$assert(array(1) === $option_ids($boilie_still_slots[0]), 'boilies still match from range, size, and format');
+$boilie_gap = MBBB_Bundle_Eligibility::selection($product_rows, $group_bundle(array(
+	array('type' => 'boilies', 'quantity' => 1, 'unit' => 'bags', 'ranges' => array('missing-range')),
+)));
+$assert(false !== strpos(implode(' ', $boilie_gap['group_errors']), 'No boilies are available for the selected ranges.'), 'boilie groups still explain a range that matches nothing');
+
+$assert(false !== strpos($editor_source, 'Available products') && false !== strpos($script_source, 'Bottle size'), 'non-boilie groups choose products before bottle size');
 
 if ($failures > 0) {
 	fwrite(STDERR, "{$failures} failed.\n");
