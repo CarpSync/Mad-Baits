@@ -76,14 +76,43 @@
 		}
 	}
 
+	function selectedLabels(listId) {
+		var labels = [];
+		form.querySelectorAll('[data-check-list="' + listId + '"] input:checked').forEach(function (input) {
+			var span = input.parentElement ? input.parentElement.querySelector('span') : null;
+			var label = span ? span.textContent.trim() : input.value;
+			if (label) {
+				labels.push(label);
+			}
+		});
+		return labels;
+	}
+
+	function joined(listId, empty) {
+		var labels = selectedLabels(listId);
+		return labels.length ? labels.join(', ') : empty;
+	}
+
+	function statusLabel() {
+		var field = form.querySelector('[name="mb_bundle[status]"]:checked');
+		if (!field || !field.parentElement) {
+			return '';
+		}
+		var span = field.parentElement.querySelector('span');
+		return span ? span.textContent.trim() : field.value;
+	}
+
 	function updatePreview() {
 		var name = value('mb_bundle[name]') || 'Bundle name';
 		var helper = value('mb_bundle[helper_text]') || choiceSentence();
 		var badge = value('mb_bundle[badge]');
 		var badgeNode = document.getElementById('mb-preview-badge');
 		text('mb-preview-name', name);
+		text('mb-preview-status', statusLabel());
 		text('mb-preview-helper', helper);
 		text('mb-preview-qty', choiceSentence());
+		text('mb-preview-ranges', joined('ranges', 'No ranges selected'));
+		text('mb-preview-sizes', joined('sizes', 'No sizes selected'));
 		text('mb-preview-price', priceSummary());
 		text('mb-preview-button', value('mb_bundle[button_text]') || 'Build Your Bundle');
 		text('mb-bundle-choice-preview', choiceSentence());
@@ -91,22 +120,6 @@
 		if (badgeNode) {
 			badgeNode.hidden = badge === '';
 			badgeNode.textContent = badge;
-		}
-		var ranges = [];
-		form.querySelectorAll('[data-check-list="ranges"] input:checked').forEach(function (input) {
-			var label = input.parentElement ? input.parentElement.textContent.trim() : '';
-			if (label) {
-				ranges.push(label);
-			}
-		});
-		var list = document.getElementById('mb-preview-ranges');
-		if (list && ranges.length) {
-			list.innerHTML = '';
-			ranges.slice(0, 6).forEach(function (label) {
-				var item = document.createElement('li');
-				item.textContent = label;
-				list.appendChild(item);
-			});
 		}
 	}
 
@@ -129,13 +142,149 @@
 		});
 	}
 
-	function selectedLabels(listId) {
-		var labels = [];
-		form.querySelectorAll('[data-check-list="' + listId + '"] input:checked').forEach(function (input) {
-			var label = input.parentElement ? input.parentElement.innerText.trim() : input.value;
-			labels.push(label);
+	function sizeMatchesRanges(item, selected) {
+		if (!selected.length) {
+			return false;
+		}
+		var raw = item.getAttribute('data-size-ranges') || '';
+		if (!raw) {
+			return false;
+		}
+		var known = raw.split(',');
+		return selected.some(function (slug) {
+			return known.indexOf(slug) !== -1;
 		});
-		return labels;
+	}
+
+	function selectedRangeValues() {
+		var selected = [];
+		form.querySelectorAll('[data-check-list="ranges"] input:checked').forEach(function (input) {
+			selected.push(input.value);
+		});
+		return selected;
+	}
+
+	function applyListFilter(listId, uncheckHidden) {
+		var search = form.querySelector('[data-filter-list="' + listId + '"]');
+		var query = search ? search.value.toLowerCase() : '';
+		var ranges = selectedRangeValues();
+		form.querySelectorAll('[data-filter-item="' + listId + '"]').forEach(function (item) {
+			var textHide = query !== '' && item.textContent.toLowerCase().indexOf(query) === -1;
+			var rangeHide = listId === 'sizes' && !sizeMatchesRanges(item, ranges);
+			var input = item.querySelector('input[type="checkbox"]');
+			if (input && input.checked && listId === 'sizes' && rangeHide && !uncheckHidden) {
+				rangeHide = false;
+			}
+			item.hidden = textHide || rangeHide;
+			if (input && item.hidden && uncheckHidden && listId === 'sizes') {
+				input.checked = false;
+			}
+		});
+		if (listId === 'sizes') {
+			updateSizeHint();
+		}
+	}
+
+	function updateSizeHint() {
+		var hint = document.getElementById('mb-size-hint');
+		if (!hint) {
+			return;
+		}
+		var visible = 0;
+		form.querySelectorAll('[data-check-list="sizes"] [data-filter-item]').forEach(function (item) {
+			if (!item.hidden) {
+				visible += 1;
+			}
+		});
+		hint.hidden = visible > 0;
+		hint.textContent = selectedRangeValues().length
+			? 'None of the selected ranges have a boilie size yet.'
+			: 'Choose bait ranges to see the sizes customers can pick.';
+	}
+
+	function closeAdvanced() {
+		var advanced = document.getElementById('mb-advanced');
+		if (advanced && form.getAttribute('data-advanced') !== '1') {
+			advanced.open = false;
+		}
+	}
+
+	function syncFixedQty(input) {
+		var label = input.closest ? input.closest('label') : null;
+		var qty = label ? label.querySelector('.mb-manager__qty') : null;
+		if (qty) {
+			qty.disabled = !input.checked;
+		}
+	}
+
+	function markLegacyChoices(event) {
+		if (form.getAttribute('data-legacy') !== '1' || !event.target || !event.target.closest) {
+			return;
+		}
+		if (!event.target.closest('[data-structure]')) {
+			return;
+		}
+		var box = form.querySelector('[name="update_choices"]');
+		if (box) {
+			box.checked = true;
+		}
+	}
+
+	function setRadio(name, radioValue) {
+		var field = form.querySelector('[name="' + name + '"][value="' + radioValue + '"]');
+		if (field) {
+			field.checked = true;
+		}
+	}
+
+	function applyPreset(key) {
+		if (form.getAttribute('data-new') !== '1') {
+			return;
+		}
+		var presets = {
+			'10kg': { quantity: '10', sizes: ['15mm', '18mm'] },
+			'20kg': { quantity: '20', sizes: ['15mm', '18mm'] },
+			'5kg': { quantity: '5', sizes: ['15mm', '18mm'] },
+			blank: { quantity: '10', sizes: [], clear: true }
+		};
+		var preset = presets[key];
+		if (!preset) {
+			return;
+		}
+		setRadio('mb_bundle[bundle_type]', 'mix_and_match');
+		setRadio('mb_bundle[pricing_mode]', 'fixed');
+		setRadio('mb_bundle[status]', 'draft');
+		var qty = form.querySelector('[name="mb_bundle[quantity]"]');
+		if (qty) {
+			qty.value = preset.quantity;
+		}
+		var unit = form.querySelector('[name="mb_bundle[unit]"]');
+		if (unit) {
+			unit.value = 'bags';
+		}
+		if (preset.clear) {
+			['mb_bundle[name]', 'mb_bundle[fixed_price]', 'mb_bundle[helper_text]', 'mb_bundle[badge]'].forEach(function (fieldName) {
+				var field = form.querySelector('[name="' + fieldName + '"]');
+				if (field) {
+					field.value = '';
+				}
+			});
+			form.querySelectorAll('[data-check-list="ranges"] input').forEach(function (input) {
+				input.checked = false;
+			});
+		}
+		form.querySelectorAll('[data-check-list="sizes"] input').forEach(function (input) {
+			var span = input.parentElement ? input.parentElement.querySelector('span') : null;
+			var blob = ((input.value || '') + ' ' + (span ? span.textContent : '')).toLowerCase().replace(/\s+/g, '');
+			input.checked = preset.sizes.some(function (size) {
+				return blob.indexOf(size.replace(/\s+/g, '')) !== -1;
+			});
+		});
+		toggleShows();
+		applyListFilter('sizes', false);
+		closeAdvanced();
+		updatePreview();
+		refreshCount();
 	}
 
 	var countTimer = null;
@@ -152,26 +301,25 @@
 				var live = parseInt(response.data.live, 10) || 0;
 				var node = document.getElementById('mb-eligible-count');
 				if (node) {
-					node.textContent = live === 1 ? '1 eligible product variation' : live + ' eligible product variations';
-				}
-				var list = document.getElementById('mb-preview-ranges');
-				if (list && response.data.names && response.data.names.length && !selectedLabels('ranges').length) {
-					list.innerHTML = '';
-					response.data.names.forEach(function (label) {
-						var item = document.createElement('li');
-						item.textContent = label;
-						list.appendChild(item);
-					});
+					node.textContent = live === 1 ? '1 eligible product' : live + ' eligible products';
 				}
 			});
 		}, 250);
 	}
 
-	form.addEventListener('input', function () {
+	form.addEventListener('input', function (event) {
+		markLegacyChoices(event);
 		updatePreview();
 		toggleShows();
 	});
 	form.addEventListener('change', function (event) {
+		markLegacyChoices(event);
+		if (event.target && event.target.closest && event.target.type === 'checkbox' && event.target.closest('[data-check-list="fixed"]')) {
+			syncFixedQty(event.target);
+		}
+		if (event.target && event.target.closest('[data-check-list="ranges"]')) {
+			applyListFilter('sizes', true);
+		}
 		updatePreview();
 		toggleShows();
 		if (event.target && event.target.matches('input[type="checkbox"], input[type="radio"], select')) {
@@ -190,6 +338,10 @@
 				}
 				input.checked = check;
 			});
+			markLegacyChoices({ target: button });
+			if (listId === 'ranges') {
+				applyListFilter('sizes', true);
+			}
 			updatePreview();
 			refreshCount();
 		});
@@ -197,13 +349,31 @@
 
 	form.querySelectorAll('[data-filter-list]').forEach(function (input) {
 		input.addEventListener('input', function () {
-			var listId = input.getAttribute('data-filter-list');
-			var query = input.value.toLowerCase();
-			form.querySelectorAll('[data-filter-item="' + listId + '"]').forEach(function (item) {
-				item.hidden = query !== '' && item.textContent.toLowerCase().indexOf(query) === -1;
-			});
+			applyListFilter(input.getAttribute('data-filter-list'), false);
 		});
 	});
+
+	form.querySelectorAll('[data-preset]').forEach(function (button) {
+		button.addEventListener('click', function () {
+			form.querySelectorAll('[data-preset]').forEach(function (other) {
+				other.classList.toggle('is-active', other === button);
+			});
+			applyPreset(button.getAttribute('data-preset'));
+		});
+	});
+
+	var editChoices = document.getElementById('mb-edit-choices');
+	if (editChoices) {
+		editChoices.addEventListener('click', function () {
+			var panel = document.getElementById('mb-bundle-choices');
+			if (panel) {
+				panel.hidden = false;
+			}
+			editChoices.hidden = true;
+			toggleShows();
+			applyListFilter('sizes', false);
+		});
+	}
 
 	form.querySelectorAll('[data-intent]').forEach(function (button) {
 		button.addEventListener('click', function () {
@@ -212,6 +382,10 @@
 				intent.value = button.getAttribute('data-intent') || 'save';
 			}
 		});
+	});
+
+	form.addEventListener('submit', function () {
+		form.querySelectorAll('[data-check-list="fixed"] input[type="checkbox"]').forEach(syncFixedQty);
 	});
 
 	$('#mb-bundle-image-pick').on('click', function (event) {
@@ -251,6 +425,9 @@
 	});
 
 	toggleShows();
+	applyListFilter('sizes', false);
+	closeAdvanced();
+	window.addEventListener('pageshow', closeAdvanced);
 	updatePreview();
 	refreshCount();
 }(jQuery));
